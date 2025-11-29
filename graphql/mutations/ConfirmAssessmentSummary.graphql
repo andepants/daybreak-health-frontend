@@ -1,0 +1,22 @@
+# ConfirmAssessmentSummary Mutation
+# Confirms the assessment summary and enables navigation to demographics
+# Saves user confirmation and stores summary for therapist matching (FR-003)
+# Updates session status to indicate assessment is confirmed
+
+mutation ConfirmAssessmentSummary($sessionId: ID!, $confirmed: Boolean!) {
+  confirmAssessmentSummary(sessionId: $sessionId, confirmed: $confirmed) {
+    session {
+      id
+      status
+      assessment {
+        isComplete
+        summary {
+          keyConcerns
+          childName
+          recommendedFocus
+          generatedAt
+        }
+      }
+    }
+  }
+}

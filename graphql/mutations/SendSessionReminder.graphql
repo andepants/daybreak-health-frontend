@@ -1,0 +1,9 @@
+# SendSessionReminder Mutation
+# Requests an email reminder to return to an onboarding session
+
+mutation SendSessionReminder($input: SendSessionReminderInput!) {
+  sendSessionReminder(input: $input) {
+    success
+    message
+  }
+}

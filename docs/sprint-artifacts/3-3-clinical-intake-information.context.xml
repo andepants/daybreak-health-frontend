@@ -1,0 +1,246 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3</storyId>
+    <title>Clinical Intake Information</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/3-3-clinical-intake-information.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>to provide relevant medical history for my child</iWant>
+    <soThat>the therapist has important context for treatment</soThat>
+    <tasks>
+      - Task 1: Create ClinicalIntakeForm component structure (AC: 1, 7, 8, 9)
+      - Task 2: Define Zod validation schema (AC: all fields)
+      - Task 3: Implement medications field (AC: 2, 10, 12)
+      - Task 4: Implement previous therapy experience field (AC: 3, 10)
+      - Task 5: Implement mental health diagnoses multi-select (AC: 4, 10, 13)
+      - Task 6: Implement school accommodations field (AC: 5, 10)
+      - Task 7: Implement additional information field with character counter (AC: 6, 10, 12)
+      - Task 8: Integrate auto-save functionality (AC: 10)
+      - Task 9: Implement Continue button navigation (AC: 11)
+      - Task 10: Add component to onboarding flow (AC: 1)
+      - Task 11: Write unit tests
+      - Task 12: Accessibility and UX polish
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC-3.3.1: Given I have completed child info form, when the clinical intake section loads, then I see all clinical intake form fields
+    AC-3.3.2: Form includes current medications field (optional, textarea)
+    AC-3.3.3: Form includes previous therapy experience field (optional, select: Never, Currently in therapy, Previously in therapy)
+    AC-3.3.4: Form includes other mental health diagnoses field (optional, multi-select checkboxes: Anxiety, Depression, ADHD, Autism, Other)
+    AC-3.3.5: Form includes school accommodations field (optional, select: None, IEP, 504 Plan, Other)
+    AC-3.3.6: Form includes "Anything else we should know" field (optional, textarea, 500 character limit)
+    AC-3.3.7: All fields are clearly marked as optional and can be skipped
+    AC-3.3.8: Clear messaging displayed: "This information helps us match with the right therapist"
+    AC-3.3.9: Privacy notice displayed: "Your information is protected by HIPAA"
+    AC-3.3.10: Form saves on blur for each field using auto-save functionality
+    AC-3.3.11: "Continue" button proceeds to insurance section when clicked
+    AC-3.3.12: Textarea fields display character counter approaching character limit
+    AC-3.3.13: Multi-select checkboxes use shadcn/ui Checkbox component
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification - Parent & Child Information Collection</title>
+        <section>Data Models and Contracts</section>
+        <snippet>Defines clinicalIntakeSchema with all optional fields: currentMedications (string, max 500), previousTherapy (enum), diagnoses (array of enums), schoolAccommodations (enum), additionalInfo (string, max 500). All validation schemas use Zod 3.x with React Hook Form integration.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>APIs and Interfaces</section>
+        <snippet>UpdateClinicalIntake mutation takes sessionId and ClinicalIntakeInput, returns session with demographics.clinicalIntake fields. All mutations integrate with Apollo Client cache for optimistic updates and data persistence.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Acceptance Criteria (Story 3.3)</section>
+        <snippet>AC-3.3.1: All fields optional. AC-3.3.2: Medications 500 char limit. AC-3.3.3: Multi-select diagnoses stored as array. AC-3.3.4: HIPAA notice visible. AC-3.3.5: Auto-save partial data on exit.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture - Project Structure</title>
+        <section>features/</section>
+        <snippet>Feature components located in features/[feature]/ with co-located GraphQL operations, hooks, and TypeScript types. Demographics forms in features/demographics/ with Zod validation schemas in lib/validations/.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture - Security</title>
+        <section>PHI Protection Checklist</section>
+        <snippet>No PHI in console.log, URLs, or browser history. Form autofill disabled for sensitive fields. Error messages don't expose PHI. Use phiGuard utility for safe logging. Session tokens in httpOnly cookies where possible.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture - Consistency Rules</title>
+        <section>Form Patterns</section>
+        <snippet>Labels above input, always visible. Validation on blur + on submit. Error display inline below field. Help text below input, muted color. Textarea fields include character counter approaching limit.</snippet>
+      </doc>
+      <doc>
+        <path>docs/prd.md</path>
+        <title>Product Requirements - FR-006</title>
+        <section>Onboarding & Data Collection</section>
+        <snippet>System shall collect clinical intake information including primary concerns and relevant history. Used for therapist matching with transparent rationale.</snippet>
+      </doc>
+      <doc>
+        <path>docs/prd.md</path>
+        <title>Product Requirements - FR-007</title>
+        <section>Session Persistence</section>
+        <snippet>System shall persist onboarding progress, allowing parents to resume an incomplete session. Auto-save on every interaction, 30-day session retention.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design - Form Patterns</title>
+        <section>Accessibility Requirements</section>
+        <snippet>WCAG 2.1 AA compliance. 4.5:1 color contrast for body text. Keyboard navigation for all interactive elements. Proper ARIA labels. Touch targets minimum 44x44px. Clear, specific error messages associated with fields.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>hooks/useAutoSave.ts</path>
+        <kind>hook</kind>
+        <symbol>useAutoSave</symbol>
+        <lines>1-171</lines>
+        <reason>Auto-save hook required by AC-3.3.10 for saving form data on blur. Provides saveStatus, save function, retry logic, and error handling. Currently uses localStorage mock, ready for GraphQL mutation integration.</reason>
+      </artifact>
+      <artifact>
+        <path>hooks/useOnboardingSession.ts</path>
+        <kind>hook</kind>
+        <symbol>useOnboardingSession</symbol>
+        <lines>1-170</lines>
+        <reason>Session management hook for retrieving sessionId and session state. Provides context for auto-save operations and session persistence.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/checkbox.tsx</path>
+        <kind>component</kind>
+        <symbol>Checkbox</symbol>
+        <lines>1-33</lines>
+        <reason>shadcn/ui Checkbox component required by AC-3.3.13 for multi-select mental health diagnoses. Uses Radix UI with accessible keyboard navigation and focus states.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/textarea.tsx</path>
+        <kind>component</kind>
+        <symbol>Textarea</symbol>
+        <lines>1-19</lines>
+        <reason>shadcn/ui Textarea component for medications and additional information fields (AC-3.3.2, AC-3.3.6). Includes built-in validation states (aria-invalid) and auto-resize.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/select.tsx</path>
+        <kind>component</kind>
+        <symbol>Select, SelectTrigger, SelectContent, SelectItem</symbol>
+        <lines>1-188</lines>
+        <reason>shadcn/ui Select components for previous therapy experience (AC-3.3.3) and school accommodations (AC-3.3.5). Accessible dropdown with keyboard navigation.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>react-hook-form</package>
+        <version>^7.67.0</version>
+        <usage>Form state management with uncontrolled inputs and minimal re-renders</usage>
+      </node>
+      <node>
+        <package>zod</package>
+        <version>^3.25.76</version>
+        <usage>Schema validation for clinical intake fields with custom error messages</usage>
+      </node>
+      <node>
+        <package>@hookform/resolvers</package>
+        <version>^5.2.2</version>
+        <usage>Zod resolver integration with React Hook Form</usage>
+      </node>
+      <node>
+        <package>@apollo/client</package>
+        <version>4.1.0-alpha.5</version>
+        <usage>GraphQL mutations for data persistence and cache management</usage>
+      </node>
+      <node>
+        <package>@radix-ui/react-checkbox</package>
+        <version>^1.3.3</version>
+        <usage>Accessible checkbox primitive for multi-select diagnoses</usage>
+      </node>
+      <node>
+        <package>@radix-ui/react-select</package>
+        <version>^2.2.6</version>
+        <usage>Accessible select primitive for therapy experience and accommodations</usage>
+      </node>
+      <node>
+        <package>@radix-ui/react-label</package>
+        <version>^2.1.8</version>
+        <usage>Accessible labels with proper associations for form fields</usage>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>All clinical intake fields MUST be optional - form can submit with zero fields filled (AC-3.3.7)</constraint>
+    <constraint>Textarea character limits enforced via Zod schema: medications 500 chars, additionalInfo 500 chars (AC-3.3.2, AC-3.3.6)</constraint>
+    <constraint>Character counter MUST display for textarea fields, with visual warning approaching limit (AC-3.3.12)</constraint>
+    <constraint>Multi-select checkboxes MUST use shadcn/ui Checkbox component, not native HTML checkboxes (AC-3.3.13)</constraint>
+    <constraint>Auto-save MUST trigger on blur for each field using useAutoSave hook (AC-3.3.10)</constraint>
+    <constraint>HIPAA privacy notice MUST be prominently displayed: "Your information is protected by HIPAA" (AC-3.3.9)</constraint>
+    <constraint>Helper messaging required: "This information helps us match with the right therapist" (AC-3.3.8)</constraint>
+    <constraint>NO PHI in console.log, error messages, or URLs per Architecture PHI Protection Checklist</constraint>
+    <constraint>Component file MUST include JSDoc documentation with purpose and parameters</constraint>
+    <constraint>All form fields require proper labels with htmlFor attributes and ARIA labels for accessibility (Task 12)</constraint>
+    <constraint>Continue button MUST always be enabled since all fields optional, navigates to insurance route (AC-3.3.11)</constraint>
+    <constraint>Use React Hook Form 7.x with Zod 3.x resolver (not Zod 4.x per ADR-004)</constraint>
+    <constraint>Component must be mobile-first responsive with proper spacing and touch targets (44x44px minimum)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>clinicalIntakeSchema (Zod)</name>
+      <kind>Validation Schema</kind>
+      <signature>z.object({ currentMedications: z.string().max(500).optional(), previousTherapy: z.enum(['never', 'currently', 'previously']).optional(), diagnoses: z.array(z.enum(['anxiety', 'depression', 'adhd', 'autism', 'other'])).optional(), schoolAccommodations: z.enum(['none', 'iep', '504-plan', 'other']).optional(), additionalInfo: z.string().max(500).optional() })</signature>
+      <path>lib/validations/demographics.ts (to be created) or features/demographics/schemas/clinicalIntakeSchema.ts</path>
+    </interface>
+    <interface>
+      <name>UpdateClinicalIntake (GraphQL Mutation)</name>
+      <kind>GraphQL Mutation</kind>
+      <signature>mutation UpdateClinicalIntake($sessionId: ID!, $input: ClinicalIntakeInput!) { updateClinicalIntake(sessionId: $sessionId, input: $input) { id demographics { clinicalIntake { currentMedications previousTherapy diagnoses schoolAccommodations additionalInfo } } } }</signature>
+      <path>graphql/mutations/UpdateClinicalIntake.graphql (to be created)</path>
+    </interface>
+    <interface>
+      <name>useAutoSave</name>
+      <kind>React Hook</kind>
+      <signature>function useAutoSave({ sessionId, onSaveSuccess?, onSaveError? }): { saveStatus: SaveStatus, lastSaved: Date | null, error: Error | null, retry: () => void, save: (data: unknown) => Promise&lt;void&gt; }</signature>
+      <path>hooks/useAutoSave.ts</path>
+    </interface>
+    <interface>
+      <name>useOnboardingSession</name>
+      <kind>React Hook</kind>
+      <signature>function useOnboardingSession(sessionId: string): { session: OnboardingSession | null, isLoading: boolean, error: Error | null, isReturningUser: boolean, sessionExpiresAt: Date | null, refetch: () => void }</signature>
+      <path>hooks/useOnboardingSession.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Frontend testing uses Vitest 4.x for unit tests with React Testing Library 16.x for component testing. E2E tests use Playwright 1.x for cross-browser user flows. All GraphQL operations are type-safe via GraphQL Code Generator. Test files located in tests/unit/ and tests/e2e/ directories. Component tests focus on user interactions, accessibility, and form validation. Tests must verify WCAG 2.1 AA compliance using axe DevTools.</standards>
+    <locations>tests/unit/components/demographics/, tests/unit/hooks/, tests/e2e/</locations>
+    <ideas>
+      <test id="AC-3.3.1">Test that clinical intake form renders all expected fields when loaded</test>
+      <test id="AC-3.3.2">Test medications textarea has 500 character limit and enforces via Zod validation</test>
+      <test id="AC-3.3.3">Test previous therapy select has correct options: Never, Currently in therapy, Previously in therapy</test>
+      <test id="AC-3.3.4">Test mental health diagnoses multi-select with Checkbox components, verify array storage</test>
+      <test id="AC-3.3.5">Test school accommodations select has correct options: None, IEP, 504 Plan, Other</test>
+      <test id="AC-3.3.6">Test additional information textarea has 500 character limit with counter display</test>
+      <test id="AC-3.3.7">Test all fields marked as optional, form submits successfully with zero fields filled</test>
+      <test id="AC-3.3.8">Test helper message displays: "This information helps us match with the right therapist"</test>
+      <test id="AC-3.3.9">Test HIPAA notice displays: "Your information is protected by HIPAA"</test>
+      <test id="AC-3.3.10">Test auto-save triggers on field blur using useAutoSave hook, verify save status</test>
+      <test id="AC-3.3.11">Test Continue button navigates to insurance route when clicked</test>
+      <test id="AC-3.3.12">Test character counter displays and updates for textarea fields, shows warning approaching limit</test>
+      <test id="AC-3.3.13">Test multi-select uses shadcn/ui Checkbox component, not native checkboxes</test>
+      <test id="Task-11.1">Unit test Zod schema validation with valid and invalid data scenarios</test>
+      <test id="Task-11.5">Test checkbox onChange updates form array field correctly</test>
+      <test id="Task-12">Accessibility tests: keyboard navigation, screen reader labels, focus indicators, WCAG contrast</test>
+    </ideas>
+  </tests>
+</story-context>

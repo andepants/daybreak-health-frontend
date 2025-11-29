@@ -4,9 +4,15 @@
 mutation SubmitAssessmentMessage($input: SubmitAssessmentMessageInput!) {
   submitAssessmentMessage(input: $input) {
     id
-    summary
+    summary {
+      keyConcerns
+      childName
+      recommendedFocus
+      generatedAt
+    }
     isFitForDaybreak
     suggestedNextSteps
+    isComplete
     conversationHistory {
       id
       sender

@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 import * as ApolloReactCommon from '@apollo/client';
-import * as Apollo from '@apollo/client';
+import * as ApolloReactHooks from '@apollo/client/react';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -31,9 +31,23 @@ export type Assessment = {
   __typename?: 'Assessment';
   conversationHistory: Array<ChatMessage>;
   id: Scalars['ID']['output'];
+  isComplete: Maybe<Scalars['Boolean']['output']>;
   isFitForDaybreak: Maybe<Scalars['Boolean']['output']>;
   suggestedNextSteps: Maybe<Scalars['String']['output']>;
-  summary: Maybe<Scalars['String']['output']>;
+  summary: Maybe<AssessmentSummary>;
+};
+
+export type AssessmentSummary = {
+  __typename?: 'AssessmentSummary';
+  childName: Scalars['String']['output'];
+  generatedAt: Scalars['String']['output'];
+  keyConcerns: Array<Scalars['String']['output']>;
+  recommendedFocus: Maybe<Array<Scalars['String']['output']>>;
+};
+
+export type AssessmentSummaryPayload = {
+  __typename?: 'AssessmentSummaryPayload';
+  summary: AssessmentSummary;
 };
 
 export type ChatMessage = {
@@ -54,11 +68,32 @@ export type Child = {
   pronouns: Maybe<Scalars['String']['output']>;
 };
 
+export type ChildInfo = {
+  __typename?: 'ChildInfo';
+  concerns: Maybe<Array<Scalars['String']['output']>>;
+  dateOfBirth: Maybe<Scalars['String']['output']>;
+  firstName: Maybe<Scalars['String']['output']>;
+  lastName: Maybe<Scalars['String']['output']>;
+  pronouns: Maybe<Scalars['String']['output']>;
+};
+
+export type ConfirmSummaryPayload = {
+  __typename?: 'ConfirmSummaryPayload';
+  session: OnboardingSession;
+};
+
 export type CostEstimate = {
   __typename?: 'CostEstimate';
   copayPerSession: Maybe<Scalars['Float']['output']>;
   deductibleRemaining: Maybe<Scalars['Float']['output']>;
   notes: Maybe<Scalars['String']['output']>;
+};
+
+export type Demographics = {
+  __typename?: 'Demographics';
+  child: Maybe<ChildInfo>;
+  isComplete: Scalars['Boolean']['output'];
+  parent: Maybe<ParentInfo>;
 };
 
 export type InsuranceInformation = {
@@ -78,18 +113,44 @@ export type MessageSender =
 
 export type Mutation = {
   __typename?: 'Mutation';
+  completeAssessment: Maybe<AssessmentSummaryPayload>;
+  confirmAssessmentSummary: Maybe<ConfirmSummaryPayload>;
+  resetAssessment: Maybe<ResetAssessmentPayload>;
   scheduleAppointment: Maybe<Appointment>;
+  sendSessionReminder: Maybe<SendSessionReminderPayload>;
   sendSupportChatMessage: Maybe<ChatMessage>;
   startOnboarding: Maybe<OnboardingSession>;
   submitAssessmentMessage: Maybe<Assessment>;
   submitInsuranceImage: Maybe<InsuranceInformation>;
   submitInsuranceInfo: Maybe<OnboardingSession>;
   updateDemographics: Maybe<OnboardingSession>;
+  updateParentInfo: Maybe<UpdateParentInfoPayload>;
+};
+
+
+export type MutationCompleteAssessmentArgs = {
+  sessionId: Scalars['ID']['input'];
+};
+
+
+export type MutationConfirmAssessmentSummaryArgs = {
+  confirmed: Scalars['Boolean']['input'];
+  sessionId: Scalars['ID']['input'];
+};
+
+
+export type MutationResetAssessmentArgs = {
+  sessionId: Scalars['ID']['input'];
 };
 
 
 export type MutationScheduleAppointmentArgs = {
   input: ScheduleAppointmentInput;
+};
+
+
+export type MutationSendSessionReminderArgs = {
+  input: SendSessionReminderInput;
 };
 
 
@@ -123,6 +184,12 @@ export type MutationUpdateDemographicsArgs = {
   input: UpdateDemographicsInput;
 };
 
+
+export type MutationUpdateParentInfoArgs = {
+  input: ParentInfoInput;
+  sessionId: Scalars['ID']['input'];
+};
+
 export type OnboardingSession = {
   __typename?: 'OnboardingSession';
   appointment: Maybe<Appointment>;
@@ -151,6 +218,23 @@ export type OnboardingStatus =
   | 'SCHEDULING_COMPLETED'
   | 'SCHEDULING_PENDING';
 
+export type ParentInfo = {
+  __typename?: 'ParentInfo';
+  email: Scalars['String']['output'];
+  firstName: Scalars['String']['output'];
+  lastName: Scalars['String']['output'];
+  phone: Scalars['String']['output'];
+  relationshipToChild: RelationshipType;
+};
+
+export type ParentInfoInput = {
+  email: Scalars['String']['input'];
+  firstName: Scalars['String']['input'];
+  lastName: Scalars['String']['input'];
+  phone: Scalars['String']['input'];
+  relationshipToChild: RelationshipType;
+};
+
 export type Query = {
   __typename?: 'Query';
   getAvailableSlots: Maybe<Array<Appointment>>;
@@ -176,10 +260,32 @@ export type QueryGetOnboardingSessionArgs = {
   id: Scalars['ID']['input'];
 };
 
+export type RelationshipType =
+  | 'GRANDPARENT'
+  | 'GUARDIAN'
+  | 'OTHER'
+  | 'PARENT';
+
+export type ResetAssessmentPayload = {
+  __typename?: 'ResetAssessmentPayload';
+  session: OnboardingSession;
+};
+
 export type ScheduleAppointmentInput = {
   onboardingSessionId: Scalars['ID']['input'];
   therapistId: Scalars['ID']['input'];
   timeSlotId: Scalars['ID']['input'];
+};
+
+export type SendSessionReminderInput = {
+  email: Scalars['String']['input'];
+  sessionId: Scalars['ID']['input'];
+};
+
+export type SendSessionReminderPayload = {
+  __typename?: 'SendSessionReminderPayload';
+  message: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type StartOnboardingInput = {
@@ -223,6 +329,14 @@ export type UpdateDemographicsInput = {
   parentLastName?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type UpdateParentInfoPayload = {
+  __typename?: 'UpdateParentInfoPayload';
+  demographics: Maybe<Demographics>;
+  id: Scalars['ID']['output'];
+  status: OnboardingStatus;
+  updatedAt: Scalars['String']['output'];
+};
+
 export type User = {
   __typename?: 'User';
   children: Maybe<Array<Child>>;
@@ -239,6 +353,43 @@ export type UserRole =
   | 'PARENT'
   | 'SUPPORT_STAFF';
 
+export type UpdateParentInfoMutationVariables = Exact<{
+  sessionId: Scalars['ID']['input'];
+  input: ParentInfoInput;
+}>;
+
+
+export type UpdateParentInfoMutation = { __typename?: 'Mutation', updateParentInfo: { __typename?: 'UpdateParentInfoPayload', id: string, status: OnboardingStatus, updatedAt: string, demographics: { __typename?: 'Demographics', isComplete: boolean, parent: { __typename?: 'ParentInfo', firstName: string, lastName: string, email: string, phone: string, relationshipToChild: RelationshipType } | null } | null } | null };
+
+export type CompleteAssessmentMutationVariables = Exact<{
+  sessionId: Scalars['ID']['input'];
+}>;
+
+
+export type CompleteAssessmentMutation = { __typename?: 'Mutation', completeAssessment: { __typename?: 'AssessmentSummaryPayload', summary: { __typename?: 'AssessmentSummary', keyConcerns: Array<string>, childName: string, recommendedFocus: Array<string> | null, generatedAt: string } } | null };
+
+export type ConfirmAssessmentSummaryMutationVariables = Exact<{
+  sessionId: Scalars['ID']['input'];
+  confirmed: Scalars['Boolean']['input'];
+}>;
+
+
+export type ConfirmAssessmentSummaryMutation = { __typename?: 'Mutation', confirmAssessmentSummary: { __typename?: 'ConfirmSummaryPayload', session: { __typename?: 'OnboardingSession', id: string, status: OnboardingStatus, assessment: { __typename?: 'Assessment', isComplete: boolean | null, summary: { __typename?: 'AssessmentSummary', keyConcerns: Array<string>, childName: string, recommendedFocus: Array<string> | null, generatedAt: string } | null } | null } } | null };
+
+export type ResetAssessmentMutationVariables = Exact<{
+  sessionId: Scalars['ID']['input'];
+}>;
+
+
+export type ResetAssessmentMutation = { __typename?: 'Mutation', resetAssessment: { __typename?: 'ResetAssessmentPayload', session: { __typename?: 'OnboardingSession', id: string, status: OnboardingStatus, assessment: { __typename?: 'Assessment', isComplete: boolean | null, conversationHistory: Array<{ __typename?: 'ChatMessage', id: string, sender: MessageSender, content: string, timestamp: string }> } | null } } | null };
+
+export type SendSessionReminderMutationVariables = Exact<{
+  input: SendSessionReminderInput;
+}>;
+
+
+export type SendSessionReminderMutation = { __typename?: 'Mutation', sendSessionReminder: { __typename?: 'SendSessionReminderPayload', success: boolean, message: string | null } | null };
+
 export type StartOnboardingMutationVariables = Exact<{
   input: StartOnboardingInput;
 }>;
@@ -251,7 +402,7 @@ export type SubmitAssessmentMessageMutationVariables = Exact<{
 }>;
 
 
-export type SubmitAssessmentMessageMutation = { __typename?: 'Mutation', submitAssessmentMessage: { __typename?: 'Assessment', id: string, summary: string | null, isFitForDaybreak: boolean | null, suggestedNextSteps: string | null, conversationHistory: Array<{ __typename?: 'ChatMessage', id: string, sender: MessageSender, content: string, timestamp: string }> } | null };
+export type SubmitAssessmentMessageMutation = { __typename?: 'Mutation', submitAssessmentMessage: { __typename?: 'Assessment', id: string, isFitForDaybreak: boolean | null, suggestedNextSteps: string | null, isComplete: boolean | null, summary: { __typename?: 'AssessmentSummary', keyConcerns: Array<string>, childName: string, recommendedFocus: Array<string> | null, generatedAt: string } | null, conversationHistory: Array<{ __typename?: 'ChatMessage', id: string, sender: MessageSender, content: string, timestamp: string }> } | null };
 
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -263,7 +414,7 @@ export type GetOnboardingSessionQueryVariables = Exact<{
 }>;
 
 
-export type GetOnboardingSessionQuery = { __typename?: 'Query', getOnboardingSession: { __typename?: 'OnboardingSession', id: string, status: OnboardingStatus, createdAt: string, updatedAt: string, parent: { __typename?: 'User', id: string, email: string, firstName: string | null, lastName: string | null }, child: { __typename?: 'Child', id: string, firstName: string, dateOfBirth: string, pronouns: string | null, concerns: Array<string> | null }, assessment: { __typename?: 'Assessment', id: string, summary: string | null, isFitForDaybreak: boolean | null, suggestedNextSteps: string | null, conversationHistory: Array<{ __typename?: 'ChatMessage', id: string, sender: MessageSender, content: string, timestamp: string }> } | null, insuranceInfo: { __typename?: 'InsuranceInformation', id: string, provider: string, planName: string | null, memberId: string, groupId: string | null } | null, appointment: { __typename?: 'Appointment', id: string, therapistName: string, startTime: string, endTime: string, confirmationId: string } | null } | null };
+export type GetOnboardingSessionQuery = { __typename?: 'Query', getOnboardingSession: { __typename?: 'OnboardingSession', id: string, status: OnboardingStatus, createdAt: string, updatedAt: string, parent: { __typename?: 'User', id: string, email: string, firstName: string | null, lastName: string | null }, child: { __typename?: 'Child', id: string, firstName: string, dateOfBirth: string, pronouns: string | null, concerns: Array<string> | null }, assessment: { __typename?: 'Assessment', id: string, isFitForDaybreak: boolean | null, suggestedNextSteps: string | null, isComplete: boolean | null, summary: { __typename?: 'AssessmentSummary', keyConcerns: Array<string>, childName: string, recommendedFocus: Array<string> | null, generatedAt: string } | null, conversationHistory: Array<{ __typename?: 'ChatMessage', id: string, sender: MessageSender, content: string, timestamp: string }> } | null, insuranceInfo: { __typename?: 'InsuranceInformation', id: string, provider: string, planName: string | null, memberId: string, groupId: string | null } | null, appointment: { __typename?: 'Appointment', id: string, therapistName: string, startTime: string, endTime: string, confirmationId: string } | null } | null };
 
 export type SupportChatMessagesSubscriptionVariables = Exact<{
   onboardingSessionId: Scalars['ID']['input'];
@@ -273,6 +424,113 @@ export type SupportChatMessagesSubscriptionVariables = Exact<{
 export type SupportChatMessagesSubscription = { __typename?: 'Subscription', supportChatMessages: { __typename?: 'ChatMessage', id: string, sender: MessageSender, content: string, timestamp: string } | null };
 
 
+export const UpdateParentInfoDocument = gql`
+    """
+UpdateParentInfo Mutation
+Updates parent/guardian contact information for an onboarding session.
+Called by useAutoSave hook on blur and on form submission.
+"""
+mutation UpdateParentInfo($sessionId: ID!, $input: ParentInfoInput!) {
+  updateParentInfo(sessionId: $sessionId, input: $input) {
+    id
+    status
+    demographics {
+      parent {
+        firstName
+        lastName
+        email
+        phone
+        relationshipToChild
+      }
+      isComplete
+    }
+    updatedAt
+  }
+}
+    `;
+export function useUpdateParentInfoMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateParentInfoMutation, UpdateParentInfoMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateParentInfoMutation, UpdateParentInfoMutationVariables>(UpdateParentInfoDocument, options);
+      }
+export type UpdateParentInfoMutationHookResult = ReturnType<typeof useUpdateParentInfoMutation>;
+export const CompleteAssessmentDocument = gql`
+    mutation CompleteAssessment($sessionId: ID!) {
+  completeAssessment(sessionId: $sessionId) {
+    summary {
+      keyConcerns
+      childName
+      recommendedFocus
+      generatedAt
+    }
+  }
+}
+    `;
+export function useCompleteAssessmentMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CompleteAssessmentMutation, CompleteAssessmentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CompleteAssessmentMutation, CompleteAssessmentMutationVariables>(CompleteAssessmentDocument, options);
+      }
+export type CompleteAssessmentMutationHookResult = ReturnType<typeof useCompleteAssessmentMutation>;
+export const ConfirmAssessmentSummaryDocument = gql`
+    mutation ConfirmAssessmentSummary($sessionId: ID!, $confirmed: Boolean!) {
+  confirmAssessmentSummary(sessionId: $sessionId, confirmed: $confirmed) {
+    session {
+      id
+      status
+      assessment {
+        isComplete
+        summary {
+          keyConcerns
+          childName
+          recommendedFocus
+          generatedAt
+        }
+      }
+    }
+  }
+}
+    `;
+export function useConfirmAssessmentSummaryMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<ConfirmAssessmentSummaryMutation, ConfirmAssessmentSummaryMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<ConfirmAssessmentSummaryMutation, ConfirmAssessmentSummaryMutationVariables>(ConfirmAssessmentSummaryDocument, options);
+      }
+export type ConfirmAssessmentSummaryMutationHookResult = ReturnType<typeof useConfirmAssessmentSummaryMutation>;
+export const ResetAssessmentDocument = gql`
+    mutation ResetAssessment($sessionId: ID!) {
+  resetAssessment(sessionId: $sessionId) {
+    session {
+      id
+      status
+      assessment {
+        conversationHistory {
+          id
+          sender
+          content
+          timestamp
+        }
+        isComplete
+      }
+    }
+  }
+}
+    `;
+export function useResetAssessmentMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<ResetAssessmentMutation, ResetAssessmentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<ResetAssessmentMutation, ResetAssessmentMutationVariables>(ResetAssessmentDocument, options);
+      }
+export type ResetAssessmentMutationHookResult = ReturnType<typeof useResetAssessmentMutation>;
+export const SendSessionReminderDocument = gql`
+    mutation SendSessionReminder($input: SendSessionReminderInput!) {
+  sendSessionReminder(input: $input) {
+    success
+    message
+  }
+}
+    `;
+export function useSendSessionReminderMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<SendSessionReminderMutation, SendSessionReminderMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<SendSessionReminderMutation, SendSessionReminderMutationVariables>(SendSessionReminderDocument, options);
+      }
+export type SendSessionReminderMutationHookResult = ReturnType<typeof useSendSessionReminderMutation>;
 export const StartOnboardingDocument = gql`
     mutation StartOnboarding($input: StartOnboardingInput!) {
   startOnboarding(input: $input) {
@@ -291,39 +549,24 @@ export const StartOnboardingDocument = gql`
   }
 }
     `;
-export type StartOnboardingMutationFn = ApolloReactCommon.MutationFunction<StartOnboardingMutation, StartOnboardingMutationVariables>;
-
-/**
- * __useStartOnboardingMutation__
- *
- * To run a mutation, you first call `useStartOnboardingMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useStartOnboardingMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [startOnboardingMutation, { data, loading, error }] = useStartOnboardingMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useStartOnboardingMutation(baseOptions?: Apollo.MutationHookOptions<StartOnboardingMutation, StartOnboardingMutationVariables>) {
+export function useStartOnboardingMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<StartOnboardingMutation, StartOnboardingMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<StartOnboardingMutation, StartOnboardingMutationVariables>(StartOnboardingDocument, options);
+        return ApolloReactHooks.useMutation<StartOnboardingMutation, StartOnboardingMutationVariables>(StartOnboardingDocument, options);
       }
 export type StartOnboardingMutationHookResult = ReturnType<typeof useStartOnboardingMutation>;
-export type StartOnboardingMutationResult = ApolloReactCommon.MutationResult<StartOnboardingMutation>;
-export type StartOnboardingMutationOptions = ApolloReactCommon.BaseMutationOptions<StartOnboardingMutation, StartOnboardingMutationVariables>;
 export const SubmitAssessmentMessageDocument = gql`
     mutation SubmitAssessmentMessage($input: SubmitAssessmentMessageInput!) {
   submitAssessmentMessage(input: $input) {
     id
-    summary
+    summary {
+      keyConcerns
+      childName
+      recommendedFocus
+      generatedAt
+    }
     isFitForDaybreak
     suggestedNextSteps
+    isComplete
     conversationHistory {
       id
       sender
@@ -333,32 +576,11 @@ export const SubmitAssessmentMessageDocument = gql`
   }
 }
     `;
-export type SubmitAssessmentMessageMutationFn = ApolloReactCommon.MutationFunction<SubmitAssessmentMessageMutation, SubmitAssessmentMessageMutationVariables>;
-
-/**
- * __useSubmitAssessmentMessageMutation__
- *
- * To run a mutation, you first call `useSubmitAssessmentMessageMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useSubmitAssessmentMessageMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [submitAssessmentMessageMutation, { data, loading, error }] = useSubmitAssessmentMessageMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useSubmitAssessmentMessageMutation(baseOptions?: Apollo.MutationHookOptions<SubmitAssessmentMessageMutation, SubmitAssessmentMessageMutationVariables>) {
+export function useSubmitAssessmentMessageMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<SubmitAssessmentMessageMutation, SubmitAssessmentMessageMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<SubmitAssessmentMessageMutation, SubmitAssessmentMessageMutationVariables>(SubmitAssessmentMessageDocument, options);
+        return ApolloReactHooks.useMutation<SubmitAssessmentMessageMutation, SubmitAssessmentMessageMutationVariables>(SubmitAssessmentMessageDocument, options);
       }
 export type SubmitAssessmentMessageMutationHookResult = ReturnType<typeof useSubmitAssessmentMessageMutation>;
-export type SubmitAssessmentMessageMutationResult = ApolloReactCommon.MutationResult<SubmitAssessmentMessageMutation>;
-export type SubmitAssessmentMessageMutationOptions = ApolloReactCommon.BaseMutationOptions<SubmitAssessmentMessageMutation, SubmitAssessmentMessageMutationVariables>;
 export const GetCurrentUserDocument = gql`
     query GetCurrentUser {
   me {
@@ -376,38 +598,16 @@ export const GetCurrentUserDocument = gql`
   }
 }
     `;
-
-/**
- * __useGetCurrentUserQuery__
- *
- * To run a query within a React component, call `useGetCurrentUserQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetCurrentUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetCurrentUserQuery({
- *   variables: {
- *   },
- * });
- */
-export function useGetCurrentUserQuery(baseOptions?: Apollo.QueryHookOptions<GetCurrentUserQuery, GetCurrentUserQueryVariables>) {
+export function useGetCurrentUserQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetCurrentUserQuery, GetCurrentUserQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetCurrentUserQuery, GetCurrentUserQueryVariables>(GetCurrentUserDocument, options);
+        return ApolloReactHooks.useQuery<GetCurrentUserQuery, GetCurrentUserQueryVariables>(GetCurrentUserDocument, options);
       }
-export function useGetCurrentUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCurrentUserQuery, GetCurrentUserQueryVariables>) {
+export function useGetCurrentUserLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetCurrentUserQuery, GetCurrentUserQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetCurrentUserQuery, GetCurrentUserQueryVariables>(GetCurrentUserDocument, options);
-        }
-export function useGetCurrentUserSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetCurrentUserQuery, GetCurrentUserQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetCurrentUserQuery, GetCurrentUserQueryVariables>(GetCurrentUserDocument, options);
+          return ApolloReactHooks.useLazyQuery<GetCurrentUserQuery, GetCurrentUserQueryVariables>(GetCurrentUserDocument, options);
         }
 export type GetCurrentUserQueryHookResult = ReturnType<typeof useGetCurrentUserQuery>;
 export type GetCurrentUserLazyQueryHookResult = ReturnType<typeof useGetCurrentUserLazyQuery>;
-export type GetCurrentUserSuspenseQueryHookResult = ReturnType<typeof useGetCurrentUserSuspenseQuery>;
-export type GetCurrentUserQueryResult = ApolloReactCommon.QueryResult<GetCurrentUserQuery, GetCurrentUserQueryVariables>;
 export const GetOnboardingSessionDocument = gql`
     query GetOnboardingSession($sessionId: ID!) {
   getOnboardingSession(id: $sessionId) {
@@ -430,9 +630,15 @@ export const GetOnboardingSessionDocument = gql`
     }
     assessment {
       id
-      summary
+      summary {
+        keyConcerns
+        childName
+        recommendedFocus
+        generatedAt
+      }
       isFitForDaybreak
       suggestedNextSteps
+      isComplete
       conversationHistory {
         id
         sender
@@ -457,39 +663,16 @@ export const GetOnboardingSessionDocument = gql`
   }
 }
     `;
-
-/**
- * __useGetOnboardingSessionQuery__
- *
- * To run a query within a React component, call `useGetOnboardingSessionQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetOnboardingSessionQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetOnboardingSessionQuery({
- *   variables: {
- *      sessionId: // value for 'sessionId'
- *   },
- * });
- */
-export function useGetOnboardingSessionQuery(baseOptions: Apollo.QueryHookOptions<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables> & ({ variables: GetOnboardingSessionQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+export function useGetOnboardingSessionQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>(GetOnboardingSessionDocument, options);
+        return ApolloReactHooks.useQuery<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>(GetOnboardingSessionDocument, options);
       }
-export function useGetOnboardingSessionLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>) {
+export function useGetOnboardingSessionLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>(GetOnboardingSessionDocument, options);
-        }
-export function useGetOnboardingSessionSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>(GetOnboardingSessionDocument, options);
+          return ApolloReactHooks.useLazyQuery<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>(GetOnboardingSessionDocument, options);
         }
 export type GetOnboardingSessionQueryHookResult = ReturnType<typeof useGetOnboardingSessionQuery>;
 export type GetOnboardingSessionLazyQueryHookResult = ReturnType<typeof useGetOnboardingSessionLazyQuery>;
-export type GetOnboardingSessionSuspenseQueryHookResult = ReturnType<typeof useGetOnboardingSessionSuspenseQuery>;
-export type GetOnboardingSessionQueryResult = ApolloReactCommon.QueryResult<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>;
 export const SupportChatMessagesDocument = gql`
     subscription SupportChatMessages($onboardingSessionId: ID!) {
   supportChatMessages(onboardingSessionId: $onboardingSessionId) {
@@ -500,26 +683,8 @@ export const SupportChatMessagesDocument = gql`
   }
 }
     `;
-
-/**
- * __useSupportChatMessagesSubscription__
- *
- * To run a query within a React component, call `useSupportChatMessagesSubscription` and pass it any options that fit your needs.
- * When your component renders, `useSupportChatMessagesSubscription` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useSupportChatMessagesSubscription({
- *   variables: {
- *      onboardingSessionId: // value for 'onboardingSessionId'
- *   },
- * });
- */
-export function useSupportChatMessagesSubscription(baseOptions: Apollo.SubscriptionHookOptions<SupportChatMessagesSubscription, SupportChatMessagesSubscriptionVariables> & ({ variables: SupportChatMessagesSubscriptionVariables; skip?: boolean; } | { skip: boolean; }) ) {
+export function useSupportChatMessagesSubscription(baseOptions: ApolloReactHooks.SubscriptionHookOptions<SupportChatMessagesSubscription, SupportChatMessagesSubscriptionVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useSubscription<SupportChatMessagesSubscription, SupportChatMessagesSubscriptionVariables>(SupportChatMessagesDocument, options);
+        return ApolloReactHooks.useSubscription<SupportChatMessagesSubscription, SupportChatMessagesSubscriptionVariables>(SupportChatMessagesDocument, options);
       }
 export type SupportChatMessagesSubscriptionHookResult = ReturnType<typeof useSupportChatMessagesSubscription>;
-export type SupportChatMessagesSubscriptionResult = ApolloReactCommon.SubscriptionResult<SupportChatMessagesSubscription>;

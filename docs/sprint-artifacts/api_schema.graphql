@@ -31,6 +31,13 @@ enum MessageSender {
   SUPPORT
 }
 
+enum RelationshipType {
+  PARENT
+  GUARDIAN
+  GRANDPARENT
+  OTHER
+}
+
 # ------------------------------------------------------------------
 # CORE TYPES
 # ------------------------------------------------------------------
@@ -43,6 +50,28 @@ type User {
   role: UserRole!
   createdAt: String!
   children: [Child!]
+}
+
+type ParentInfo {
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String! # E.164 format: +1XXXXXXXXXX
+  relationshipToChild: RelationshipType!
+}
+
+type Demographics {
+  parent: ParentInfo
+  child: ChildInfo
+  isComplete: Boolean!
+}
+
+type ChildInfo {
+  firstName: String
+  lastName: String
+  dateOfBirth: String
+  pronouns: String
+  concerns: [String!]
 }
 
 type Child {
@@ -69,9 +98,29 @@ type OnboardingSession {
 type Assessment {
   id: ID!
   conversationHistory: [ChatMessage!]!
-  summary: String
+  summary: AssessmentSummary
   isFitForDaybreak: Boolean
   suggestedNextSteps: String
+  isComplete: Boolean
+}
+
+type AssessmentSummary {
+  keyConcerns: [String!]!
+  childName: String!
+  recommendedFocus: [String!]
+  generatedAt: String!
+}
+
+type AssessmentSummaryPayload {
+  summary: AssessmentSummary!
+}
+
+type ConfirmSummaryPayload {
+  session: OnboardingSession!
+}
+
+type ResetAssessmentPayload {
+  session: OnboardingSession!
 }
 
 type ChatMessage {
@@ -147,6 +196,31 @@ input ScheduleAppointmentInput {
   timeSlotId: ID!
 }
 
+input ParentInfoInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String! # E.164 format: +1XXXXXXXXXX
+  relationshipToChild: RelationshipType!
+}
+
+type UpdateParentInfoPayload {
+  id: ID!
+  status: OnboardingStatus!
+  demographics: Demographics
+  updatedAt: String!
+}
+
+input SendSessionReminderInput {
+  sessionId: ID!
+  email: String!
+}
+
+type SendSessionReminderPayload {
+  success: Boolean!
+  message: String
+}
+
 # ------------------------------------------------------------------
 # QUERIES
 # ------------------------------------------------------------------
@@ -176,8 +250,23 @@ type Mutation {
   # P0: Send a message to the AI assessment chatbot and get a response
   submitAssessmentMessage(input: SubmitAssessmentMessageInput!): Assessment
 
+  # P0: Complete assessment and generate summary (Story 2.5)
+  completeAssessment(sessionId: ID!): AssessmentSummaryPayload
+
+  # P0: Confirm assessment summary and enable navigation (Story 2.5)
+  confirmAssessmentSummary(sessionId: ID!, confirmed: Boolean!): ConfirmSummaryPayload
+
+  # P0: Reset assessment to start over (Story 2.5)
+  resetAssessment(sessionId: ID!): ResetAssessmentPayload
+
+  # P0: Send email reminder to return to session (Story 2.6)
+  sendSessionReminder(input: SendSessionReminderInput!): SendSessionReminderPayload
+
   # P0: Update parent and child demographic information
   updateDemographics(input: UpdateDemographicsInput!): OnboardingSession
+
+  # P0: Update parent info specifically (Story 3.1)
+  updateParentInfo(sessionId: ID!, input: ParentInfoInput!): UpdateParentInfoPayload
 
   # P0: Manually submit insurance information
   submitInsuranceInfo(input: SubmitInsuranceInfoInput!): OnboardingSession

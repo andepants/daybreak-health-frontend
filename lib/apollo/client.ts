@@ -49,7 +49,7 @@ const typePolicies = {
  *
  * @returns Configured ApolloClient instance
  */
-export function makeClient(): ApolloClient<NormalizedCacheObject> {
+export function makeClient() {
   // Create HTTP link with auth middleware
   const httpLink = createAuthLink().concat(createHttpLink());
 
@@ -85,8 +85,6 @@ export function makeClient(): ApolloClient<NormalizedCacheObject> {
         errorPolicy: "all",
       },
     },
-    // Enable devtools in development
-    connectToDevTools: process.env.NODE_ENV === "development",
   });
 }
 

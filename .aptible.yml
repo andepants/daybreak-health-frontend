@@ -1,0 +1,5 @@
+# Aptible configuration for Daybreak Health Frontend
+healthcheck:
+  path: /
+  timeout_seconds: 5
+  interval_seconds: 30

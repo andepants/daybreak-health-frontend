@@ -22,9 +22,15 @@ query GetOnboardingSession($sessionId: ID!) {
     }
     assessment {
       id
-      summary
+      summary {
+        keyConcerns
+        childName
+        recommendedFocus
+        generatedAt
+      }
       isFitForDaybreak
       suggestedNextSteps
+      isComplete
       conversationHistory {
         id
         sender

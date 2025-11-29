@@ -2,12 +2,19 @@
  * Apollo Provider Component
  *
  * Wraps the application with ApolloProvider for GraphQL access.
- * Uses @apollo/client-integration-nextjs for Next.js App Router compatibility.
+ * Uses standard Apollo Client setup for Next.js App Router.
  */
 "use client";
 
-import { ApolloNextAppProvider } from "@apollo/client-integration-nextjs";
-import { makeClient } from "./client";
+import { ApolloClient, InMemoryCache } from "@apollo/client";
+import { ApolloProvider } from "@apollo/client/react";
+import { useMemo } from "react";
+import {
+  createHttpLink,
+  createAuthLink,
+  createWsLink,
+  createSplitLink,
+} from "./links";
 
 /**
  * Props for the ApolloWrapper component
@@ -17,17 +24,74 @@ interface ApolloWrapperProps {
 }
 
 /**
+ * Cache type policies for normalized data management.
+ */
+const typePolicies = {
+  OnboardingSession: {
+    keyFields: ["id"],
+    fields: {
+      assessment: {
+        merge: true,
+      },
+    },
+  },
+  Message: {
+    keyFields: ["id"],
+  },
+  TherapistMatch: {
+    keyFields: ["therapistId"],
+  },
+};
+
+/**
+ * Creates a configured Apollo Client instance for Next.js App Router.
+ */
+function makeClient() {
+  const httpLink = createAuthLink().concat(createHttpLink());
+  const isBrowser = typeof window !== "undefined";
+
+  let link = httpLink;
+
+  if (isBrowser) {
+    const wsLink = createWsLink();
+    link = createSplitLink(httpLink, wsLink);
+  }
+
+  const cache = new InMemoryCache({
+    typePolicies,
+  });
+
+  return new ApolloClient({
+    link,
+    cache,
+    defaultOptions: {
+      watchQuery: {
+        fetchPolicy: "cache-and-network",
+      },
+      query: {
+        fetchPolicy: "cache-first",
+        errorPolicy: "all",
+      },
+      mutate: {
+        errorPolicy: "all",
+      },
+    },
+  });
+}
+
+/**
  * Apollo Provider wrapper for Next.js App Router.
  *
- * Uses ApolloNextAppProvider for SSR/CSR compatibility.
- * Client is created lazily on first render.
+ * Client is created once and memoized for the component lifetime.
  *
  * @param children - React children to wrap with Apollo context
  */
 export function ApolloWrapper({ children }: ApolloWrapperProps) {
+  const client = useMemo(() => makeClient(), []);
+
   return (
-    <ApolloNextAppProvider makeClient={makeClient}>
+    <ApolloProvider client={client}>
       {children}
-    </ApolloNextAppProvider>
+    </ApolloProvider>
   );
 }

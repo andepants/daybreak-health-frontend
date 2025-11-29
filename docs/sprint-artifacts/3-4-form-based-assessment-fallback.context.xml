@@ -1,0 +1,430 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.4</storyId>
+    <title>Form-Based Assessment Fallback</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/3-4-form-based-assessment-fallback.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent who prefers traditional forms</asA>
+    <iWant>the option to complete assessment via forms instead of AI chat</iWant>
+    <soThat>I can proceed even if the chat experience doesn't work for me</soThat>
+    <tasks>
+### Task 1: Route and Page Structure Setup
+- [ ] Create route structure `/app/onboarding/[sessionId]/form/assessment/page.tsx`
+- [ ] Create multi-page form container component
+- [ ] Implement page navigation logic (next/previous)
+- [ ] Add progress indicator component
+- [ ] Set up form state management (React Hook Form or similar)
+
+### Task 2: Form Page Components - Page 1
+- [ ] Create `Page1AboutYourChild.tsx` component in `features/assessment/form/`
+- [ ] Implement "What concerns bring you here today?" textarea with validation
+- [ ] Implement "How long noticed concerns?" select with options
+- [ ] Implement "Severity rating" 1-5 scale input (radio or slider)
+- [ ] Add Zod schema for Page 1 validation
+- [ ] Add field-level error handling and display
+
+### Task 3: Form Page Components - Page 2
+- [ ] Create `Page2DailyLifeImpact.tsx` component
+- [ ] Implement "Sleep patterns" select field with options
+- [ ] Implement "Appetite changes" select field with options
+- [ ] Implement "School performance" select field with options
+- [ ] Implement "Social relationships" select field with options
+- [ ] Add Zod schema for Page 2 validation
+- [ ] Define option sets for each field
+
+### Task 4: Form Page Components - Page 3
+- [ ] Create `Page3AdditionalContext.tsx` component
+- [ ] Implement "Significant recent events?" textarea (optional)
+- [ ] Implement "Therapy goals?" textarea (required)
+- [ ] Add Zod schema for Page 3 validation
+- [ ] Add final submission button and confirmation flow
+
+### Task 5: Auto-Save Integration
+- [ ] Implement `useFormAutoSave` hook or extend existing `useAutoSave`
+- [ ] Add debounced save on field blur
+- [ ] Integrate with GraphQL mutation for form data persistence
+- [ ] Add visual save confirmation indicators
+- [ ] Handle save errors gracefully with retry logic
+- [ ] Test auto-save across page navigation
+
+### Task 6: Data Persistence Schema
+- [ ] Define GraphQL mutation for form assessment data
+- [ ] Ensure backend schema supports both chat and form data sources
+- [ ] Implement data mapping from form fields to backend schema
+- [ ] Add mutation to `types/graphql.ts` via codegen
+- [ ] Test data persistence and retrieval
+
+### Task 7: Summary Generation
+- [ ] Create form-to-summary transformation function
+- [ ] Ensure summary format matches AI chat summary structure
+- [ ] Integrate with existing summary generation endpoint/mutation
+- [ ] Add summary preview before final submission
+- [ ] Test summary completeness and accuracy
+
+### Task 8: Mode Switching - Chat to Form
+- [ ] Add "Prefer a traditional form? Click here" link to chat UI
+- [ ] Implement navigation handler with state preservation
+- [ ] Create data migration function (chat responses → form fields)
+- [ ] Pre-populate form fields with existing chat data
+- [ ] Track mode switch event for analytics
+
+### Task 9: Mode Switching - Form to Chat
+- [ ] Add "Switch to AI chat" link to form UI
+- [ ] Implement reverse navigation with state preservation
+- [ ] Create data migration function (form fields → chat context)
+- [ ] Ensure chat AI can access and reference form data
+- [ ] Test bidirectional switching without data loss
+
+### Task 10: UI/UX Polish
+- [ ] Style form pages with Tailwind CSS
+- [ ] Ensure mobile responsiveness
+- [ ] Add loading states and transitions
+- [ ] Implement keyboard navigation support
+- [ ] Add accessibility labels (ARIA)
+- [ ] Test with screen readers
+
+### Task 11: Testing
+- [ ] Write unit tests for form validation schemas
+- [ ] Write unit tests for auto-save hook
+- [ ] Write integration tests for page navigation
+- [ ] Write integration tests for mode switching
+- [ ] Write E2E tests for complete form flow
+- [ ] Test summary generation accuracy
+
+### Task 12: Documentation
+- [ ] Document form component architecture
+- [ ] Add inline comments for complex logic
+- [ ] Update README with form fallback flow
+- [ ] Document GraphQL schema changes
+- [ ] Add troubleshooting guide
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. **AC-3.4.1: Fallback Link Visibility**
+   - Given I am on the assessment chat screen
+   - When I look for alternatives
+   - Then I see a subtle link: "Prefer a traditional form? Click here"
+   - And the link is positioned non-intrusively (footer or header area)
+   - And the link styling indicates it's a secondary option
+
+2. **AC-3.4.2: Form Route Navigation**
+   - Given I click the fallback link
+   - When the form-based assessment loads
+   - Then I navigate to `/onboarding/[sessionId]/form/assessment`
+   - And the URL reflects the current form page
+   - And the session context is preserved
+
+3. **AC-3.4.3: Page 1 - About Your Child**
+   - Given I am on the form-based assessment
+   - When I view Page 1
+   - Then I see:
+     - Field: "What concerns bring you here today?" (textarea, required)
+     - Field: "How long have you noticed these concerns?" (select, required)
+       - Options: "Less than 1 month", "1-3 months", "3-6 months", "6+ months"
+     - Field: "How severe would you rate the concerns?" (1-5 scale, required)
+   - And all fields have appropriate labels and help text
+   - And validation prevents progression with empty required fields
+
+4. **AC-3.4.4: Page 2 - Daily Life Impact**
+   - Given I complete Page 1 and proceed
+   - When I view Page 2
+   - Then I see:
+     - Field: "Sleep patterns" (select with multiple options)
+     - Field: "Appetite changes" (select with multiple options)
+     - Field: "School performance" (select with multiple options)
+     - Field: "Social relationships" (select with multiple options)
+   - And each field has relevant options (e.g., "No change", "Improved", "Declined")
+   - And fields support optional state
+
+5. **AC-3.4.5: Page 3 - Additional Context**
+   - Given I complete Page 2 and proceed
+   - When I view Page 3
+   - Then I see:
+     - Field: "Has anything significant happened recently?" (textarea, optional)
+     - Field: "What are you hoping to get from therapy?" (textarea, required)
+   - And this is marked as the final page
+   - And I can submit the complete assessment
+
+6. **AC-3.4.6: Auto-Save Functionality**
+   - Given I am filling out any form page
+   - When I complete a field and move focus (blur event)
+   - Then the field value saves automatically to the backend
+   - And a visual indicator confirms the save (e.g., checkmark, "Saved" text)
+   - And I can safely close the browser and resume later
+
+7. **AC-3.4.7: Form Progress Tracking**
+   - Given I am navigating through form pages
+   - When I view any page
+   - Then I see a progress indicator (e.g., "Page 1 of 3" or progress bar)
+   - And completed pages are marked/highlighted
+   - And I can navigate back to previous pages without data loss
+
+8. **AC-3.4.8: Summary Generation Parity**
+   - Given I complete all required form fields
+   - When I submit the form assessment
+   - Then the system generates a summary identical in structure to AI chat summaries
+   - And the summary includes all collected assessment data
+   - And the summary is stored with the same backend schema
+
+9. **AC-3.4.9: Mode Switching - Chat to Form**
+   - Given I have started the AI chat assessment
+   - When I switch to form-based assessment
+   - Then any data already collected via chat is pre-populated in form fields
+   - And I don't lose any progress
+   - And the system tracks the mode switch
+
+10. **AC-3.4.10: Mode Switching - Form to Chat**
+    - Given I am using the form-based assessment
+    - When I choose to switch back to chat mode
+    - Then I see a link/button to return to chat
+    - And all form data persists and is available to the chat AI
+    - And the chat can reference previously submitted form data
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      - path: docs/sprint-artifacts/tech-spec-epic-3.md
+        title: Epic 3 Technical Specification
+        section: Form Assessment Schema & Validation
+        snippet: Defines formAssessmentSchema with Zod validation for primaryConcerns, concernDuration, concernSeverity, sleepPatterns, appetiteChanges, schoolPerformance, socialRelationships, recentEvents, therapyGoals. Schema ensures form data matches backend expectations and provides type safety for form-to-summary transformation.
+
+      - path: docs/sprint-artifacts/tech-spec-epic-3.md
+        title: Epic 3 Technical Specification
+        section: APIs and Interfaces - SubmitFormAssessment Mutation
+        snippet: GraphQL mutation submitFormAssessment accepts FormAssessmentInput and returns assessment summary with isComplete flag. This endpoint handles both AI chat and form-based assessment data, ensuring parity in summary generation.
+
+      - path: docs/sprint-artifacts/tech-spec-epic-3.md
+        title: Epic 3 Technical Specification
+        section: Workflows and Sequencing - Alternative Flow
+        snippet: Form assessment follows 3-page wizard pattern (Page 1 concerns/duration/severity, Page 2 daily life impact, Page 3 goals/events). After submission generates summary, merges with main onboarding flow at Demographics step. Maintains session context throughout.
+
+      - path: docs/architecture.md
+        title: System Architecture
+        section: ADR-003 Form-Based Fallback Flow
+        snippet: Form-based assessment is a parallel flow alongside AI chat at /onboarding/[sessionId]/form/* routes. Implements risk mitigation for AI chat abandonment. Both flows share data collection logic and generate compatible assessment summaries. Fallback reduces drop-off and provides accessibility alternative.
+
+      - path: docs/architecture.md
+        title: System Architecture
+        section: Project Structure - Form Routes
+        snippet: Form routes under app/onboarding/[sessionId]/form/ include assessment/page.tsx for traditional form flow. Features directory contains form-specific components, schemas, hooks, and utilities for multi-page wizard, auto-save, and data transformation.
+
+      - path: docs/ux-design-specification.md
+        title: UX Design Specification
+        section: User Journey - Insurance Submission Pattern
+        snippet: Pattern for photo-first with fallback to manual entry demonstrates graceful degradation UX. Form fallback follows similar pattern - AI chat primary, form as accessible alternative. Error handling emphasizes empathy and support.
+
+      - path: docs/prd.md
+        title: Product Requirements Document
+        section: FR-001 Assessment & Screening
+        snippet: AI conversational interface guides parents through mental health screening with adaptive questions. System must generate assessment summary for therapist matching. Form-based alternative ensures all parents can complete assessment regardless of chat preference or technical issues.
+    </docs>
+
+    <code>
+      - path: hooks/useAutoSave.ts
+        kind: hook
+        symbol: useAutoSave
+        lines: 1-171
+        reason: Existing auto-save hook provides pattern for immediate save on changes with retry logic and status tracking. Form assessment can extend or use similar pattern for field-level auto-save on blur events.
+
+      - path: hooks/useOnboardingSession.ts
+        kind: hook
+        symbol: useOnboardingSession
+        lines: 1-180
+        reason: Session management hook loads and persists session state with localStorage backup. Form assessment must integrate with same session context and recovery mechanisms.
+
+      - path: graphql/queries/GetOnboardingSession.graphql
+        kind: graphql-query
+        symbol: GetOnboardingSession
+        lines: 1-57
+        reason: Query structure shows assessment data model with conversationHistory and summary. Form assessment must populate compatible assessment structure for seamless integration.
+
+      - path: graphql/mutations/SubmitAssessmentMessage.graphql
+        kind: graphql-mutation
+        symbol: SubmitAssessmentMessage
+        lines: 1-24
+        reason: AI chat assessment mutation returns summary structure with keyConcerns, childName, recommendedFocus. Form submission must generate identical summary format for downstream compatibility.
+
+      - path: components.json
+        kind: config
+        symbol: shadcn-config
+        lines: 1-23
+        reason: shadcn/ui configuration shows available component library (new-york style, Lucide icons). Form pages should use consistent Input, Textarea, Select, Button, Progress components from this system.
+
+      - path: package.json
+        kind: config
+        symbol: dependencies
+        lines: 15-35
+        reason: React Hook Form 7.67.0, Zod 3.25.76, @hookform/resolvers 5.2.2 already installed. Form validation and state management dependencies available. Radix UI components (select, checkbox, label, dialog, avatar) ready for form widgets.
+    </code>
+
+    <dependencies>
+      - nodejs:
+          react: ^19.2.0
+          react-dom: ^19.2.0
+          react-hook-form: ^7.67.0
+          zod: ^3.25.76
+          @hookform/resolvers: ^5.2.2
+          @apollo/client: ^4.0.9
+          graphql: ^16.12.0
+          next: ^16.0.5
+          @radix-ui/react-select: ^2.2.6
+          @radix-ui/react-checkbox: ^1.3.3
+          @radix-ui/react-label: ^2.1.8
+          @radix-ui/react-dialog: ^1.1.15
+          lucide-react: ^0.555.0
+          class-variance-authority: ^0.7.1
+          clsx: ^2.1.1
+          tailwind-merge: ^3.4.0
+      - devDependencies:
+          typescript: ^5
+          @types/react: ^19
+          @types/node: ^20
+          vitest: ^4.0.14
+          @testing-library/react: ^16.3.0
+          @testing-library/user-event: ^14.6.1
+          @playwright/test: ^1.57.0
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Multi-page form must use client-side routing or state management (not server navigation) to preserve form state between pages
+    - All form fields must integrate with React Hook Form for validation and state management
+    - Zod schemas per page must be composable and reusable across chat-to-form data migration
+    - Auto-save must debounce (500-1000ms) and queue mutations to prevent race conditions
+    - Form field names and data types must exactly match backend GraphQL schema for FormAssessmentInput
+    - Summary generation endpoint must accept both AI chat and form-based input sources
+    - PHI protection: no form values in console.log, URLs, or browser history (use replace not push)
+    - Accessibility: WCAG 2.1 AA compliance required (proper labels, keyboard navigation, screen reader support, 44x44px touch targets)
+    - Mobile-first responsive design with max-width 640px for form content
+    - No form autofill for sensitive fields (autoComplete="off")
+    - Error messages must be clear, specific, and associated with field (not expose PHI)
+    - Mode switching must preserve ALL data bidirectionally (chat↔form)
+    - Progress persistence required - user can close browser and resume at same page
+    - Session ID in URL provides recovery mechanism (/onboarding/[sessionId]/form/assessment)
+  </constraints>
+
+  <interfaces>
+    - name: FormAssessmentInput
+      kind: GraphQL Input Type
+      signature: |
+        input FormAssessmentInput {
+          primaryConcerns: String!
+          concernDuration: ConcernDuration!
+          concernSeverity: Int!
+          sleepPatterns: SleepPattern!
+          appetiteChanges: AppetiteChange!
+          schoolPerformance: SchoolPerformance!
+          socialRelationships: SocialRelationship!
+          recentEvents: String
+          therapyGoals: String
+        }
+      path: docs/sprint-artifacts/api_schema.graphql (backend)
+
+    - name: submitFormAssessment
+      kind: GraphQL Mutation
+      signature: |
+        mutation SubmitFormAssessment($sessionId: ID!, $input: FormAssessmentInput!) {
+          submitFormAssessment(sessionId: $sessionId, input: $input) {
+            id
+            assessment {
+              summary {
+                keyConcerns
+                childName
+                recommendedFocus
+                generatedAt
+              }
+              isComplete
+            }
+          }
+        }
+      path: graphql/mutations/SubmitFormAssessment.graphql (to be created)
+
+    - name: formAssessmentSchema
+      kind: Zod Schema
+      signature: |
+        export const formAssessmentSchema = z.object({
+          primaryConcerns: z.string().min(10).max(2000),
+          concernDuration: z.enum(['less-than-1-month', '1-3-months', '3-6-months', '6-plus-months']),
+          concernSeverity: z.number().min(1).max(5),
+          sleepPatterns: z.enum(['normal', 'difficulty-falling-asleep', 'waking-frequently', 'sleeping-too-much']),
+          appetiteChanges: z.enum(['normal', 'decreased', 'increased', 'irregular']),
+          schoolPerformance: z.enum(['normal', 'declining', 'significantly-impacted', 'not-attending']),
+          socialRelationships: z.enum(['normal', 'withdrawing', 'conflicts', 'isolated']),
+          recentEvents: z.string().max(1000).optional(),
+          therapyGoals: z.string().max(1000).optional()
+        })
+      path: lib/validations/assessment.ts (to be created)
+
+    - name: useFormAutoSave
+      kind: React Hook
+      signature: |
+        function useFormAutoSave(options: {
+          sessionId: string;
+          mutation: DocumentNode;
+          debounceMs?: number;
+        }): {
+          saveField: (fieldName: string, value: unknown) => void;
+          saveStatus: SaveStatus;
+          error: Error | null;
+        }
+      path: hooks/useFormAutoSave.ts (to be created or extend useAutoSave)
+
+    - name: formToSummary
+      kind: Utility Function
+      signature: |
+        function formToSummary(formData: FormAssessment): AssessmentSummary {
+          // Transform form responses into structured summary
+          return { keyConcerns, childName, recommendedFocus, generatedAt }
+        }
+      path: features/assessment/form/utils/formToSummary.ts (to be created)
+
+    - name: chatToFormMapper
+      kind: Utility Function
+      signature: |
+        function chatToFormMapper(conversationHistory: Message[]): Partial<FormAssessment> {
+          // Extract form field values from chat conversation
+          return { primaryConcerns, concernDuration, ... }
+        }
+      path: features/assessment/form/utils/chatToFormMapper.ts (to be created)
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing follows established project patterns with Vitest for unit tests, React Testing Library for component tests, and Playwright for E2E flows. All form validation schemas must have comprehensive unit test coverage. Auto-save hooks require tests for debounce behavior, retry logic, and error handling. Integration tests verify page navigation, data persistence, and mode switching. E2E tests cover complete happy path and error scenarios. Accessibility testing with axe DevTools, keyboard-only navigation, and screen reader (VoiceOver/NVDA) required.
+    </standards>
+
+    <locations>
+      - tests/unit/features/assessment/form/schemas/*.test.ts (Zod schema validation tests)
+      - tests/unit/features/assessment/form/hooks/*.test.ts (auto-save hook tests)
+      - tests/unit/lib/utils/formToSummary.test.ts (transformation function tests)
+      - tests/unit/features/assessment/form/utils/chatToFormMapper.test.ts (data migration tests)
+      - tests/integration/assessment-form-flow.test.tsx (multi-page navigation)
+      - tests/integration/form-auto-save.test.tsx (persistence behavior)
+      - tests/e2e/assessment-mode-switching.spec.ts (chat↔form switching)
+      - tests/e2e/form-assessment-complete-flow.spec.ts (end-to-end happy path)
+    </locations>
+
+    <ideas>
+      - AC-3.4.1: Test fallback link visibility, positioning, and styling in chat interface
+      - AC-3.4.2: Test navigation to form route preserves sessionId in URL, verify session context loads
+      - AC-3.4.3: Test Page 1 field rendering, validation rules (required, min/max lengths), error display
+      - AC-3.4.4: Test Page 2 select options populate correctly, optional fields allow progression
+      - AC-3.4.5: Test Page 3 final page indicator, submission button enabled when valid, success flow
+      - AC-3.4.6: Test auto-save triggers on blur, debounce timing, retry on failure, visual indicator updates
+      - AC-3.4.7: Test progress indicator accuracy, back button preserves data, forward validation prevents skip
+      - AC-3.4.8: Test summary generation structure matches AI chat format, all fields mapped correctly
+      - AC-3.4.9: Test chat data pre-populates form fields accurately, mode switch tracked in analytics
+      - AC-3.4.10: Test form-to-chat link visibility, chat receives form context, bidirectional switching preserves all data
+      - Edge case: Test browser refresh mid-form restores progress, test network failure during save queues retry
+      - Edge case: Test validation errors on multiple fields display correctly, test character limits enforce at max
+      - Accessibility: Test keyboard navigation between fields/pages, test screen reader announces errors, test focus management
+    </ideas>
+  </tests>
+</story-context>

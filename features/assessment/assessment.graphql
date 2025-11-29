@@ -1,0 +1,12 @@
+# GraphQL operations for AI-guided assessment flow
+#
+# This file is kept for legacy organization but operations are now
+# consolidated in graphql/queries/ and graphql/mutations/ directories
+# as per Architecture document structure.
+#
+# See:
+# - graphql/queries/GetOnboardingSession.graphql for assessment state
+# - graphql/mutations/SubmitAssessmentMessage.graphql for message submission
+# - graphql/mutations/CompleteAssessment.graphql for summary generation
+# - graphql/mutations/ConfirmAssessmentSummary.graphql for confirmation
+# - graphql/mutations/ResetAssessment.graphql for starting over

@@ -69,10 +69,10 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* === Border Radius (Daybreak Design System) === */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
 
   /* === Spacing Scale (4px base) === */
@@ -198,5 +198,53 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* === Custom Utilities === */
+
+  /* Hide scrollbar while maintaining scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* iOS safe area padding for bottom-fixed elements */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Fade in animation for chat messages and chips */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+  }
+
+  /* Typing indicator dot bounce animation */
+  @keyframes typing-dot-bounce {
+    0%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-6px);
+    }
+  }
+
+  .animate-typing-dot {
+    animation: typing-dot-bounce 1s ease-in-out infinite;
   }
 }

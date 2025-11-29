@@ -1,0 +1,377 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.2</storyId>
+    <title>Child Information Form</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/3-2-child-information-form.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>to provide my child's information with appropriate options</iWant>
+    <soThat>Daybreak understands who they'll be helping</soThat>
+    <tasks>
+      - Task 1: Create ChildInfoForm component (AC: 3.2.1, 3.2.2, 3.2.8, 3.2.11, 3.2.12, 3.2.13, 3.2.16)
+        - Create `features/demographics/ChildInfoForm.tsx`
+        - Implement form structure with React Hook Form
+        - Add First Name input with 2-50 character validation
+        - Add Grade select field with options (5th-12th, Not in school)
+        - Add validation on blur behavior
+        - Add visual indicators for valid/invalid states
+        - Implement disabled state for Continue button based on form validity
+        - Integrate `useAutoSave` hook for auto-save on blur
+      - Task 2: Implement Date of Birth picker (AC: 3.2.3, 3.2.4, 3.2.5)
+        - Add shadcn/ui Calendar component wrapped in Popover
+        - Implement month/year dropdown navigation
+        - Set default date to ~13 years ago (current year - 13)
+        - Create age validation function (validates 10-19 years old)
+        - Add clear error message for age outside range: "Child must be between 10-19 years old for Daybreak services"
+        - Display selected date in readable format (MM/DD/YYYY)
+        - Ensure calendar opens on input focus/click
+      - Task 3: Implement Pronouns field (AC: 3.2.6, 3.2.7)
+        - Add pronouns select field with options array
+        - Include options: "She/Her", "He/Him", "They/Them", "Other", "Prefer not to say"
+        - Implement conditional rendering for custom text input when "Other" selected
+        - Style custom input to match form aesthetics
+        - Mark field as optional with clear indication
+        - Store pronouns value as flexible string in form data
+      - Task 4: Implement Primary Concerns field (AC: 3.2.9, 3.2.10)
+        - Add textarea for Primary Concerns
+        - Query Apollo cache for `assessment.summary` field
+        - Pre-populate textarea with assessment summary data
+        - Add helper text: "Review and edit what we learned from your conversation"
+        - Style textarea with minimum 4 rows height
+        - Add character counter if needed (consider 500-1000 char max)
+        - Ensure editable state is clear (cursor changes, focus styles)
+      - Task 5: Create ChildInfoSchema Zod validation (AC: 3.2.2, 3.2.5)
+        - Create or update `lib/validations/demographics.ts`
+        - Define `ChildInfoSchema` with Zod
+        - Add firstName validation: z.string().min(2).max(50)
+        - Add dateOfBirth validation with custom age check (10-19 years)
+        - Add pronouns as optional string
+        - Add grade as optional string
+        - Add primaryConcerns as required string
+        - Export schema for use in form
+      - Task 6: Integrate with onboarding flow (AC: 3.2.1, 3.2.14, 3.2.15, 3.2.17)
+        - Update demographics page route to handle child info section
+        - Implement Continue button navigation to `/onboarding/[sessionId]/insurance`
+        - Update OnboardingProgress component to show step 3 of 5
+        - Implement Back button to return to parent info
+        - Ensure session data persists on navigation
+        - Test full navigation flow: parent info → child info → insurance
+      - Task 7: Write unit tests (AC: all)
+        - Create `tests/unit/components/demographics/ChildInfoForm.test.tsx`
+        - Test form renders with all required fields
+        - Test Date of Birth age validation (valid and invalid ages)
+        - Test pronouns field with "Other" custom input
+        - Test pre-population of primary concerns from cache
+        - Test form validation states (valid/invalid)
+        - Test Continue button disabled/enabled state
+        - Test auto-save behavior on field blur
+        - Edge Case Tests:
+          - Test age boundary: child exactly 10 years old (valid)
+          - Test age boundary: child exactly 19 years old (valid)
+          - Test age boundary: child 9 years 11 months (invalid)
+          - Test age boundary: child 19 years 1 month (invalid)
+          - Test primary concerns when assessment.summary is null/undefined
+          - Test primary concerns when assessment.summary is empty string
+          - Test custom pronouns input appears when "Other" selected
+          - Test custom pronouns input hides when different option selected
+          - Test form behavior when Apollo cache has no assessment data
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC-3.2.1: Child info form loads after completing parent info form at `/onboarding/[sessionId]/demographics` (child section)
+    AC-3.2.2: First Name field displays with validation (required, 2-50 chars)
+    AC-3.2.3: Date of Birth picker displays calendar component with month/year dropdown navigation
+    AC-3.2.4: Date of Birth picker defaults to ~13 years ago for quick navigation
+    AC-3.2.5: Date of Birth validation ensures child is between 10-19 years old with clear error message if outside range
+    AC-3.2.6: Preferred Pronouns field displays as optional select with options: She/Her, He/Him, They/Them, Other, Prefer not to say
+    AC-3.2.7: When "Other" is selected for pronouns, custom text input appears
+    AC-3.2.8: Grade field displays as optional select with options: 5th through 12th grade, Not in school
+    AC-3.2.9: Primary Concerns field pre-fills with assessment summary from cache
+    AC-3.2.10: Primary Concerns field is editable textarea with clear indication it can be modified
+    AC-3.2.11: Form validation displays on blur with specific error messages in error red (#E85D5D)
+    AC-3.2.12: Valid fields show subtle green checkmark indicator
+    AC-3.2.13: "Continue" button is disabled until all required fields are valid
+    AC-3.2.14: "Continue" button navigates to insurance step when enabled
+    AC-3.2.15: Progress bar updates to show step 3 of 5
+    AC-3.2.16: Form auto-saves on blur for each field
+    AC-3.2.17: Back button returns to parent info form without losing data
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/prd.md</path>
+        <title>Product Requirements Document: Parent Onboarding AI</title>
+        <section>6.2 Onboarding & Data Collection</section>
+        <snippet>FR-005: The system shall collect child demographic information (name, date of birth, pronouns). FR-006: The system shall collect clinical intake information (primary concerns, relevant history). FR-007: The system shall persist onboarding progress, allowing parents to resume an incomplete session.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Project Structure - features/demographics/</section>
+        <snippet>Component Location: `features/demographics/ChildInfoForm.tsx`, Validation Location: `lib/validations/demographics.ts`, Route Location: Part of `app/onboarding/[sessionId]/demographics/page.tsx`. Use React Hook Form with Zod resolver for forms. All form components use shadcn/ui styled to Daybreak theme.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Implementation Patterns - Forms</section>
+        <snippet>React Hook Form 7.x with Zod 3.x resolver (ADR-004). Zod schemas centralized in `lib/validations/`. Auto-save triggers on blur via `useAutoSave` hook. Form state synchronized to Apollo cache and backend.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification - Color System</title>
+        <section>3.1 - Semantic Colors</section>
+        <snippet>Success: #10B981, Error: #E85D5D, Warning: #F59E0B. Error messages display in error red (#E85D5D). Valid fields show subtle green checkmark.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification - Typography and Spacing</title>
+        <section>3.2-3.3</section>
+        <snippet>Body Font: Inter (Sans-serif) for forms. Base spacing unit: 4px. Border radius md: 12px for form inputs. Touch targets minimum 44x44px for WCAG compliance.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification - Form Patterns</title>
+        <section>7.1 - Form Patterns</section>
+        <snippet>Labels: Above input, always visible. Required indicator: Asterisk (*) after label. Validation timing: On blur + on submit. Error display: Inline below field, red text. Help text: Below input, muted color.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown - Story 3.2</title>
+        <section>Epic 3: Parent & Child Information Collection</section>
+        <snippet>Story 3.2 implements child info collection with date picker, age validation (10-19 years), pronouns field with custom option, and primary concerns pre-filled from assessment summary. Prerequisites: Story 3.1 (Parent Information Form), Story 1.2 (Design System), Story 2.5 (Assessment Summary Generation).</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/sprint-artifacts/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Data Models and Contracts</section>
+        <snippet>ChildInfoSchema validates: firstName (2-50 chars), dateOfBirth (age 10-19), pronouns (optional enum + custom), grade (optional enum), primaryConcerns (optional, max 2000). Age validation uses custom refine with date calculation.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/sprint-artifacts/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>APIs and Interfaces</section>
+        <snippet>UpdateChildInfo mutation accepts ChildInfoInput with firstName, dateOfBirth, pronouns, grade, primaryConcerns. GetDemographics query includes child object with all fields and assessment.summary for pre-population.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>hooks/useAutoSave.ts</path>
+        <kind>hook</kind>
+        <symbol>useAutoSave</symbol>
+        <lines>1-171</lines>
+        <reason>Provides auto-save functionality for form fields on blur. Returns saveStatus, save function, and retry capability. Handles network failures with retry logic. Used for AC-3.2.16 (form auto-save on blur).</reason>
+      </artifact>
+      <artifact>
+        <path>hooks/useOnboardingSession.ts</path>
+        <kind>hook</kind>
+        <symbol>useOnboardingSession</symbol>
+        <lines>1-170</lines>
+        <reason>Manages onboarding session state including loading, restoration, and expiry. Provides session data including child and assessment information for pre-population. Used for AC-3.2.9 (pre-fill primary concerns from assessment.summary).</reason>
+      </artifact>
+      <artifact>
+        <path>features/assessment/useAssessmentChat.ts</path>
+        <kind>hook</kind>
+        <symbol>useAssessmentChat</symbol>
+        <lines>1-599</lines>
+        <reason>Reference implementation showing React Hook Form patterns, state management, auto-save integration, and Apollo Client mutation usage. Demonstrates how to integrate useAutoSave with form state.</reason>
+      </artifact>
+      <artifact>
+        <path>graphql/queries/GetOnboardingSession.graphql</path>
+        <kind>graphql</kind>
+        <symbol>GetOnboardingSession</symbol>
+        <lines>1-57</lines>
+        <reason>Query for fetching session state including child demographics and assessment.summary. Used to pre-populate form fields and restore session data. Relevant for AC-3.2.9 (pre-fill from cache).</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/input.tsx</path>
+        <kind>component</kind>
+        <symbol>Input</symbol>
+        <reason>shadcn/ui Input component for text fields. Base component for First Name field. Styled with Daybreak theme colors and design tokens.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/select.tsx</path>
+        <kind>component</kind>
+        <symbol>Select</symbol>
+        <reason>shadcn/ui Select component for dropdown fields. Used for Pronouns and Grade select fields. Supports Radix UI accessibility features.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/textarea.tsx</path>
+        <kind>component</kind>
+        <symbol>Textarea</symbol>
+        <reason>shadcn/ui Textarea component for multi-line text input. Used for Primary Concerns field with pre-population and editing capability.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/label.tsx</path>
+        <kind>component</kind>
+        <symbol>Label</symbol>
+        <reason>shadcn/ui Label component for form field labels. Ensures proper accessibility with label associations and required indicators.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <reason>shadcn/ui Button component for Continue and Back buttons. Supports disabled state based on form validation (AC-3.2.13).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="react-hook-form" version="^7.67.0">Form state management with uncontrolled inputs</package>
+        <package name="@hookform/resolvers" version="^5.2.2">Zod integration for React Hook Form</package>
+        <package name="zod" version="^3.25.76">Schema validation for form fields</package>
+        <package name="@apollo/client" version="4.1.0-alpha.5">GraphQL client for mutations and cache</package>
+        <package name="@radix-ui/react-select" version="^2.2.6">Accessible select component for Pronouns and Grade</package>
+        <package name="@radix-ui/react-label" version="^2.1.8">Accessible label component</package>
+        <package name="lucide-react" version="^0.555.0">Icons for validation indicators (checkmark, error)</package>
+        <package name="class-variance-authority" version="^0.7.1">Variant styling for form states</package>
+        <package name="tailwind-merge" version="^3.4.0">Utility for merging Tailwind classes</package>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    1. Age Validation: Child MUST be between 10-19 years old (inclusive). Calculate age accurately accounting for leap years and month/day differences.
+    2. PHI Protection: No PHI in console.log, URLs, or browser history. Use phiGuard utility for any logging.
+    3. Form Validation: Validation triggers on blur AND on submit. Never on every keystroke (performance).
+    4. Auto-Save: Save triggers on blur for each field with 300ms debounce. Use optimistic UI updates.
+    5. Mobile-First: All form components must be mobile-responsive with 44x44px minimum touch targets.
+    6. Accessibility: WCAG 2.1 AA compliance required. Proper label associations, keyboard navigation, focus management.
+    7. Error Messages: Specific, actionable error messages. "Child must be between 10-19 years old" not generic "Invalid date"
+    8. Pronouns Flexibility: Store pronouns as string (not enum) to support custom values. Respectful, optional field.
+    9. Primary Concerns: Pre-populate from assessment.summary but allow full editing. Handle null/undefined/empty gracefully.
+    10. Session Persistence: All data must persist to backend immediately on blur. Session ID in URL is recovery mechanism.
+    11. Design Tokens: Use Daybreak colors (#E85D5D for errors, #10B981 for success, #2A9D8F for primary actions).
+    12. Component Location: features/demographics/ChildInfoForm.tsx per Architecture project structure.
+    13. Date Format: Display as MM/DD/YYYY. Store as ISO 8601 string. Default to ~13 years ago for quick selection.
+    14. No Placeholder Values: Never use placeholders for actual data. Required fields must be explicitly filled.
+    15. Continue Button: Disabled state until ALL required fields valid. Enable immediately when form becomes valid.
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>UpdateChildInfo GraphQL Mutation</name>
+      <kind>GraphQL Mutation</kind>
+      <signature>
+        mutation UpdateChildInfo($sessionId: ID!, $input: ChildInfoInput!) {
+          updateChildInfo(sessionId: $sessionId, input: $input) {
+            id
+            demographics {
+              child {
+                firstName
+                dateOfBirth
+                pronouns
+                grade
+                primaryConcerns
+              }
+              isComplete
+            }
+          }
+        }
+      </signature>
+      <path>graphql/mutations/UpdateChildInfo.graphql</path>
+    </interface>
+    <interface>
+      <name>ChildInfoSchema Zod Validation</name>
+      <kind>Zod Schema</kind>
+      <signature>
+        export const childInfoSchema = z.object({
+          firstName: z.string().min(2).max(50),
+          dateOfBirth: z.string().refine((val) => {
+            const age = calculateAge(new Date(val));
+            return age >= 10 && age <= 19;
+          }, "Child must be between 10-19 years old for Daybreak services"),
+          pronouns: z.enum(['she/her', 'he/him', 'they/them', 'other', 'prefer-not-to-say']).optional(),
+          pronounsCustom: z.string().max(50).optional(),
+          grade: z.enum(['5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', 'not-in-school']).optional(),
+          primaryConcerns: z.string().max(2000).optional()
+        });
+      </signature>
+      <path>lib/validations/demographics.ts</path>
+    </interface>
+    <interface>
+      <name>ChildInfoForm Component</name>
+      <kind>React Component</kind>
+      <signature>
+        export function ChildInfoForm({
+          sessionId,
+          onContinue,
+          onBack
+        }: {
+          sessionId: string;
+          onContinue: () => void;
+          onBack: () => void;
+        }): JSX.Element
+      </signature>
+      <path>features/demographics/ChildInfoForm.tsx</path>
+    </interface>
+    <interface>
+      <name>useAutoSave Hook</name>
+      <kind>React Hook</kind>
+      <signature>
+        export function useAutoSave(options: {
+          sessionId: string;
+          onSaveSuccess?: () => void;
+          onSaveError?: (error: Error) => void;
+        }): {
+          saveStatus: 'idle' | 'saving' | 'saved' | 'error';
+          lastSaved: Date | null;
+          error: Error | null;
+          retry: () => void;
+          save: (data: unknown) => Promise<void>;
+        }
+      </signature>
+      <path>hooks/useAutoSave.ts</path>
+    </interface>
+    <interface>
+      <name>calculateAge Utility Function</name>
+      <kind>TypeScript Function</kind>
+      <signature>
+        function calculateAge(birthDate: Date): number {
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const monthDiff = today.getMonth() - birthDate.getMonth();
+          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
+          return age;
+        }
+      </signature>
+      <path>lib/utils/age-validation.ts (to be created)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit tests use Vitest + React Testing Library. Component tests verify rendering, validation, user interactions, and edge cases. Integration tests validate Apollo Client cache updates and mutation calls. E2E tests with Playwright verify full form flow. All tests follow Architecture testing patterns with MSW for API mocking.
+    </standards>
+    <locations>
+      tests/unit/components/demographics/ChildInfoForm.test.tsx
+      tests/unit/lib/validations/demographics.test.ts
+      tests/unit/lib/utils/age-validation.test.ts
+      tests/e2e/onboarding-demographics.spec.ts
+    </locations>
+    <ideas>
+      - Test AC-3.2.2: First Name validation with boundary cases (1 char invalid, 2 chars valid, 50 chars valid, 51 chars invalid)
+      - Test AC-3.2.5: Age validation with exact boundaries (9y 364d invalid, 10y 0d valid, 19y 365d valid, 20y 0d invalid)
+      - Test AC-3.2.7: Pronouns "Other" triggers custom input field, switching away hides it, custom value persists
+      - Test AC-3.2.9: Primary concerns pre-fill from assessment.summary.keyConcerns array joined with newlines
+      - Test AC-3.2.11: Blur triggers validation, errors display in red with specific message text
+      - Test AC-3.2.12: Valid field shows green checkmark icon (lucide-react Check icon)
+      - Test AC-3.2.13: Continue button disabled when any required field invalid, enabled when all valid
+      - Test AC-3.2.16: Auto-save calls mutation on field blur with 300ms debounce
+      - Test Edge Case: Date picker defaults to year 2012 when opened in 2025 (current year - 13)
+      - Test Edge Case: Assessment.summary is null → primaryConcerns starts empty (not "undefined" or error)
+      - Test Edge Case: Assessment.summary is empty array → primaryConcerns starts empty
+      - Test Edge Case: Multiple tabs open → last-write-wins with timestamp reconciliation
+      - Test Accessibility: Keyboard navigation through all fields, Enter submits, Escape closes date picker
+      - Test Accessibility: Screen reader announces field labels, validation errors, and success states
+    </ideas>
+  </tests>
+</story-context>

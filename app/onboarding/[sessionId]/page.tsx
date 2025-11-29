@@ -8,6 +8,13 @@
  */
 
 /**
+ * Generate static params for the onboarding page
+ */
+export async function generateStaticParams() {
+  return [{ sessionId: "demo" }];
+}
+
+/**
  * Page props with session ID from route params
  */
 interface OnboardingPageProps {

@@ -1,0 +1,452 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>1</storyId>
+    <title>Parent Information Form</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/3-1-parent-information-form.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>to enter my contact information with helpful validation</iWant>
+    <soThat>Daybreak can reach me and I feel confident the information is correct</soThat>
+    <tasks>
+- Task 1: Create Zod validation schemas (AC: 3.1.2, 3.1.3, 3.1.4, 3.1.5, 3.1.6)
+  - Create lib/validations/demographics.ts
+  - Define parentInfoSchema with Zod
+  - Add first name validation (required, 2-50 chars, trim whitespace)
+  - Add last name validation (required, 2-50 chars, trim whitespace)
+  - Add email validation (required, RFC 5322 via Zod email validator)
+  - Add phone validation (required, US format, regex pattern)
+  - Add relationship validation (required, enum of allowed values)
+  - Export TypeScript type from schema: export type ParentInfoInput = z.infer&lt;typeof parentInfoSchema&gt;
+
+- Task 2: Create phone formatting utility (AC: 3.1.5, 3.1.12)
+  - Create lib/utils/formatters.ts if not exists
+  - Add formatPhoneNumber() function for display format (XXX) XXX-XXXX
+  - Add toE164() function to convert to +1XXXXXXXXXX format
+  - Add fromE164() function to parse stored format back to display
+  - Handle partial input during typing (e.g., "(555) 12" while typing)
+  - Export all phone utilities
+
+- Task 3: Create ParentInfoForm component (AC: all)
+  - Create features/demographics/ParentInfoForm.tsx
+  - Import React Hook Form useForm hook
+  - Import Zod resolver zodResolver
+  - Initialize form with useForm&lt;ParentInfoInput&gt;() and zodResolver
+  - Create controlled Input for First Name with error display
+  - Create controlled Input for Last Name with error display
+  - Create controlled Input for Email with autoComplete="email"
+  - Create controlled Input for Phone with format-on-change handler
+  - Create Select component for Relationship to Child
+  - Add error message display below each field (red text, specific messages)
+  - Add checkmark icon for valid fields (conditional render)
+  - Add "Continue" button (primary, disabled when form invalid)
+  - Add "Back" link/button
+  - Export component and props interface
+
+- Task 4: Integrate useAutoSave hook (AC: 3.1.14)
+  - Import useAutoSave from @/hooks/useAutoSave
+  - Call useAutoSave() with form values and session ID
+  - Configure to save on blur events
+  - Add visual indicator when saving (optional loading state)
+  - Ensure auto-save doesn't interfere with form validation
+
+- Task 5: Create demographics page route (AC: 3.1.1, 3.1.15, 3.1.16)
+  - Create app/onboarding/[sessionId]/demographics/page.tsx
+  - Import and render ParentInfoForm component
+  - Handle session ID from URL params
+  - Implement "Continue" navigation to child info form (same page, different section)
+  - Implement "Back" navigation to assessment summary
+  - Add page title and descriptive heading
+  - Ensure page uses onboarding layout (progress bar, header, footer)
+
+- Task 6: Style form with shadcn/ui and Daybreak theme (AC: 3.1.8, 3.1.9)
+  - Use shadcn/ui Input component for text fields
+  - Use shadcn/ui Select component for dropdown
+  - Use shadcn/ui Button component for actions
+  - Apply error red (#E85D5D) for error messages
+  - Apply success green checkmark for valid fields
+  - Ensure single-column layout with proper spacing (Daybreak spacing tokens)
+  - Ensure mobile-first responsive design
+  - Add focus states and hover states per Daybreak theme
+
+- Task 7: Create GraphQL mutation for demographics (AC: 3.1.14)
+  - Create features/demographics/demographics.graphql
+  - Define UpdateParentInfo mutation
+  - Include input type with all parent info fields
+  - Return updated session with parent info
+  - Run pnpm codegen to generate TypeScript types
+
+- Task 8: Write unit tests (AC: all)
+  - Create tests/unit/components/demographics/ParentInfoForm.test.tsx
+  - Test form renders all required fields
+  - Test first name validation (too short, too long, valid)
+  - Test last name validation
+  - Test email validation (invalid format, valid format)
+  - Test phone formatting and validation
+  - Test relationship select options
+  - Test error messages display on blur
+  - Test submit button disabled state
+  - Test form submission with valid data
+  - Test auto-save trigger on blur
+  - Mock useAutoSave hook in tests
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+AC-3.1.1: Page renders at /onboarding/[sessionId]/demographics with clean, single-column form layout
+AC-3.1.2: First Name field accepts 2-50 characters, required
+AC-3.1.3: Last Name field accepts 2-50 characters, required
+AC-3.1.4: Email field validates against RFC 5322 format, required
+AC-3.1.5: Phone field accepts US phone numbers, formats as (XXX) XXX-XXXX, stores as E.164
+AC-3.1.6: Relationship to Child field provides options: Parent, Guardian, Grandparent, Other (required select)
+AC-3.1.7: Validation triggers on blur, not on every keystroke
+AC-3.1.8: Error messages display below field in red (#E85D5D) with specific messaging
+AC-3.1.9: Valid fields show subtle green checkmark icon
+AC-3.1.10: Submit button disabled until all required fields are valid
+AC-3.1.11: Email field has autoComplete="email" for browser autofill
+AC-3.1.12: Phone input auto-formats as user types
+AC-3.1.13: Form state managed by React Hook Form with Zod schema validation
+AC-3.1.14: Form auto-saves on blur via useAutoSave hook
+AC-3.1.15: "Continue" button leads to child info form (next step)
+AC-3.1.16: Back button returns to assessment summary
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <!-- PRD Section: Onboarding & Data Collection -->
+      <doc>
+        <path>docs/prd.md</path>
+        <title>Product Requirements Document</title>
+        <section>6.2 Onboarding & Data Collection</section>
+        <snippet>FR-004: The system shall collect parent demographic information (name, contact, relationship to child). FR-007: The system shall persist onboarding progress, allowing parents to resume an incomplete session.</snippet>
+      </doc>
+
+      <!-- Tech Spec Epic 3 -->
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-3.md</path>
+        <title>Epic Technical Specification: Parent & Child Information Collection</title>
+        <section>Detailed Design - Data Models and Contracts</section>
+        <snippet>ParentInfoSchema with fields: firstName (2-50 chars), lastName (2-50 chars), email (RFC 5322), phone (E.164 format), relationshipToChild (enum). Phone stored as +1XXXXXXXXXX, displayed as (XXX) XXX-XXXX.</snippet>
+      </doc>
+
+      <!-- Architecture - Project Structure -->
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Project Structure - features/demographics/</section>
+        <snippet>Component Location: features/demographics/ParentInfoForm.tsx. Validation Location: lib/validations/demographics.ts. Route Location: app/onboarding/[sessionId]/demographics/page.tsx. Form Library: React Hook Form 7.x with Zod 3.x resolver.</snippet>
+      </doc>
+
+      <!-- Architecture - Implementation Patterns -->
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Implementation Patterns - Naming Patterns</section>
+        <snippet>Components: PascalCase (ParentInfoForm.tsx). Hooks: camelCase with use prefix (useAutoSave.ts). Zod schemas: camelCase with Schema suffix (parentInfoSchema). GraphQL operations: PascalCase (UpdateParentInfo).</snippet>
+      </doc>
+
+      <!-- UX Design - Design Tokens -->
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>3. Visual Foundation - Color System</section>
+        <snippet>Error color: #E85D5D (error red). Success color: #10B981 (success green). Primary button: Daybreak teal #2A9D8F. Background: Cream #FEF7ED. Text color: Deep text #1A3C34. Border radius: md (12px) for form fields.</snippet>
+      </doc>
+
+      <!-- UX Design - Form Patterns -->
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>7. UX Pattern Decisions - Form Patterns</section>
+        <snippet>Labels: Above input, always visible. Required indicator: Asterisk (*) after label. Validation timing: On blur + on submit. Error display: Inline below field, red text. Help text: Below input, muted color.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <!-- Existing useAutoSave hook -->
+      <artifact>
+        <path>hooks/useAutoSave.ts</path>
+        <kind>hook</kind>
+        <symbol>useAutoSave</symbol>
+        <lines>1-171</lines>
+        <reason>This hook provides auto-save functionality for the parent info form. Story AC-3.1.14 requires form auto-saves on blur via useAutoSave hook. Hook already implements save status tracking, retry logic, and localStorage backup.</reason>
+      </artifact>
+
+      <!-- Existing useOnboardingSession hook -->
+      <artifact>
+        <path>hooks/useOnboardingSession.ts</path>
+        <kind>hook</kind>
+        <symbol>useOnboardingSession</symbol>
+        <lines>1-180</lines>
+        <reason>This hook manages session state for onboarding flow. ParentInfoForm will need session ID from context. Hook provides session loading, expiry detection, and localStorage recovery.</reason>
+      </artifact>
+
+      <!-- Existing formatters utility -->
+      <artifact>
+        <path>lib/utils/formatters.ts</path>
+        <kind>utility</kind>
+        <symbol>formatRelativeTime</symbol>
+        <lines>1-37</lines>
+        <reason>Existing formatters file where phone formatting functions should be added per Task 2. Pattern established for creating formatting utilities in this file.</reason>
+      </artifact>
+
+      <!-- shadcn/ui Input component -->
+      <artifact>
+        <path>components/ui/input.tsx</path>
+        <kind>component</kind>
+        <symbol>Input</symbol>
+        <lines>1-22</lines>
+        <reason>shadcn/ui Input component to be used for all text fields in ParentInfoForm per Task 6. Component has built-in aria-invalid styling for validation errors and focus-visible states.</reason>
+      </artifact>
+
+      <!-- shadcn/ui Select component -->
+      <artifact>
+        <path>components/ui/select.tsx</path>
+        <kind>component</kind>
+        <symbol>Select</symbol>
+        <lines>exists</lines>
+        <reason>shadcn/ui Select component to be used for Relationship to Child dropdown per AC-3.1.6 and Task 6. Provides accessible select with keyboard navigation.</reason>
+      </artifact>
+
+      <!-- shadcn/ui Button component -->
+      <artifact>
+        <path>components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <lines>exists</lines>
+        <reason>shadcn/ui Button component for Continue and Back buttons per Task 3. Supports disabled state for AC-3.1.10 (submit disabled until valid).</reason>
+      </artifact>
+
+      <!-- shadcn/ui Label component -->
+      <artifact>
+        <path>components/ui/label.tsx</path>
+        <kind>component</kind>
+        <symbol>Label</symbol>
+        <lines>exists</lines>
+        <reason>shadcn/ui Label component for accessible form labels. Per UX Design form patterns, labels should be above input and always visible with required asterisk indicator.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <node>
+        <package>react-hook-form</package>
+        <version>^7.67.0</version>
+        <usage>Form state management with uncontrolled inputs for performance. AC-3.1.13 requires React Hook Form with Zod schema validation.</usage>
+      </node>
+      <node>
+        <package>@hookform/resolvers</package>
+        <version>^5.2.2</version>
+        <usage>Provides zodResolver for integrating Zod validation schemas with React Hook Form.</usage>
+      </node>
+      <node>
+        <package>zod</package>
+        <version>^3.25.76</version>
+        <usage>Schema validation library for parentInfoSchema. Version 3.x per Architecture ADR-004 for stability with React Hook Form.</usage>
+      </node>
+      <node>
+        <package>@radix-ui/react-select</package>
+        <version>^2.2.6</version>
+        <usage>Accessible select component for Relationship to Child dropdown. Foundation for shadcn/ui Select.</usage>
+      </node>
+      <node>
+        <package>@radix-ui/react-label</package>
+        <version>^2.1.8</version>
+        <usage>Accessible label component with proper field associations for screen readers.</usage>
+      </node>
+      <node>
+        <package>lucide-react</package>
+        <version>^0.555.0</version>
+        <usage>Icon library for checkmark icon on valid fields per AC-3.1.9.</usage>
+      </node>
+      <node>
+        <package>@apollo/client</package>
+        <version>4.0.9</version>
+        <usage>GraphQL client for UpdateParentInfo mutation. Used in demographics.graphql operations.</usage>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+- Form components must be located in features/demographics/ directory per Architecture project structure
+- Validation schemas must be in lib/validations/demographics.ts per Architecture naming patterns
+- Use React Hook Form 7.x with Zod 3.x resolver per Architecture ADR-004
+- No PHI in console.log, URLs, or browser history per Architecture security requirements
+- All form fields must have associated label elements for WCAG 2.1 AA compliance
+- Error messages must be associated with fields via aria-describedby
+- Form must be keyboard navigable with logical tab order
+- Required fields indicated with aria-required="true"
+- Error states indicated with aria-invalid="true"
+- Touch targets minimum 44x44px for mobile accessibility
+- Phone number stored as E.164 format (+1XXXXXXXXXX), displayed as (XXX) XXX-XXXX
+- Validation triggers on blur, not on keystroke per AC-3.1.7
+- Auto-save triggers on blur with 500ms debounce per Dev Notes
+- Form autofill enabled with appropriate autocomplete attributes (email, given-name, family-name, tel)
+- Mobile-first responsive design with max-width 640px for form content
+- Component files must not exceed 500 lines per project coding standards
+- Use functional components with descriptive JSDoc comments
+- Use Tailwind CSS utility classes, no custom CSS
+- Follow Daybreak color tokens: error #E85D5D, success #10B981, primary #2A9D8F
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>UpdateParentInfo</name>
+      <kind>GraphQL mutation</kind>
+      <signature>
+mutation UpdateParentInfo($sessionId: ID!, $input: ParentInfoInput!) {
+  updateParentInfo(sessionId: $sessionId, input: $input) {
+    id
+    demographics {
+      parent {
+        firstName
+        lastName
+        email
+        phone
+        relationshipToChild
+      }
+      isComplete
+    }
+  }
+}
+      </signature>
+      <path>features/demographics/demographics.graphql</path>
+    </interface>
+
+    <interface>
+      <name>parentInfoSchema</name>
+      <kind>Zod validation schema</kind>
+      <signature>
+export const parentInfoSchema = z.object({
+  firstName: z.string().min(2).max(50),
+  lastName: z.string().min(2).max(50),
+  email: z.string().email(),
+  phone: z.string().regex(/^\+1\d{10}$/),
+  relationshipToChild: z.enum(['parent', 'guardian', 'grandparent', 'other'])
+});
+
+export type ParentInfoInput = z.infer&lt;typeof parentInfoSchema&gt;;
+      </signature>
+      <path>lib/validations/demographics.ts</path>
+    </interface>
+
+    <interface>
+      <name>formatPhoneNumber</name>
+      <kind>TypeScript function</kind>
+      <signature>
+export function formatPhoneNumber(value: string): string;
+export function toE164(phone: string): string;
+export function fromE164(phone: string): string;
+      </signature>
+      <path>lib/utils/formatters.ts</path>
+    </interface>
+
+    <interface>
+      <name>ParentInfoForm</name>
+      <kind>React component</kind>
+      <signature>
+interface ParentInfoFormProps {
+  sessionId: string;
+  onContinue?: () => void;
+  onBack?: () => void;
+}
+
+export function ParentInfoForm(props: ParentInfoFormProps): JSX.Element;
+      </signature>
+      <path>features/demographics/ParentInfoForm.tsx</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Minimum 80% code coverage for components. Test happy path and all error states. Test accessibility attributes (aria-invalid, aria-describedby, aria-required). Mock external dependencies (Apollo mutations, useAutoSave hook). Use React Testing Library best practices (query by role, not test IDs). Test keyboard navigation and focus management. Vitest for unit tests with React Testing Library. Playwright for E2E tests if needed.
+    </standards>
+
+    <locations>
+tests/unit/components/demographics/ParentInfoForm.test.tsx
+tests/unit/lib/validations/demographics.test.ts
+tests/unit/lib/utils/formatters.test.ts
+    </locations>
+
+    <ideas>
+      <test id="AC-3.1.2">
+        <description>Test first name validation: empty, too short (1 char), too long (51 chars), valid (2-50 chars), whitespace trimming</description>
+        <mapsToCriteria>AC-3.1.2</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.3">
+        <description>Test last name validation: same as first name tests</description>
+        <mapsToCriteria>AC-3.1.3</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.4">
+        <description>Test email validation: invalid format (no @, no domain), valid RFC 5322 format, empty field shows required error</description>
+        <mapsToCriteria>AC-3.1.4</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.5">
+        <description>Test phone validation and storage: invalid format (too short, non-digits), valid 10-digit number converts to E.164 (+1XXXXXXXXXX)</description>
+        <mapsToCriteria>AC-3.1.5</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.12">
+        <description>Test phone formatting: as user types "5551234567", display updates to "(555) 123-4567". Test partial input like "(555) 12".</description>
+        <mapsToCriteria>AC-3.1.12</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.6">
+        <description>Test relationship select: renders all options (Parent, Guardian, Grandparent, Other), required validation, selection updates form state</description>
+        <mapsToCriteria>AC-3.1.6</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.7">
+        <description>Test validation timing: errors do NOT appear on keystroke, errors DO appear on blur, errors clear when field becomes valid</description>
+        <mapsToCriteria>AC-3.1.7</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.8">
+        <description>Test error display: error messages appear below field, use red color (#E85D5D), show specific messages from Zod schema</description>
+        <mapsToCriteria>AC-3.1.8</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.9">
+        <description>Test valid field indicator: checkmark icon appears for valid fields, does not appear for invalid or empty fields</description>
+        <mapsToCriteria>AC-3.1.9</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.10">
+        <description>Test submit button: disabled when form invalid, enabled when all required fields valid, does not submit on Enter when disabled</description>
+        <mapsToCriteria>AC-3.1.10</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.11">
+        <description>Test autocomplete attributes: email field has autoComplete="email", first name has "given-name", last name has "family-name", phone has "tel"</description>
+        <mapsToCriteria>AC-3.1.11</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.14">
+        <description>Test auto-save: mock useAutoSave hook, verify save called on field blur, verify save not called on keystroke, verify save receives correct data</description>
+        <mapsToCriteria>AC-3.1.14</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.15">
+        <description>Test Continue navigation: onContinue callback called when valid form submitted, not called when form invalid</description>
+        <mapsToCriteria>AC-3.1.15</mapsToCriteria>
+      </test>
+
+      <test id="AC-3.1.16">
+        <description>Test Back navigation: onBack callback called when back button clicked, does not save form data on back</description>
+        <mapsToCriteria>AC-3.1.16</mapsToCriteria>
+      </test>
+
+      <test id="accessibility">
+        <description>Test accessibility: all fields have associated labels, error messages linked via aria-describedby, required fields have aria-required, invalid fields have aria-invalid, keyboard navigation works, focus indicators visible</description>
+        <mapsToCriteria>Architecture NFR - WCAG 2.1 AA</mapsToCriteria>
+      </test>
+    </ideas>
+  </tests>
+</story-context>

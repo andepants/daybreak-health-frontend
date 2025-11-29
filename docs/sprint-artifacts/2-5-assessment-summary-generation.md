@@ -1,6 +1,6 @@
 # Story 2.5: Assessment Summary Generation
 
-Status: ready-for-dev
+Status: in-progress
 
 ## Story
 

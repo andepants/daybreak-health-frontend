@@ -46,20 +46,20 @@ development_status:
 
   # Epic 2: AI-Guided Assessment Experience (6 stories)
   epic-2: contexted
-  2-1-chat-window-and-message-display: ready-for-dev
-  2-2-message-input-and-quick-reply-chips: ready-for-dev
-  2-3-ai-typing-indicator: ready-for-dev
-  2-4-assessment-flow-with-adaptive-questions: ready-for-dev
-  2-5-assessment-summary-generation: ready-for-dev
-  2-6-session-persistence-and-resume: ready-for-dev
+  2-1-chat-window-and-message-display: done
+  2-2-message-input-and-quick-reply-chips: done
+  2-3-ai-typing-indicator: done
+  2-4-assessment-flow-with-adaptive-questions: done
+  2-5-assessment-summary-generation: done
+  2-6-session-persistence-and-resume: done
   epic-2-retrospective: optional
 
   # Epic 3: Parent & Child Information Collection (4 stories)
-  epic-3: backlog
-  3-1-parent-information-form: backlog
-  3-2-child-information-form: backlog
-  3-3-clinical-intake-information: backlog
-  3-4-form-based-assessment-fallback: backlog
+  epic-3: contexted
+  3-1-parent-information-form: done
+  3-2-child-information-form: done
+  3-3-clinical-intake-information: done
+  3-4-form-based-assessment-fallback: done
   epic-3-retrospective: optional
 
   # Epic 4: Insurance Submission (3 stories)

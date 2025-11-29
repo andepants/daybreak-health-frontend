@@ -1,12 +1,11 @@
 /**
- * Next.js configuration for static export deployment.
- * Configured for S3/CloudFront hosting per architecture requirements.
+ * Next.js configuration for Aptible deployment.
+ * Uses standalone output for Docker containerization.
  */
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
-  trailingSlash: true,
+  output: 'standalone',
   images: {
     unoptimized: true,
   },

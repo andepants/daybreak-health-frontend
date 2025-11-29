@@ -27,7 +27,16 @@ const config: CodegenConfig = {
         withHooks: true,
         withHOC: false,
         withComponent: false,
+        // Disable type aliases not exported in Apollo Client 4.x
+        withMutationFn: false,
+        withResultType: false,
+        withMutationOptionsType: false,
+        addDocBlocks: false,
+        skipTypename: false,
         enumsAsTypes: true,
+        // Apollo Client 4.x ESM compatibility with Next.js 16:
+        // Import hooks from @apollo/client/react subpath (not main entry)
+        apolloReactHooksImportFrom: "@apollo/client/react",
         apolloReactCommonImportFrom: "@apollo/client",
         avoidOptionals: {
           field: true,
