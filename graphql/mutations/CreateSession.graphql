@@ -1,0 +1,14 @@
+# CreateSession Mutation
+# Creates a new onboarding session and returns session ID with auth token
+# Called when user clicks "Start Onboarding" to initiate a real session
+
+mutation CreateSession {
+  createSession {
+    session {
+      id
+      status
+    }
+    token
+    refreshToken
+  }
+}

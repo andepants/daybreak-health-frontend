@@ -95,5 +95,8 @@ export {
   onConnectionStateChange,
   getConnectionState,
   reconnectWebSocket,
+  getGraphQLEndpoint,
+  getWebSocketEndpoint,
+  getApiInfo,
 } from "./links";
-export type { ConnectionState, ConnectionStateCallback } from "./links";
+export type { ConnectionState, ConnectionStateCallback, ApiTarget, ApiInfo } from "./links";

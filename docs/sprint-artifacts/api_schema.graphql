@@ -123,6 +123,19 @@ type ResetAssessmentPayload {
   session: OnboardingSession!
 }
 
+# Payload for createSession mutation - returns new session with auth tokens
+type CreateSessionPayload {
+  session: SessionInfo!
+  token: String!
+  refreshToken: String
+}
+
+# Minimal session info returned from createSession (before full onboarding data exists)
+type SessionInfo {
+  id: ID!
+  status: String!
+}
+
 type ChatMessage {
   id: ID!
   sender: MessageSender!
@@ -244,6 +257,10 @@ type Query {
 # ------------------------------------------------------------------
 
 type Mutation {
+  # P0: Create a new onboarding session and return auth token
+  # Called when user clicks "Start Onboarding" - returns session ID and JWT
+  createSession: CreateSessionPayload
+
   # P0: Start the onboarding process and create the initial records
   startOnboarding(input: StartOnboardingInput!): OnboardingSession
 

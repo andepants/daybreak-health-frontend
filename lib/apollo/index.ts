@@ -20,5 +20,12 @@ export {
   reconnectWebSocket,
 } from "./client";
 
+// API endpoint configuration
+export {
+  getGraphQLEndpoint,
+  getWebSocketEndpoint,
+  getApiInfo,
+} from "./client";
+
 // Types
-export type { ConnectionState, ConnectionStateCallback } from "./client";
+export type { ConnectionState, ConnectionStateCallback, ApiTarget, ApiInfo } from "./client";

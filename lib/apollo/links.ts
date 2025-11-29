@@ -4,12 +4,82 @@
  * Creates and configures Apollo links for HTTP queries/mutations and
  * WebSocket subscriptions. Includes authorization header middleware
  * and exponential backoff reconnection for WebSocket connections.
+ *
+ * Environment Configuration:
+ * - NEXT_PUBLIC_API_TARGET: 'local' | 'aptible' (defaults to 'aptible' in production)
+ * - Local: localhost:3000 (Rails backend)
+ * - Aptible: app-98507.on-aptible.com (production backend)
  */
 import { HttpLink, ApolloLink, split } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createClient, type Client } from "graphql-ws";
+
+/**
+ * Determines the GraphQL HTTP endpoint based on environment configuration.
+ * In production (NODE_ENV === 'production'), always uses Aptible.
+ * In development, uses NEXT_PUBLIC_API_TARGET to switch between local and Aptible.
+ *
+ * @returns GraphQL HTTP endpoint URL
+ */
+export function getGraphQLEndpoint(): string {
+  const isProduction = process.env.NODE_ENV === "production";
+  const apiTarget = process.env.NEXT_PUBLIC_API_TARGET || "local";
+
+  // Production always uses Aptible
+  if (isProduction) {
+    return (
+      process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT_APTIBLE ||
+      "https://app-98507.on-aptible.com/graphql"
+    );
+  }
+
+  // Development: switch based on API_TARGET
+  if (apiTarget === "aptible") {
+    return (
+      process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT_APTIBLE ||
+      "https://app-98507.on-aptible.com/graphql"
+    );
+  }
+
+  return (
+    process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT_LOCAL ||
+    "http://localhost:3000/graphql"
+  );
+}
+
+/**
+ * Determines the WebSocket endpoint based on environment configuration.
+ * In production (NODE_ENV === 'production'), always uses Aptible.
+ * In development, uses NEXT_PUBLIC_API_TARGET to switch between local and Aptible.
+ *
+ * @returns WebSocket endpoint URL
+ */
+export function getWebSocketEndpoint(): string {
+  const isProduction = process.env.NODE_ENV === "production";
+  const apiTarget = process.env.NEXT_PUBLIC_API_TARGET || "local";
+
+  // Production always uses Aptible
+  if (isProduction) {
+    return (
+      process.env.NEXT_PUBLIC_WS_ENDPOINT_APTIBLE ||
+      "wss://app-98507.on-aptible.com/cable"
+    );
+  }
+
+  // Development: switch based on API_TARGET
+  if (apiTarget === "aptible") {
+    return (
+      process.env.NEXT_PUBLIC_WS_ENDPOINT_APTIBLE ||
+      "wss://app-98507.on-aptible.com/cable"
+    );
+  }
+
+  return (
+    process.env.NEXT_PUBLIC_WS_ENDPOINT_LOCAL || "ws://localhost:3000/cable"
+  );
+}
 
 /**
  * In-memory token storage for secure JWT handling.
@@ -35,12 +105,12 @@ export function getAuthToken(): string | null {
 
 /**
  * Creates an HTTP link for GraphQL queries and mutations.
- * Reads endpoint from NEXT_PUBLIC_GRAPHQL_ENDPOINT environment variable.
+ * Uses getGraphQLEndpoint() to determine the correct endpoint based on environment.
  *
  * @returns Configured HttpLink instance
  */
 export function createHttpLink(): HttpLink {
-  const uri = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "/graphql";
+  const uri = getGraphQLEndpoint();
 
   return new HttpLink({
     uri,
@@ -132,13 +202,13 @@ export function getConnectionState(): ConnectionState {
 
 /**
  * Creates a WebSocket link for GraphQL subscriptions using graphql-ws.
+ * Uses getWebSocketEndpoint() to determine the correct endpoint based on environment.
  * Configured with exponential backoff reconnection (1s, 2s, 4s, max 30s).
  *
  * @returns Configured GraphQLWsLink instance
  */
 export function createWsLink(): GraphQLWsLink {
-  const wsEndpoint =
-    process.env.NEXT_PUBLIC_WS_ENDPOINT || "ws://localhost:3000/cable";
+  const wsEndpoint = getWebSocketEndpoint();
 
   wsClient = createClient({
     url: wsEndpoint,
@@ -209,4 +279,39 @@ export function createSplitLink(
     wsLink,
     httpLink
   );
+}
+
+/**
+ * API target type for environment configuration
+ */
+export type ApiTarget = "local" | "aptible";
+
+/**
+ * API configuration info for debugging and display
+ */
+export interface ApiInfo {
+  target: ApiTarget;
+  graphqlEndpoint: string;
+  wsEndpoint: string;
+  isProduction: boolean;
+}
+
+/**
+ * Gets current API configuration info.
+ * Useful for debugging and displaying connection status.
+ *
+ * @returns Current API configuration
+ */
+export function getApiInfo(): ApiInfo {
+  const isProduction = process.env.NODE_ENV === "production";
+  const target = isProduction
+    ? "aptible"
+    : ((process.env.NEXT_PUBLIC_API_TARGET || "local") as ApiTarget);
+
+  return {
+    target,
+    graphqlEndpoint: getGraphQLEndpoint(),
+    wsEndpoint: getWebSocketEndpoint(),
+    isProduction,
+  };
 }

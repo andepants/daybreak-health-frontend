@@ -62,10 +62,11 @@ export function SaveExitModal({
   const [reminderSent, setReminderSent] = React.useState(false);
   const [emailError, setEmailError] = React.useState<string | null>(null);
 
-  // Generate session URL
+  // Generate session URL using configured public URL or fallback to window origin
   const sessionUrl = React.useMemo(() => {
-    if (typeof window === "undefined") return "";
-    return `${window.location.origin}/onboarding/${sessionId}/assessment`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
+      (typeof window !== "undefined" ? window.location.origin : "");
+    return `${baseUrl}/onboarding/${sessionId}/assessment`;
   }, [sessionId]);
 
   /**

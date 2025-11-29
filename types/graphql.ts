@@ -89,6 +89,13 @@ export type CostEstimate = {
   notes: Maybe<Scalars['String']['output']>;
 };
 
+export type CreateSessionPayload = {
+  __typename?: 'CreateSessionPayload';
+  refreshToken: Maybe<Scalars['String']['output']>;
+  session: SessionInfo;
+  token: Scalars['String']['output'];
+};
+
 export type Demographics = {
   __typename?: 'Demographics';
   child: Maybe<ChildInfo>;
@@ -115,6 +122,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   completeAssessment: Maybe<AssessmentSummaryPayload>;
   confirmAssessmentSummary: Maybe<ConfirmSummaryPayload>;
+  createSession: Maybe<CreateSessionPayload>;
   resetAssessment: Maybe<ResetAssessmentPayload>;
   scheduleAppointment: Maybe<Appointment>;
   sendSessionReminder: Maybe<SendSessionReminderPayload>;
@@ -288,6 +296,12 @@ export type SendSessionReminderPayload = {
   success: Scalars['Boolean']['output'];
 };
 
+export type SessionInfo = {
+  __typename?: 'SessionInfo';
+  id: Scalars['ID']['output'];
+  status: Scalars['String']['output'];
+};
+
 export type StartOnboardingInput = {
   childDateOfBirth: Scalars['String']['input'];
   childFirstName: Scalars['String']['input'];
@@ -375,6 +389,11 @@ export type ConfirmAssessmentSummaryMutationVariables = Exact<{
 
 
 export type ConfirmAssessmentSummaryMutation = { __typename?: 'Mutation', confirmAssessmentSummary: { __typename?: 'ConfirmSummaryPayload', session: { __typename?: 'OnboardingSession', id: string, status: OnboardingStatus, assessment: { __typename?: 'Assessment', isComplete: boolean | null, summary: { __typename?: 'AssessmentSummary', keyConcerns: Array<string>, childName: string, recommendedFocus: Array<string> | null, generatedAt: string } | null } | null } } | null };
+
+export type CreateSessionMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CreateSessionMutation = { __typename?: 'Mutation', createSession: { __typename?: 'CreateSessionPayload', token: string, refreshToken: string | null, session: { __typename?: 'SessionInfo', id: string, status: string } } | null };
 
 export type ResetAssessmentMutationVariables = Exact<{
   sessionId: Scalars['ID']['input'];
@@ -494,6 +513,23 @@ export function useConfirmAssessmentSummaryMutation(baseOptions?: ApolloReactHoo
         return ApolloReactHooks.useMutation<ConfirmAssessmentSummaryMutation, ConfirmAssessmentSummaryMutationVariables>(ConfirmAssessmentSummaryDocument, options);
       }
 export type ConfirmAssessmentSummaryMutationHookResult = ReturnType<typeof useConfirmAssessmentSummaryMutation>;
+export const CreateSessionDocument = gql`
+    mutation CreateSession {
+  createSession {
+    session {
+      id
+      status
+    }
+    token
+    refreshToken
+  }
+}
+    `;
+export function useCreateSessionMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateSessionMutation, CreateSessionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CreateSessionMutation, CreateSessionMutationVariables>(CreateSessionDocument, options);
+      }
+export type CreateSessionMutationHookResult = ReturnType<typeof useCreateSessionMutation>;
 export const ResetAssessmentDocument = gql`
     mutation ResetAssessment($sessionId: ID!) {
   resetAssessment(sessionId: $sessionId) {
