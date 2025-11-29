@@ -38,10 +38,10 @@ development_status:
   # Epic 1: Foundation & Project Setup (5 stories)
   epic-1: contexted
   1-1-project-initialization-and-core-dependencies: ready-for-dev
-  1-2-daybreak-design-system-and-theme-configuration: backlog
-  1-3-core-layout-components: backlog
-  1-4-apollo-client-configuration-with-websocket-support: backlog
-  1-5-graphql-code-generation-setup: backlog
+  1-2-daybreak-design-system-and-theme-configuration: drafted
+  1-3-core-layout-components: drafted
+  1-4-apollo-client-configuration-with-websocket-support: drafted
+  1-5-graphql-code-generation-setup: drafted
   epic-1-retrospective: optional
 
   # Epic 2: AI-Guided Assessment Experience (6 stories)
