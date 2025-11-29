@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daybreak Health - Color Theme Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .font-serif-display { font-family: 'Fraunces', Georgia, serif; }
+    .theme-card { transition: all 0.3s ease; }
+    .theme-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    .color-swatch { transition: transform 0.2s; cursor: pointer; }
+    .color-swatch:hover { transform: scale(1.1); }
+    .btn-preview { transition: all 0.2s; }
+    .btn-preview:hover { transform: translateY(-2px); }
+    
+    /* Daybreak Brand Colors */
+    :root {
+      --daybreak-teal: #2A9D8F;
+      --daybreak-teal-dark: #1E7B70;
+      --daybreak-orange: #E9A23B;
+      --daybreak-coral: #3DBCB0;
+      --daybreak-cream: #FEF7ED;
+      --daybreak-text: #1A3C34;
+      --daybreak-red-accent: #E85D5D;
+    }
+  </style>
+</head>
+<body class="min-h-screen" style="background: #FEF7ED;">
+  
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <!-- Daybreak Logo Approximation -->
+          <div class="flex items-center gap-2">
+            <svg width="32" height="24" viewBox="0 0 32 24" fill="none">
+              <path d="M16 0L32 24H0L16 0Z" fill="url(#grad1)"/>
+              <defs>
+                <linearGradient id="grad1" x1="16" y1="0" x2="16" y2="24">
+                  <stop offset="0%" stop-color="#E9A23B"/>
+                  <stop offset="100%" stop-color="#F97316"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span class="text-xl font-semibold" style="color: #2A9D8F;">Daybreak Health</span>
+          </div>
+        </div>
+        <div>
+          <span class="text-sm text-gray-500">UX Design Specification - Color System</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Intro Section -->
+  <section class="max-w-7xl mx-auto px-6 py-8">
+    <div class="bg-white rounded-2xl p-8 mb-8 shadow-sm">
+      <h1 class="font-serif-display text-3xl font-semibold mb-4" style="color: #2A9D8F;">Daybreak Health Brand Colors</h1>
+      <p class="text-gray-600 leading-relaxed mb-4">
+        Based on the existing Daybreak Health brand identity, this color system extends the warm, approachable palette 
+        for the <strong>Parent Onboarding AI</strong> experience. The goal: make parents feel <strong>supported, not clinical</strong>.
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <span class="px-3 py-1 rounded-full text-sm font-medium" style="background: #E0F2F1; color: #2A9D8F;">Healthcare</span>
+        <span class="px-3 py-1 rounded-full text-sm font-medium" style="background: #FEF3C7; color: #B45309;">Mental Health</span>
+        <span class="px-3 py-1 rounded-full text-sm font-medium" style="background: #F3E8FF; color: #7C3AED;">Conversational AI</span>
+        <span class="px-3 py-1 rounded-full text-sm font-medium" style="background: #FCE7F3; color: #BE185D;">Mobile-First</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Primary Brand Palette -->
+  <section class="max-w-7xl mx-auto px-6 pb-8">
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div class="p-6 border-b border-gray-100">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Official Brand</span>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900">Daybreak Health Color System</h2>
+        <p class="text-gray-500 text-sm mt-1">Extended from existing brand for Parent Onboarding AI</p>
+      </div>
+      
+      <!-- Primary Colors -->
+      <div class="p-6 border-b border-gray-100">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">Primary Palette</p>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div class="text-center">
+            <div class="color-swatch w-full h-20 rounded-xl shadow-inner mb-2" style="background: #2A9D8F;"></div>
+            <p class="text-sm font-medium text-gray-900">Teal Primary</p>
+            <p class="text-xs text-gray-500 font-mono">#2A9D8F</p>
+          </div>
+          <div class="text-center">
+            <div class="color-swatch w-full h-20 rounded-xl shadow-inner mb-2" style="background: #3DBCB0;"></div>
+            <p class="text-sm font-medium text-gray-900">Teal Light</p>
+            <p class="text-xs text-gray-500 font-mono">#3DBCB0</p>
+          </div>
+          <div class="text-center">
+            <div class="color-swatch w-full h-20 rounded-xl shadow-inner mb-2" style="background: #E9A23B;"></div>
+            <p class="text-sm font-medium text-gray-900">Warm Orange</p>
+            <p class="text-xs text-gray-500 font-mono">#E9A23B</p>
+          </div>
+          <div class="text-center">
+            <div class="color-swatch w-full h-20 rounded-xl shadow-inner mb-2" style="background: #FEF7ED;"></div>
+            <p class="text-sm font-medium text-gray-900">Cream BG</p>
+            <p class="text-xs text-gray-500 font-mono">#FEF7ED</p>
+          </div>
+          <div class="text-center">
+            <div class="color-swatch w-full h-20 rounded-xl shadow-inner mb-2" style="background: #1A3C34;"></div>
+            <p class="text-sm font-medium text-gray-900">Deep Text</p>
+            <p class="text-xs text-gray-500 font-mono">#1A3C34</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Semantic Colors -->
+      <div class="p-6 border-b border-gray-100">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">Semantic Colors</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="text-center">
+            <div class="color-swatch w-full h-16 rounded-xl shadow-inner mb-2" style="background: #10B981;"></div>
+            <p class="text-sm font-medium text-gray-900">Success</p>
+            <p class="text-xs text-gray-500 font-mono">#10B981</p>
+          </div>
+          <div class="text-center">
+            <div class="color-swatch w-full h-16 rounded-xl shadow-inner mb-2" style="background: #F59E0B;"></div>
+            <p class="text-sm font-medium text-gray-900">Warning</p>
+            <p class="text-xs text-gray-500 font-mono">#F59E0B</p>
+          </div>
+          <div class="text-center">
+            <div class="color-swatch w-full h-16 rounded-xl shadow-inner mb-2" style="background: #E85D5D;"></div>
+            <p class="text-sm font-medium text-gray-900">Error</p>
+            <p class="text-xs text-gray-500 font-mono">#E85D5D</p>
+          </div>
+          <div class="text-center">
+            <div class="color-swatch w-full h-16 rounded-xl shadow-inner mb-2" style="background: #3B82F6;"></div>
+            <p class="text-sm font-medium text-gray-900">Info</p>
+            <p class="text-xs text-gray-500 font-mono">#3B82F6</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Component Preview -->
+      <div class="p-6" style="background: #FEF7ED;">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">Component Preview - Daybreak Style</p>
+        
+        <div class="grid md:grid-cols-2 gap-8">
+          <!-- Left Column: Buttons & Forms -->
+          <div>
+            <!-- Buttons -->
+            <p class="text-sm font-medium text-gray-700 mb-3">Buttons (Pill Style)</p>
+            <div class="flex flex-wrap gap-3 mb-6">
+              <button class="btn-preview px-6 py-3 rounded-full text-white text-sm font-medium shadow-sm" style="background: #E9A23B;">
+                Schools - Book a Demo
+              </button>
+              <button class="btn-preview px-6 py-3 rounded-full text-white text-sm font-medium shadow-sm" style="background: #2A9D8F;">
+                Families - Sign Up
+              </button>
+            </div>
+            
+            <div class="flex flex-wrap gap-3 mb-6">
+              <button class="btn-preview px-5 py-2 rounded-full text-sm font-medium border-2" style="border-color: #2A9D8F; color: #2A9D8F; background: white;">
+                Learn More
+              </button>
+              <button class="btn-preview px-5 py-2 rounded-full text-sm font-medium" style="background: #E0F2F1; color: #2A9D8F;">
+                Secondary Action
+              </button>
+            </div>
+            
+            <!-- Input -->
+            <p class="text-sm font-medium text-gray-700 mb-3">Form Inputs</p>
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-2" style="color: #1A3C34;">Your Child's Name</label>
+              <input type="text" placeholder="Enter name..." class="w-full px-4 py-3 rounded-xl border-2 text-sm focus:outline-none" style="border-color: #E2E8F0; background: white;">
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-2" style="color: #1A3C34;">Email Address</label>
+              <input type="email" placeholder="you@example.com" class="w-full px-4 py-3 rounded-xl border-2 text-sm" style="border-color: #2A9D8F; background: white;">
+              <p class="text-xs mt-1" style="color: #2A9D8F;">We'll send confirmation here</p>
+            </div>
+          </div>
+          
+          <!-- Right Column: Chat Interface -->
+          <div>
+            <p class="text-sm font-medium text-gray-700 mb-3">AI Chat Interface</p>
+            <div class="bg-white rounded-2xl p-4 shadow-sm">
+              <!-- AI Message -->
+              <div class="flex gap-3 items-start mb-4">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #E9A23B, #F97316);">
+                  <svg width="20" height="15" viewBox="0 0 32 24" fill="white">
+                    <path d="M16 0L32 24H0L16 0Z"/>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <div class="p-4 rounded-2xl rounded-tl-md text-sm" style="background: #F0FDFA; color: #1A3C34;">
+                    <p class="font-serif-display text-base mb-2" style="color: #2A9D8F;">Hi there! I'm here to help.</p>
+                    <p>Let's start by understanding what's been going on with your child. There are no wrong answers - just share what you've noticed.</p>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-1 ml-1">Daybreak AI Assistant</p>
+                </div>
+              </div>
+              
+              <!-- User Message -->
+              <div class="flex gap-3 items-start justify-end mb-4">
+                <div class="max-w-[80%]">
+                  <div class="p-4 rounded-2xl rounded-tr-md text-sm text-white" style="background: #2A9D8F;">
+                    My daughter has been having trouble sleeping and seems anxious about school lately.
+                  </div>
+                  <p class="text-xs text-gray-400 mt-1 mr-1 text-right">You</p>
+                </div>
+              </div>
+              
+              <!-- Typing Indicator -->
+              <div class="flex gap-3 items-start">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #E9A23B, #F97316);">
+                  <svg width="20" height="15" viewBox="0 0 32 24" fill="white">
+                    <path d="M16 0L32 24H0L16 0Z"/>
+                  </svg>
+                </div>
+                <div class="p-4 rounded-2xl rounded-tl-md" style="background: #F0FDFA;">
+                  <div class="flex gap-1">
+                    <div class="w-2 h-2 rounded-full animate-bounce" style="background: #2A9D8F; animation-delay: 0ms;"></div>
+                    <div class="w-2 h-2 rounded-full animate-bounce" style="background: #2A9D8F; animation-delay: 150ms;"></div>
+                    <div class="w-2 h-2 rounded-full animate-bounce" style="background: #2A9D8F; animation-delay: 300ms;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards and Alerts -->
+      <div class="p-6 border-t border-gray-100" style="background: #FEF7ED;">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">Cards & Feedback</p>
+        
+        <div class="grid md:grid-cols-3 gap-4">
+          <!-- Progress Card -->
+          <div class="bg-white rounded-xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-medium" style="color: #1A3C34;">Onboarding Progress</span>
+              <span class="text-sm font-bold" style="color: #2A9D8F;">60%</span>
+            </div>
+            <div class="w-full h-2 rounded-full" style="background: #E0F2F1;">
+              <div class="h-2 rounded-full" style="background: #2A9D8F; width: 60%;"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Assessment complete • Insurance next</p>
+          </div>
+          
+          <!-- Success Alert -->
+          <div class="rounded-xl p-4 border-l-4" style="background: #ECFDF5; border-color: #10B981;">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 flex-shrink-0" fill="#10B981" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <p class="text-sm font-medium" style="color: #065F46;">Insurance verified!</p>
+                <p class="text-xs text-gray-600 mt-1">Your coverage is confirmed with Aetna.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Info Card -->
+          <div class="rounded-xl p-4 border-l-4" style="background: #FEF7ED; border-color: #E9A23B;">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 flex-shrink-0" fill="#E9A23B" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <p class="text-sm font-medium" style="color: #92400E;">Good to know</p>
+                <p class="text-xs text-gray-600 mt-1">Most families complete onboarding in under 15 minutes.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Typography Section -->
+  <section class="max-w-7xl mx-auto px-6 pb-8">
+    <div class="bg-white rounded-2xl shadow-sm p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-6">Typography System</h2>
+      
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">Headlines (Fraunces Serif)</p>
+          <div class="space-y-4" style="background: #FEF7ED; padding: 1.5rem; border-radius: 1rem;">
+            <h1 class="font-serif-display text-4xl font-semibold" style="color: #2A9D8F;">Mental health support</h1>
+            <h2 class="font-serif-display text-3xl font-semibold" style="color: #2A9D8F;">to help every kid</h2>
+            <h3 class="font-serif-display text-2xl font-medium" style="color: #2A9D8F;">and family thrive</h3>
+          </div>
+        </div>
+        
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">Body Text (Inter Sans-Serif)</p>
+          <div class="space-y-3">
+            <p class="text-lg" style="color: #1A3C34;">Large body text for important messages and summaries that need emphasis.</p>
+            <p class="text-base text-gray-600">Regular body text for descriptions, explanations, and general content throughout the application.</p>
+            <p class="text-sm text-gray-500">Small text for captions, labels, and secondary information.</p>
+            <p class="text-xs text-gray-400">Tiny text for timestamps, disclaimers, and fine print.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CSS Variables Reference -->
+  <section class="max-w-7xl mx-auto px-6 pb-16">
+    <div class="bg-gray-900 rounded-2xl p-6 overflow-x-auto">
+      <h3 class="text-white font-semibold mb-4">Daybreak Health - CSS Variables (Tailwind v4 Compatible)</h3>
+      <pre class="text-green-400 text-sm"><code>@theme {
+  /* Primary Brand Colors */
+  --color-daybreak-teal: #2A9D8F;
+  --color-daybreak-teal-light: #3DBCB0;
+  --color-daybreak-teal-dark: #1E7B70;
+  --color-daybreak-orange: #E9A23B;
+  --color-daybreak-orange-light: #F5B94D;
+  
+  /* Background & Surface */
+  --color-background: #FEF7ED;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  
+  /* Text Colors */
+  --color-text-primary: #1A3C34;
+  --color-text-secondary: #4B5563;
+  --color-text-muted: #9CA3AF;
+  
+  /* Semantic Colors */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #E85D5D;
+  --color-info: #3B82F6;
+  
+  /* Chat Interface */
+  --color-chat-ai-bg: #F0FDFA;
+  --color-chat-user-bg: #2A9D8F;
+  --color-chat-user-text: #FFFFFF;
+  
+  /* Border & Dividers */
+  --color-border: #E5E7EB;
+  --color-border-focus: #2A9D8F;
+  
+  /* Decorative Accents (from brand) */
+  --color-accent-red: #E85D5D;
+  --color-accent-yellow: #FCD34D;
+}
+
+/* Typography */
+@theme {
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Border Radius - Rounded/Pill Style */
+@theme {
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px; /* Pill buttons */
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-8">
+    <div class="max-w-7xl mx-auto px-6 text-center text-sm">
+      <p>Generated by BMad Method - Create UX Design Workflow</p>
+      <p class="mt-1">Daybreak Health - Parent Onboarding AI</p>
+    </div>
+  </footer>
+
+</body>
+</html>

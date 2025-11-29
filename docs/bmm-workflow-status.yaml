@@ -1,0 +1,138 @@
+# BMM Workflow Status - Daybreak Health Frontend
+# Generated: 2025-11-28
+# Track: BMad Method (Greenfield)
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#   - skipped: Optional workflow that was skipped
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/prd.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2025-11-28"
+project: "daybreak-health-frontend"
+project_type: "Parent Onboarding AI - Daybreak Health"
+selected_track: "bmad-method"
+field_type: "greenfield"
+workflow_path: "method-greenfield.yaml"
+
+# Existing artifacts discovered during init
+existing_artifacts:
+  - path: "docs/prd.md"
+    type: "prd"
+    note: "Product Requirements Document v1.2"
+  - path: "docs/frontend_prd.md"
+    type: "tech-spec"
+    note: "Frontend Technical Specification v1.1"
+  - path: "docs/sprint-artifacts/api_schema.graphql"
+    type: "api-schema"
+    note: "GraphQL API contract"
+  - path: "docs/backend-graphql-subscriptions-guide.md"
+    type: "integration-guide"
+    note: "Backend integration guide for GraphQL subscriptions"
+
+workflow_status:
+  # ============================================
+  # PHASE 0: Discovery (Optional)
+  # ============================================
+  phase_0_discovery:
+    name: "Discovery"
+    status: "skipped"
+    note: "User chose to continue with existing PRD"
+    workflows:
+      brainstorm-project:
+        status: "skipped"
+        agent: "analyst"
+      research:
+        status: "skipped"
+        agent: "analyst"
+      product-brief:
+        status: "skipped"
+        agent: "analyst"
+
+  # ============================================
+  # PHASE 1: Planning
+  # ============================================
+  phase_1_planning:
+    name: "Planning"
+    status: "completed"
+    workflows:
+      prd:
+        status: "docs/prd.md"
+        agent: "pm"
+        completed: "2025-11-28"
+        note: "PRD v1.2 - includes tech stack audit and real-time architecture"
+      validate-prd:
+        status: "skipped"
+        agent: "pm"
+      create-ux-design:
+        status: "docs/ux-design-specification.md"
+        agent: "ux-designer"
+        completed: "2025-11-28"
+        condition: "if_has_ui"
+        note: "UX Design Specification v1.0 - shadcn/ui + Daybreak brand"
+
+  # ============================================
+  # PHASE 2: Solutioning
+  # ============================================
+  phase_2_solutioning:
+    name: "Solutioning"
+    status: "completed"
+    workflows:
+      architecture:
+        status: "docs/architecture.md"
+        agent: "architect"
+        completed: "2025-11-28"
+        note: "Architecture v1.0 - First Principles + Pre-mortem analysis applied"
+      create-epics-and-stories:
+        status: "docs/epics.md"
+        agent: "pm"
+        completed: "2025-11-28"
+        note: "6 Epics, 26 Stories covering 15 MVP functional requirements"
+      test-design:
+        status: "recommended"
+        agent: "tea"
+        note: "System-level testability review"
+      validate-architecture:
+        status: "optional"
+        agent: "architect"
+      implementation-readiness:
+        status: "docs/implementation-readiness-report-2025-11-28.md"
+        agent: "architect"
+        completed: "2025-11-28"
+        note: "Ready with Conditions - 95/100 score"
+
+  # ============================================
+  # PHASE 3: Implementation
+  # ============================================
+  phase_3_implementation:
+    name: "Implementation"
+    status: "pending"
+    workflows:
+      sprint-planning:
+        status: "required"
+        agent: "sm"
+        note: "Creates sprint plan - subsequent work tracked in sprint-status.yaml"
+
+# Current position in workflow
+current_phase: 3
+current_workflow: "sprint-planning"
+next_workflow: "sprint-planning"
+next_agent: "sm"
+next_command: "/bmad:bmm:workflows:sprint-planning"
+
+# Notes
+notes:
+  - "PRD v1.2 includes tech stack audit and real-time architecture"
+  - "UX Design Specification v1.0 completed with shadcn/ui + Daybreak brand"
+  - "Architecture v1.0 completed with First Principles + Pre-mortem analysis"
+  - "Key architectural additions: form-based fallback, human support in MVP, aggressive auto-save"
+  - "Epics v1.0: 6 epics, 26 stories covering all 15 MVP FRs"
+  - "Implementation Readiness: READY WITH CONDITIONS (95/100 score)"
+  - "Next: Run sprint-planning to initialize Phase 4 implementation"

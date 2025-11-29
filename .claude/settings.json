@@ -1,0 +1,8 @@
+{
+  "skills": {
+    "daybreak-frontend": {
+      "description": "Guide for building UI components that match the Daybreak Health brand. Use when implementing UI components, styling pages, creating new frontend features, or ensuring visual consistency with the Daybreak Health design system including colors, typography, buttons, and layout patterns.",
+      "path": ".claude/skills/daybreak-frontend.md"
+    }
+  }
+}

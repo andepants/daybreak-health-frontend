@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daybreak Health - Design Direction Mockups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .font-serif { font-family: 'Fraunces', Georgia, serif; }
+    
+    /* Daybreak Colors */
+    :root {
+      --teal: #2A9D8F;
+      --teal-light: #3DBCB0;
+      --orange: #E9A23B;
+      --cream: #FEF7ED;
+      --text: #1A3C34;
+    }
+    
+    .mockup-frame {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .mockup-frame:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 30px 60px -15px rgba(0,0,0,0.2);
+    }
+    
+    .direction-nav {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+    }
+    
+    .nav-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #D1D5DB;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-dot:hover, .nav-dot.active {
+      background: var(--teal);
+      transform: scale(1.2);
+    }
+    
+    /* Mobile frame */
+    .mobile-frame {
+      width: 375px;
+      height: 700px;
+      border-radius: 2.5rem;
+      border: 8px solid #1a1a1a;
+      overflow: hidden;
+      position: relative;
+    }
+    .mobile-frame::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 30px;
+      background: #1a1a1a;
+      border-radius: 0 0 1rem 1rem;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body style="background: #F3F4F6;">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <svg width="32" height="24" viewBox="0 0 32 24" fill="none">
+            <path d="M16 0L32 24H0L16 0Z" fill="url(#grad1)"/>
+            <defs>
+              <linearGradient id="grad1" x1="16" y1="0" x2="16" y2="24">
+                <stop offset="0%" stop-color="#E9A23B"/>
+                <stop offset="100%" stop-color="#F97316"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="text-xl font-semibold" style="color: #2A9D8F;">Daybreak Health</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <select id="viewToggle" class="px-3 py-2 rounded-lg border border-gray-200 text-sm">
+            <option value="desktop">Desktop View</option>
+            <option value="mobile">Mobile View</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Intro -->
+  <section class="max-w-7xl mx-auto px-6 py-8">
+    <div class="text-center mb-8">
+      <h1 class="font-serif text-3xl font-semibold mb-3" style="color: #2A9D8F;">Design Direction Mockups</h1>
+      <p class="text-gray-600 max-w-2xl mx-auto">
+        Six different layout approaches for the Parent Onboarding AI experience. 
+        Each maintains Daybreak's warm, supportive brand while exploring different UX patterns.
+      </p>
+    </div>
+  </section>
+
+  <!-- Direction 1: Full-Screen Chat (ChatGPT-style) -->
+  <section class="max-w-7xl mx-auto px-6 pb-16">
+    <div class="mb-6">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="px-3 py-1 rounded-full text-xs font-bold text-white" style="background: #2A9D8F;">Direction 1</span>
+        <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Recommended</span>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900">Immersive Conversation</h2>
+      <p class="text-gray-500">Full-screen chat experience - familiar, focused, and emotionally engaging</p>
+    </div>
+    
+    <div class="mockup-frame" style="height: 600px;">
+      <!-- Header Bar -->
+      <div class="flex items-center justify-between px-6 py-4 border-b" style="background: white;">
+        <div class="flex items-center gap-3">
+          <svg width="28" height="21" viewBox="0 0 32 24" fill="none">
+            <path d="M16 0L32 24H0L16 0Z" fill="url(#g1)"/>
+            <defs><linearGradient id="g1" x1="16" y1="0" x2="16" y2="24"><stop offset="0%" stop-color="#E9A23B"/><stop offset="100%" stop-color="#F97316"/></linearGradient></defs>
+          </svg>
+          <span class="font-semibold" style="color: #2A9D8F;">Daybreak Health</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 text-sm text-gray-500">
+            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+            <span>Step 2 of 5</span>
+          </div>
+          <button class="text-sm font-medium" style="color: #2A9D8F;">Save & Exit</button>
+        </div>
+      </div>
+      
+      <!-- Chat Area -->
+      <div class="flex-1 overflow-y-auto p-6" style="background: #FEF7ED; height: 460px;">
+        <!-- Progress indicator -->
+        <div class="flex justify-center mb-6">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-1 rounded-full" style="background: #2A9D8F;"></div>
+            <div class="w-8 h-1 rounded-full" style="background: #2A9D8F;"></div>
+            <div class="w-8 h-1 rounded-full" style="background: #E5E7EB;"></div>
+            <div class="w-8 h-1 rounded-full" style="background: #E5E7EB;"></div>
+            <div class="w-8 h-1 rounded-full" style="background: #E5E7EB;"></div>
+          </div>
+        </div>
+        
+        <!-- AI Message -->
+        <div class="flex gap-3 items-start mb-6 max-w-2xl mx-auto">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #E9A23B, #F97316);">
+            <svg width="18" height="14" viewBox="0 0 32 24" fill="white"><path d="M16 0L32 24H0L16 0Z"/></svg>
+          </div>
+          <div class="flex-1">
+            <div class="bg-white p-5 rounded-2xl rounded-tl-md shadow-sm">
+              <p class="font-serif text-xl mb-3" style="color: #2A9D8F;">Tell me about what's been going on.</p>
+              <p class="text-gray-600">In your own words, what changes have you noticed in your child recently? There's no right or wrong answer - just share what comes to mind.</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- User typing area preview -->
+        <div class="max-w-2xl mx-auto">
+          <div class="bg-white rounded-2xl p-4 shadow-sm border-2" style="border-color: #E5E7EB;">
+            <textarea class="w-full text-gray-400 resize-none focus:outline-none" rows="3" placeholder="Type your response here... Take your time."></textarea>
+            <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+              <span class="text-xs text-gray-400">Your responses are confidential and HIPAA protected</span>
+              <button class="px-5 py-2 rounded-full text-white text-sm font-medium" style="background: #2A9D8F;">
+                Continue →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-4 p-4 bg-white rounded-xl">
+      <p class="text-sm text-gray-600"><strong>Best for:</strong> Emotional conversations, building trust. Feels like texting a supportive friend. <strong>Pattern:</strong> ChatGPT/iMessage hybrid.</p>
+    </div>
+  </section>
+
+  <!-- Direction 2: Split View with Context -->
+  <section class="max-w-7xl mx-auto px-6 pb-16">
+    <div class="mb-6">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="px-3 py-1 rounded-full text-xs font-bold text-white" style="background: #E9A23B;">Direction 2</span>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900">Split View with Progress</h2>
+      <p class="text-gray-500">Chat + sidebar showing journey context - great for longer sessions</p>
+    </div>
+    
+    <div class="mockup-frame flex" style="height: 600px;">
+      <!-- Sidebar -->
+      <div class="w-72 border-r border-gray-100 p-6 flex flex-col" style="background: white;">
+        <div class="flex items-center gap-2 mb-8">
+          <svg width="24" height="18" viewBox="0 0 32 24" fill="none">
+            <path d="M16 0L32 24H0L16 0Z" fill="url(#g2)"/>
+            <defs><linearGradient id="g2" x1="16" y1="0" x2="16" y2="24"><stop offset="0%" stop-color="#E9A23B"/><stop offset="100%" stop-color="#F97316"/></linearGradient></defs>
+          </svg>
+          <span class="font-semibold" style="color: #2A9D8F;">Daybreak</span>
+        </div>
+        
+        <div class="mb-6">
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Your Journey</p>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs text-white" style="background: #2A9D8F;">✓</div>
+              <span class="text-sm text-gray-600">Welcome</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs text-white" style="background: #2A9D8F;">2</div>
+              <span class="text-sm font-medium" style="color: #1A3C34;">Assessment</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs border-2" style="border-color: #E5E7EB; color: #9CA3AF;">3</div>
+              <span class="text-sm text-gray-400">Insurance</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs border-2" style="border-color: #E5E7EB; color: #9CA3AF;">4</div>
+              <span class="text-sm text-gray-400">Match</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs border-2" style="border-color: #E5E7EB; color: #9CA3AF;">5</div>
+              <span class="text-sm text-gray-400">Schedule</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-auto">
+          <div class="p-4 rounded-xl" style="background: #F0FDFA;">
+            <p class="text-xs font-medium mb-1" style="color: #2A9D8F;">Need help?</p>
+            <p class="text-xs text-gray-500">Chat with our care team anytime.</p>
+            <button class="mt-2 text-xs font-medium" style="color: #2A9D8F;">Start Live Chat →</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Main Chat -->
+      <div class="flex-1 flex flex-col" style="background: #FEF7ED;">
+        <div class="p-6 flex-1 overflow-y-auto">
+          <div class="max-w-xl">
+            <div class="flex gap-3 items-start mb-4">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #E9A23B, #F97316);">
+                <svg width="18" height="14" viewBox="0 0 32 24" fill="white"><path d="M16 0L32 24H0L16 0Z"/></svg>
+              </div>
+              <div class="bg-white p-4 rounded-2xl rounded-tl-md shadow-sm flex-1">
+                <p class="font-serif text-lg mb-2" style="color: #2A9D8F;">Let's understand your situation.</p>
+                <p class="text-gray-600 text-sm">How long have you noticed these changes in your child's behavior?</p>
+              </div>
+            </div>
+            
+            <!-- Quick response options -->
+            <div class="ml-12 flex flex-wrap gap-2">
+              <button class="px-4 py-2 rounded-full text-sm border-2 hover:bg-white transition" style="border-color: #2A9D8F; color: #2A9D8F;">Less than a month</button>
+              <button class="px-4 py-2 rounded-full text-sm border-2 hover:bg-white transition" style="border-color: #2A9D8F; color: #2A9D8F;">1-3 months</button>
+              <button class="px-4 py-2 rounded-full text-sm border-2 hover:bg-white transition" style="border-color: #2A9D8F; color: #2A9D8F;">3-6 months</button>
+              <button class="px-4 py-2 rounded-full text-sm border-2 hover:bg-white transition" style="border-color: #2A9D8F; color: #2A9D8F;">More than 6 months</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Input -->
+        <div class="p-4 border-t bg-white">
+          <div class="flex gap-3 max-w-xl">
+            <input type="text" placeholder="Or type your own response..." class="flex-1 px-4 py-3 rounded-xl border-2 text-sm" style="border-color: #E5E7EB;">
+            <button class="px-5 py-3 rounded-xl text-white" style="background: #2A9D8F;">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-4 p-4 bg-white rounded-xl">
+      <p class="text-sm text-gray-600"><strong>Best for:</strong> Longer onboarding flows where users need orientation. <strong>Pattern:</strong> Slack/Discord sidebar navigation.</p>
+    </div>
+  </section>
+
+  <!-- Direction 3: Card-Based Wizard -->
+  <section class="max-w-7xl mx-auto px-6 pb-16">
+    <div class="mb-6">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="px-3 py-1 rounded-full text-xs font-bold text-white" style="background: #7C3AED;">Direction 3</span>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900">Focused Card Wizard</h2>
+      <p class="text-gray-500">One question at a time - maximum focus, minimal overwhelm</p>
+    </div>
+    
+    <div class="mockup-frame flex items-center justify-center" style="height: 600px; background: linear-gradient(180deg, #FEF7ED 0%, #F0FDFA 100%);">
+      <div class="w-full max-w-lg px-8">
+        <!-- Progress -->
+        <div class="text-center mb-8">
+          <p class="text-sm text-gray-500 mb-2">Question 3 of 8</p>
+          <div class="w-full h-2 rounded-full" style="background: #E5E7EB;">
+            <div class="h-2 rounded-full transition-all" style="background: #2A9D8F; width: 37.5%;"></div>
+          </div>
+        </div>
+        
+        <!-- Question Card -->
+        <div class="bg-white rounded-3xl p-8 shadow-xl text-center">
+          <div class="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center" style="background: linear-gradient(135deg, #E9A23B, #F97316);">
+            <svg width="28" height="21" viewBox="0 0 32 24" fill="white"><path d="M16 0L32 24H0L16 0Z"/></svg>
+          </div>
+          
+          <h2 class="font-serif text-2xl mb-4" style="color: #2A9D8F;">How is your child sleeping?</h2>
+          <p class="text-gray-500 mb-8">Sleep patterns often change when kids are struggling emotionally.</p>
+          
+          <div class="space-y-3">
+            <button class="w-full p-4 rounded-xl text-left border-2 hover:border-teal-500 transition flex items-center justify-between group" style="border-color: #E5E7EB;">
+              <span class="text-gray-700">Sleeping well, no changes</span>
+              <span class="opacity-0 group-hover:opacity-100 transition" style="color: #2A9D8F;">→</span>
+            </button>
+            <button class="w-full p-4 rounded-xl text-left border-2 hover:border-teal-500 transition flex items-center justify-between group" style="border-color: #E5E7EB;">
+              <span class="text-gray-700">Having trouble falling asleep</span>
+              <span class="opacity-0 group-hover:opacity-100 transition" style="color: #2A9D8F;">→</span>
+            </button>
+            <button class="w-full p-4 rounded-xl text-left border-2 hover:border-teal-500 transition flex items-center justify-between group" style="border-color: #E5E7EB;">
+              <span class="text-gray-700">Sleeping too much</span>
+              <span class="opacity-0 group-hover:opacity-100 transition" style="color: #2A9D8F;">→</span>
+            </button>
+            <button class="w-full p-4 rounded-xl text-left border-2 hover:border-teal-500 transition flex items-center justify-between group" style="border-color: #E5E7EB;">
+              <span class="text-gray-700">Irregular sleep schedule</span>
+              <span class="opacity-0 group-hover:opacity-100 transition" style="color: #2A9D8F;">→</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="flex justify-between mt-6">
+          <button class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">← Back</button>
+          <button class="px-4 py-2 text-sm font-medium" style="color: #2A9D8F;">Skip this question</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-4 p-4 bg-white rounded-xl">
+      <p class="text-sm text-gray-600"><strong>Best for:</strong> Anxious parents who feel overwhelmed. Reduces cognitive load. <strong>Pattern:</strong> Typeform/Tally style.</p>
+    </div>
+  </section>
+
+  <!-- Direction 4: Insurance Upload Focus -->
+  <section class="max-w-7xl mx-auto px-6 pb-16">
+    <div class="mb-6">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="px-3 py-1 rounded-full text-xs font-bold text-white" style="background: #EC4899;">Direction 4</span>
+        <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Key Conversion Point</span>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900">Insurance Made Easy</h2>
+      <p class="text-gray-500">Photo capture flow - the biggest drop-off point, redesigned</p>
+    </div>
+    
+    <div class="mockup-frame" style="height: 600px; background: #FEF7ED;">
+      <div class="h-full flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 bg-white border-b">
+          <button class="text-gray-500">← Back</button>
+          <span class="text-sm font-medium">Insurance Information</span>
+          <button class="text-sm" style="color: #2A9D8F;">Help</button>
+        </div>
+        
+        <!-- Content -->
+        <div class="flex-1 p-6 flex flex-col items-center justify-center">
+          <div class="w-full max-w-md text-center">
+            <div class="mb-6">
+              <span class="inline-block px-3 py-1 rounded-full text-xs font-medium" style="background: #FEF3C7; color: #92400E;">
+                📸 Fastest way - just 30 seconds!
+              </span>
+            </div>
+            
+            <h2 class="font-serif text-2xl mb-3" style="color: #2A9D8F;">Snap a photo of your insurance card</h2>
+            <p class="text-gray-500 mb-8">We'll automatically extract all the information. No typing required!</p>
+            
+            <!-- Upload Area -->
+            <div class="border-2 border-dashed rounded-2xl p-8 mb-6 transition hover:border-teal-400 cursor-pointer" style="border-color: #CBD5E1; background: white;">
+              <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background: #F0FDFA;">
+                <svg class="w-8 h-8" fill="none" stroke="#2A9D8F" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <p class="font-medium mb-1" style="color: #1A3C34;">Take photo or upload</p>
+              <p class="text-sm text-gray-400">Front of insurance card</p>
+            </div>
+            
+            <!-- Or divider -->
+            <div class="flex items-center gap-4 mb-6">
+              <div class="flex-1 h-px bg-gray-200"></div>
+              <span class="text-sm text-gray-400">or</span>
+              <div class="flex-1 h-px bg-gray-200"></div>
+            </div>
+            
+            <!-- Manual entry -->
+            <button class="text-sm font-medium" style="color: #2A9D8F;">
+              Enter information manually →
+            </button>
+          </div>
+        </div>
+        
+        <!-- Trust badges -->
+        <div class="px-6 py-4 bg-white border-t">
+          <div class="flex items-center justify-center gap-6 text-xs text-gray-400">
+            <span class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+              HIPAA Compliant
+            </span>
+            <span class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+              256-bit Encryption
+            </span>
+            <span class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+              Auto-deleted after verification
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-4 p-4 bg-white rounded-xl">
+      <p class="text-sm text-gray-600"><strong>Best for:</strong> Insurance step - the #1 drop-off point. Photo-first reduces friction by 80%. <strong>Pattern:</strong> Deposit check mobile banking.</p>
+    </div>
+  </section>
+
+  <!-- Direction 5: Therapist Matching -->
+  <section class="max-w-7xl mx-auto px-6 pb-16">
+    <div class="mb-6">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="px-3 py-1 rounded-full text-xs font-bold text-white" style="background: #10B981;">Direction 5</span>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900">Therapist Match Results</h2>
+      <p class="text-gray-500">Presenting matched therapists with warmth and transparency</p>
+    </div>
+    
+    <div class="mockup-frame" style="height: 650px; background: #FEF7ED;">
+      <div class="h-full flex flex-col">
+        <!-- Header -->
+        <div class="px-6 py-4 bg-white border-b">
+          <div class="flex items-center justify-between">
+            <button class="text-gray-500">← Back</button>
+            <div class="text-center">
+              <p class="text-sm font-medium" style="color: #1A3C34;">We found your matches!</p>
+              <p class="text-xs text-gray-400">3 therapists available for Emma</p>
+            </div>
+            <div class="w-8"></div>
+          </div>
+        </div>
+        
+        <!-- Content -->
+        <div class="flex-1 p-6 overflow-y-auto">
+          <div class="max-w-2xl mx-auto">
+            <!-- Match explanation -->
+            <div class="p-4 rounded-xl mb-6 flex items-start gap-3" style="background: #F0FDFA;">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background: #2A9D8F;">
+                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium" style="color: #1A3C34;">Matched based on Emma's needs</p>
+                <p class="text-xs text-gray-600 mt-1">Specializing in teen anxiety, available evenings, accepts your insurance</p>
+              </div>
+            </div>
+            
+            <!-- Therapist Cards -->
+            <div class="space-y-4">
+              <!-- Therapist 1 - Top Match -->
+              <div class="bg-white rounded-2xl p-5 shadow-sm border-2" style="border-color: #2A9D8F;">
+                <div class="flex items-start gap-4">
+                  <div class="w-20 h-20 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center text-3xl">👩‍⚕️</div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="px-2 py-0.5 rounded-full text-xs font-medium text-white" style="background: #2A9D8F;">Best Match</span>
+                    </div>
+                    <h3 class="font-semibold text-lg" style="color: #1A3C34;">Dr. Sarah Chen, LCSW</h3>
+                    <p class="text-sm text-gray-500 mb-3">Teen anxiety & depression specialist • 8 years experience</p>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                      <span class="px-2 py-1 rounded-full text-xs" style="background: #FEF3C7; color: #92400E;">CBT</span>
+                      <span class="px-2 py-1 rounded-full text-xs" style="background: #EDE9FE; color: #6B21A8;">Mindfulness</span>
+                      <span class="px-2 py-1 rounded-full text-xs" style="background: #DBEAFE; color: #1E40AF;">School Issues</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm text-gray-500">Next available: <strong class="text-gray-700">Tomorrow 4pm</strong></p>
+                      <button class="px-4 py-2 rounded-full text-sm font-medium text-white" style="background: #2A9D8F;">Book Now</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Therapist 2 -->
+              <div class="bg-white rounded-2xl p-5 shadow-sm">
+                <div class="flex items-start gap-4">
+                  <div class="w-20 h-20 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center text-3xl">👨‍⚕️</div>
+                  <div class="flex-1">
+                    <h3 class="font-semibold text-lg" style="color: #1A3C34;">Dr. Marcus Johnson, PhD</h3>
+                    <p class="text-sm text-gray-500 mb-3">Adolescent psychology • 12 years experience</p>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                      <span class="px-2 py-1 rounded-full text-xs" style="background: #ECFDF5; color: #047857;">Family Therapy</span>
+                      <span class="px-2 py-1 rounded-full text-xs" style="background: #FEF3C7; color: #92400E;">CBT</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm text-gray-500">Next available: <strong class="text-gray-700">Thursday 3pm</strong></p>
+                      <button class="px-4 py-2 rounded-full text-sm font-medium border-2" style="border-color: #2A9D8F; color: #2A9D8F;">View Profile</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-4 p-4 bg-white rounded-xl">
+      <p class="text-sm text-gray-600"><strong>Best for:</strong> Building confidence in therapist selection. Transparent matching rationale. <strong>Pattern:</strong> Dating app meets healthcare.</p>
+    </div>
+  </section>
+
+  <!-- Direction 6: Mobile Chat (iOS Messages Style) -->
+  <section class="max-w-7xl mx-auto px-6 pb-16">
+    <div class="mb-6">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="px-3 py-1 rounded-full text-xs font-bold text-white" style="background: #F97316;">Direction 6</span>
+        <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Mobile-First</span>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900">Native Mobile Chat</h2>
+      <p class="text-gray-500">Optimized for mobile - where 70% of parents will onboard</p>
+    </div>
+    
+    <div class="flex justify-center">
+      <div class="mobile-frame" style="background: #FEF7ED;">
+        <!-- Status bar simulation -->
+        <div class="h-11 flex items-end justify-between px-6 pb-1 text-xs" style="padding-top: 35px;">
+          <span style="color: #1A3C34;">9:41</span>
+          <div class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="#1A3C34" viewBox="0 0 24 24"><path d="M12.01 21.49L23.64 7c-.45-.34-4.93-4-11.64-4C5.28 3 .81 6.66.36 7l11.63 14.49.01.01.01-.01z"/></svg>
+            <svg class="w-6 h-4" fill="#1A3C34" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="2" height="4"/></svg>
+          </div>
+        </div>
+        
+        <!-- Chat header -->
+        <div class="flex items-center justify-between px-4 py-3 bg-white border-b">
+          <button style="color: #2A9D8F;">← Back</button>
+          <div class="text-center">
+            <p class="font-semibold text-sm" style="color: #1A3C34;">Daybreak Assistant</p>
+            <p class="text-xs text-green-500">Online</p>
+          </div>
+          <button style="color: #2A9D8F;">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"/></svg>
+          </button>
+        </div>
+        
+        <!-- Chat messages -->
+        <div class="flex-1 p-4 overflow-y-auto" style="height: 480px;">
+          <!-- AI message -->
+          <div class="flex gap-2 items-end mb-4">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #E9A23B, #F97316);">
+              <svg width="14" height="10" viewBox="0 0 32 24" fill="white"><path d="M16 0L32 24H0L16 0Z"/></svg>
+            </div>
+            <div class="max-w-[75%]">
+              <div class="p-3 rounded-2xl rounded-bl-md text-sm" style="background: white; color: #1A3C34;">
+                <p class="font-serif mb-1" style="color: #2A9D8F;">Hi! 👋</p>
+                <p>I'm here to help you get started with Daybreak. This should only take about 10 minutes.</p>
+              </div>
+              <p class="text-[10px] text-gray-400 mt-1 ml-1">9:41 AM</p>
+            </div>
+          </div>
+          
+          <!-- AI follow-up -->
+          <div class="flex gap-2 items-end mb-4">
+            <div class="w-8 h-8 flex-shrink-0"></div>
+            <div class="max-w-[75%]">
+              <div class="p-3 rounded-2xl rounded-bl-md text-sm" style="background: white; color: #1A3C34;">
+                First, what's your child's first name?
+              </div>
+            </div>
+          </div>
+          
+          <!-- User message -->
+          <div class="flex justify-end mb-4">
+            <div class="max-w-[75%]">
+              <div class="p-3 rounded-2xl rounded-br-md text-sm text-white" style="background: #2A9D8F;">
+                Emma
+              </div>
+              <p class="text-[10px] text-gray-400 mt-1 mr-1 text-right">9:42 AM</p>
+            </div>
+          </div>
+          
+          <!-- AI response -->
+          <div class="flex gap-2 items-end mb-4">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #E9A23B, #F97316);">
+              <svg width="14" height="10" viewBox="0 0 32 24" fill="white"><path d="M16 0L32 24H0L16 0Z"/></svg>
+            </div>
+            <div class="max-w-[75%]">
+              <div class="p-3 rounded-2xl rounded-bl-md text-sm" style="background: white; color: #1A3C34;">
+                Thanks! And how old is Emma?
+              </div>
+            </div>
+          </div>
+          
+          <!-- Quick replies -->
+          <div class="flex flex-wrap gap-2 ml-10">
+            <button class="px-3 py-2 rounded-full text-xs border-2" style="border-color: #2A9D8F; color: #2A9D8F;">10-12</button>
+            <button class="px-3 py-2 rounded-full text-xs border-2" style="border-color: #2A9D8F; color: #2A9D8F;">13-15</button>
+            <button class="px-3 py-2 rounded-full text-xs border-2" style="border-color: #2A9D8F; color: #2A9D8F;">16-18</button>
+          </div>
+        </div>
+        
+        <!-- Input area -->
+        <div class="absolute bottom-0 left-0 right-0 p-3 bg-white border-t">
+          <div class="flex items-center gap-2">
+            <button class="p-2 rounded-full" style="background: #F0FDFA;">
+              <svg class="w-5 h-5" fill="#2A9D8F" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+            </button>
+            <input type="text" placeholder="Type a message..." class="flex-1 px-4 py-2 rounded-full border text-sm" style="border-color: #E5E7EB;">
+            <button class="p-2 rounded-full" style="background: #2A9D8F;">
+              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-4 p-4 bg-white rounded-xl max-w-md mx-auto">
+      <p class="text-sm text-gray-600 text-center"><strong>Best for:</strong> Mobile-first users (majority). Feels like texting. <strong>Pattern:</strong> iMessage/WhatsApp.</p>
+    </div>
+  </section>
+
+  <!-- Recommendation Summary -->
+  <section class="max-w-7xl mx-auto px-6 pb-16">
+    <div class="bg-white rounded-2xl shadow-lg p-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">🎨 Design Recommendation</h2>
+      
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="font-semibold text-lg mb-4" style="color: #2A9D8F;">Recommended Approach: Adaptive Hybrid</h3>
+          <p class="text-gray-600 mb-4">
+            Combine <strong>Direction 1 (Immersive Chat)</strong> as the primary experience with 
+            <strong>Direction 3 (Focused Cards)</strong> for structured questions and 
+            <strong>Direction 4 (Insurance)</strong> for the critical conversion point.
+          </p>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li>✅ Chat-first for emotional connection and trust-building</li>
+            <li>✅ Card wizard for structured clinical questions</li>
+            <li>✅ Photo-first for insurance to reduce drop-off</li>
+            <li>✅ Mobile-native design (Direction 6) for 70%+ of users</li>
+          </ul>
+        </div>
+        
+        <div class="p-6 rounded-xl" style="background: #FEF7ED;">
+          <h4 class="font-medium mb-3" style="color: #1A3C34;">Key Decisions Made</h4>
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Navigation Pattern</span>
+              <span class="font-medium" style="color: #2A9D8F;">Linear flow with progress</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Input Style</span>
+              <span class="font-medium" style="color: #2A9D8F;">Chat + Quick replies</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Visual Weight</span>
+              <span class="font-medium" style="color: #2A9D8F;">Spacious, warm</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Button Style</span>
+              <span class="font-medium" style="color: #2A9D8F;">Pill (full rounded)</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Card Corners</span>
+              <span class="font-medium" style="color: #2A9D8F;">Large radius (1-1.5rem)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-8">
+    <div class="max-w-7xl mx-auto px-6 text-center text-sm">
+      <p>Generated by BMad Method - Create UX Design Workflow</p>
+      <p class="mt-1">Daybreak Health - Parent Onboarding AI</p>
+    </div>
+  </footer>
+
+</body>
+</html>

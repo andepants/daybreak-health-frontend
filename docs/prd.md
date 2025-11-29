@@ -3,8 +3,9 @@
 **Organization:** Daybreak Health
 **Project ID:** p4oHJcP0IdbGuVksPpch_1762212723037
 **Author:** Manus AI
-**Version:** 1.1
+**Version:** 1.2
 **Date:** November 28, 2025
+**Last Updated:** November 28, 2025 (Tech stack audit & real-time architecture update)
 
 ---
 
@@ -44,24 +45,76 @@ The primary goal is to increase the conversion rate of interested parents into a
 
 ## 6. Functional Requirements
 
-The project will be implemented in phases, with a clear distinction between the initial MVP and subsequent enhancements.
+Functional requirements are organized by capability area. Each requirement specifies WHAT the system must do, not HOW it will be implemented. Technical implementation details are defined in the Architecture document.
 
-### P0: Must-Have (MVP Scope)
+**Priority Legend:** `[MVP]` = Must-have for launch | `[Growth]` = Post-MVP enhancement | `[Vision]` = Future consideration
 
-- **AI-Powered Assessment Module:** An LLM-powered chatbot (using OpenAI GPT-4) that guides parents through a conversational mental health screener.
-- **Streamlined Onboarding Flow:** A multi-step web interface for collecting demographic, clinical intake, and insurance information (manual entry for MVP).
-- **AI-Assisted Scheduling Module:** A system that suggests best-fit therapists and appointment slots.
+---
 
-### P1: Should-Have (Post-MVP)
+### 6.1 Assessment & Screening
 
-- **Image-to-Text Insurance Submission:** A feature allowing parents to upload a picture of their insurance card for automatic data extraction (via AWS Textract).
-- **Cost Estimation Tool:** An automated tool that provides an upfront, good-faith estimate of costs.
-- **Real-time Support Interface:** A live chat option (using Action Cable) for parents to connect with Daybreak’s support team.
+| ID | Requirement | Priority |
+|:---|:------------|:---------|
+| FR-001 | The system shall provide a conversational AI interface that guides parents through a mental health screening questionnaire for their child. | [MVP] |
+| FR-002 | The assessment shall adapt questions based on previous responses to gather relevant clinical information. | [MVP] |
+| FR-003 | The system shall generate a summary of assessment findings to inform therapist matching. | [MVP] |
 
-### P2: Nice-to-Have (Future Enhancements)
+---
 
-- **Emotional Support Content:** A library of curated articles, videos, and resources.
-- **Self-Help Resource Center:** A knowledge base for parents to learn more about common mental health symptoms.
+### 6.2 Onboarding & Data Collection
+
+| ID | Requirement | Priority |
+|:---|:------------|:---------|
+| FR-004 | The system shall collect parent demographic information (name, contact, relationship to child). | [MVP] |
+| FR-005 | The system shall collect child demographic information (name, date of birth, pronouns). | [MVP] |
+| FR-006 | The system shall collect clinical intake information (primary concerns, relevant history). | [MVP] |
+| FR-007 | The system shall persist onboarding progress, allowing parents to resume an incomplete session. | [MVP] |
+
+---
+
+### 6.3 Insurance Management
+
+| ID | Requirement | Priority |
+|:---|:------------|:---------|
+| FR-008 | The system shall allow parents to manually enter insurance information (carrier, member ID, group number). | [MVP] |
+| FR-009 | The system shall allow parents to upload an image of their insurance card for automated data extraction. | [Growth] |
+| FR-010 | The system shall provide an upfront cost estimate based on submitted insurance information. | [Growth] |
+
+---
+
+### 6.4 Scheduling
+
+| ID | Requirement | Priority |
+|:---|:------------|:---------|
+| FR-011 | The system shall suggest therapists based on assessment results, child's needs, and availability. | [MVP] |
+| FR-012 | The system shall display available appointment slots for selected therapists. | [MVP] |
+| FR-013 | The system shall allow parents to book an appointment and receive confirmation. | [MVP] |
+
+---
+
+### 6.5 Support & Communication
+
+| ID | Requirement | Priority |
+|:---|:------------|:---------|
+| FR-014 | The system shall provide real-time chat support connecting parents with Daybreak staff during onboarding. | [Growth] |
+| FR-015 | The system shall deliver confirmation and reminder notifications via email. | [MVP] |
+
+---
+
+### 6.6 Educational Resources
+
+| ID | Requirement | Priority |
+|:---|:------------|:---------|
+| FR-016 | The system shall provide a library of educational content (articles, videos) about child mental health. | [Vision] |
+| FR-017 | The system shall provide a searchable knowledge base for common questions and symptoms. | [Vision] |
+
+---
+
+**Total: 17 Functional Requirements**
+- MVP: 11 requirements
+- Growth: 3 requirements
+- Vision: 2 requirements
+- Support (MVP): 1 requirement
 
 ## 7. Non-Functional Requirements
 
@@ -69,6 +122,7 @@ The project will be implemented in phases, with a clear distinction between the 
 - **Security:** The platform must be fully compliant with HIPAA. All Protected Health Information (PHI) and Personally Identifiable Information (PII) must be encrypted in transit (TLS 1.2+) and at rest (AES-256).
 - **Scalability:** The architecture must be able to scale horizontally to accommodate growth beyond the initial 1,000 concurrent user target.
 - **Usability & Accessibility:** The user interface must be intuitive, mobile-first, and compliant with Web Content Accessibility Guidelines (WCAG) 2.1 AA standards.
+- **Browser Compatibility:** Modern browsers required due to Tailwind CSS v4 dependencies (`@property`, `color-mix()`). Minimum supported: Chrome 111+ (March 2023), Safari 16.4+ (March 2023), Firefox 128+ (July 2024). IE11 and legacy Edge are not supported.
 
 ## 8. System Architecture & Technology Stack
 
@@ -81,13 +135,21 @@ The architecture consists of a stateless Next.js frontend application that commu
 ```mermaid
 graph TD
     subgraph "Frontend Repository (AWS S3/CloudFront)"
-        A[Parent on Browser/Mobile] -->|HTTPS| B(Next.js Frontend App)
+        A[Parent on Browser/Mobile] -->|HTTPS| B(Next.js 15 Frontend)
+        B1[Apollo Client 4]
+        B2[React Hook Form + Zod]
+        B --> B1
+        B --> B2
     end
 
     subgraph "Backend Repository (Aptible)"
-        C(Ruby on Rails API Server)
-        D[Amazon RDS for PostgreSQL]
-        E[Redis Cache & Job Queue]
+        C(Ruby on Rails 7 API)
+        C1[graphql-ruby]
+        C2[GraphQL Subscriptions]
+        D[Amazon RDS PostgreSQL]
+        E[Redis / Solid Cable]
+        C --> C1
+        C1 --> C2
     end
 
     subgraph "External Services"
@@ -95,20 +157,18 @@ graph TD
         G(AWS Textract API)
     end
 
-    B -->|GraphQL API Calls| C
+    B1 -->|GraphQL Queries/Mutations| C1
+    B1 <-->|GraphQL Subscriptions via Action Cable| C2
     C -->|Read/Write| D
-    C -->|Cache/Jobs/WebSockets| E
+    C -->|Cache/Jobs/Pub-Sub| E
+    C2 -->|WebSocket Transport| E
     C -->|API Call| F
     C -->|API Call| G
 
-    subgraph "Real-time Channel"
-        H(Action Cable WebSocket)
-        A <-->|WSS| H
-        H <--> C
-    end
-
     style B fill:#cde4ff
     style C fill:#d5e8d4
+    style B1 fill:#e1d5e7
+    style C2 fill:#fff2cc
 ```
 
 ### 8.2. Codebase Structure: Separate Repositories
@@ -130,32 +190,47 @@ This project will be organized into two distinct Git repositories:
 
 ### 8.3. Technology Stack & Justification
 
-| Component | Technology | Justification |
-| :--- | :--- | :--- |
-| **Frontend** | **Next.js** | A modern, performant, and SEO-friendly React framework. Will be deployed as a static site to AWS S3 and distributed via CloudFront for global low latency. |
-| **Backend** | **Ruby on Rails 7** | A robust and mature framework that enables rapid development. It will be configured in API-only mode to serve the GraphQL endpoint. |
-| **Database** | **Amazon RDS for PostgreSQL** | A managed, HIPAA-compliant database service that automates backups, patching, and failover. Chosen for its reliability and data integrity. |
-| **API** | **GraphQL** | Allows the frontend to request exactly the data it needs, reducing over-fetching and improving performance, especially on mobile networks. The `graphql-ruby` gem will be used. |
-| **AI/LLM** | **OpenAI GPT-4** | Provides state-of-the-art conversational AI. Using the official API with a Business Associate Agreement (BAA) ensures HIPAA compliance. |
-| **Insurance OCR** | **AWS Textract** | A managed, HIPAA-compliant OCR service optimized for extracting data from documents like insurance cards. |
-| **Real-time Chat** | **Action Cable** | Rails' native WebSocket framework. It is sufficient for the MVP's real-time support chat feature and avoids the cost of a third-party service. |
-| **Caching/Jobs** | **Redis** | Used as a high-performance cache, a backend for Sidekiq for asynchronous jobs, and as the pub/sub mechanism for Action Cable. |
-| **Hosting** | **Aptible (Backend), AWS S3 (Frontend)** | The backend will be deployed on the user's preferred HIPAA-compliant Aptible platform. The frontend will be deployed to AWS S3/CloudFront for optimal performance and scalability. |
+#### Frontend Stack
+
+| Component | Technology | Version | Justification |
+| :--- | :--- | :--- | :--- |
+| **Framework** | **Next.js** | 15.x | App Router with React Server Components, Turbopack for fast builds, built-in TypeScript support. Deployed as static site to AWS S3/CloudFront. |
+| **UI Library** | **React** | 19.x | Latest features including `use` hook, Actions, `useActionState` for forms, and ref as prop. |
+| **Language** | **TypeScript** | 5.x | End-to-end type safety from GraphQL schema to components. |
+| **GraphQL Client** | **Apollo Client** | 4.x | With `@apollo/client-integration-nextjs` for App Router. Provides caching, Suspense support, and unified API for queries/mutations/subscriptions. |
+| **Code Generation** | **GraphQL Code Generator** | Latest | Generates TypeScript types and React hooks from `api_schema.graphql`. Uses `typescript-react-apollo` plugin. |
+| **Styling** | **Tailwind CSS** | 4.x | Utility-first CSS with CSS-first configuration. Form state variants (`invalid:`, `focus:`, `disabled:`). Requires modern browsers (Chrome 111+, Safari 16.4+, Firefox 128+). |
+| **Form Handling** | **React Hook Form** | 7.x | Performant, uncontrolled form handling with minimal re-renders. |
+| **Validation** | **Zod** | 3.x | TypeScript-first schema validation. Integrates with React Hook Form via `@hookform/resolvers/zod`. (v3 for stability per Architecture ADR-004) |
+
+#### Backend Stack
+
+| Component | Technology | Version | Justification |
+| :--- | :--- | :--- | :--- |
+| **Framework** | **Ruby on Rails** | 7.x | API-only mode. Mature, rapid development with strong conventions. |
+| **Database** | **Amazon RDS for PostgreSQL** | - | Managed, HIPAA-compliant with automated backups and failover. |
+| **API** | **GraphQL** | - | `graphql-ruby` gem with `GraphQL::Subscriptions::ActionCableSubscriptions` for real-time. |
+| **AI/LLM** | **OpenAI GPT-4** | - | Conversational AI with BAA for HIPAA compliance. |
+| **Insurance OCR** | **AWS Textract** | - | HIPAA-compliant OCR optimized for document extraction. |
+| **Real-time Transport** | **Action Cable** | - | Rails' native WebSocket framework. Serves as transport for GraphQL subscriptions. Can use `solid_cable` (database-backed) to avoid Redis dependency for MVP. |
+| **Caching/Jobs** | **Redis** | - | High-performance cache, Sidekiq backend, Action Cable pub/sub (production). |
+| **Hosting** | **Aptible** | - | HIPAA-compliant PaaS for backend deployment. |
 
 ## 9. Development & Deployment Workflow
 
 -   **Local Development:** Developers will run two local servers: the Rails API (e.g., on `localhost:3001`) and the Next.js app (e.g., on `localhost:3000`). The Next.js app will be configured to proxy API requests to the Rails server.
 -   **Version Control:** Both repositories will use Git, with a main branch for production code and feature branches for development.
--   **CI/CD:** Separate CI/CD pipelines will be set up for each repository (e.g., using GitHub Actions). The backend pipeline will run RSpec tests and deploy to Aptible. The frontend pipeline will run Jest tests, build the static Next.js site, and deploy it to AWS S3.
+-   **CI/CD:** Separate CI/CD pipelines will be set up for each repository (e.g., using GitHub Actions). The backend pipeline will run RSpec tests and deploy to Aptible. The frontend pipeline will run Vitest unit tests, Playwright E2E tests, build the static Next.js site, and deploy it to AWS S3.
 -   **CORS:** The Rails backend will be configured to accept cross-origin requests only from the deployed frontend domain to ensure security.
 
 ## 10. Testing Strategy
 
 A multi-layered testing approach will ensure quality and reliability.
 
--   **Unit Tests:** RSpec for the Rails backend and Jest/React Testing Library for the Next.js frontend.
--   **Integration Tests:** Test the interactions between the frontend, backend, and external APIs (OpenAI, AWS Textract).
--   **End-to-End (E2E) Tests:** Cypress to simulate user flows through the entire application.
+-   **Unit Tests:** RSpec for the Rails backend. Vitest + React Testing Library for the Next.js frontend (faster than Jest with native ESM support).
+-   **Integration Tests:** Test the interactions between the frontend, backend, and external APIs (OpenAI, AWS Textract). Use MSW (Mock Service Worker) for API mocking.
+-   **End-to-End (E2E) Tests:** Playwright for cross-browser testing and user flow simulation. Preferred over Cypress for better TypeScript support and parallel execution.
+-   **Type Safety Tests:** GraphQL Code Generator ensures compile-time validation of all GraphQL operations against the schema.
 -   **AI Testing:** A golden dataset of question-answer pairs will be used to validate the chatbot's responses for accuracy, tone, and safety. Regular human review of conversation logs will be required.
 -   **Test Data:** The test cases provided by Daybreak Health will be used for manual and automated QA. [1]
 

@@ -1,0 +1,176 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1</storyId>
+    <title>Project Initialization and Core Dependencies</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/1-1-project-initialization-and-core-dependencies.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>a properly configured Next.js 15 project with all core dependencies installed</iWant>
+    <soThat>I can begin building features with the correct tooling and type safety</soThat>
+    <tasks>
+      <task id="1" ac="1">Create Next.js 15 project with create-next-app
+        <subtask id="1.1">Run npx create-next-app@latest daybreak-health-frontend --typescript --tailwind --eslint --app --use-pnpm</subtask>
+        <subtask id="1.2">Verify project structure created correctly</subtask>
+        <subtask id="1.3">Run pnpm dev and confirm localhost:3000 serves</subtask>
+      </task>
+      <task id="2" ac="2">Initialize shadcn/ui component library
+        <subtask id="2.1">Run pnpm dlx shadcn@latest init</subtask>
+        <subtask id="2.2">Select New York style during initialization</subtask>
+        <subtask id="2.3">Verify components.json created with correct config</subtask>
+        <subtask id="2.4">Verify components/ui/ directory structure</subtask>
+      </task>
+      <task id="3" ac="3,5">Install Apollo Client and GraphQL dependencies
+        <subtask id="3.1">Run pnpm add @apollo/client @apollo/client-integration-nextjs graphql graphql-ws</subtask>
+        <subtask id="3.2">Verify imports work in a test file</subtask>
+        <subtask id="3.3">Install GraphQL Codegen: pnpm add -D @graphql-codegen/cli @graphql-codegen/typescript @graphql-codegen/typescript-operations @graphql-codegen/typescript-react-apollo</subtask>
+      </task>
+      <task id="4" ac="4">Install form handling dependencies
+        <subtask id="4.1">Run pnpm add react-hook-form @hookform/resolvers zod</subtask>
+        <subtask id="4.2">Verify Zod version is 3.x (not 4.x per ADR-004)</subtask>
+        <subtask id="4.3">Verify imports work correctly</subtask>
+      </task>
+      <task id="5" ac="6">Configure testing framework
+        <subtask id="5.1">Install Vitest: pnpm add -D vitest @testing-library/react @testing-library/dom jsdom @vitejs/plugin-react</subtask>
+        <subtask id="5.2">Create vitest.config.ts with React plugin and jsdom environment</subtask>
+        <subtask id="5.3">Install Playwright: pnpm add -D @playwright/test</subtask>
+        <subtask id="5.4">Create playwright.config.ts with basic configuration</subtask>
+        <subtask id="5.5">Add test scripts to package.json</subtask>
+      </task>
+      <task id="6" ac="7,8,9">Configure static export and environment
+        <subtask id="6.1">Update next.config.ts with output: 'export'</subtask>
+        <subtask id="6.2">Create .env.example with NEXT_PUBLIC_GRAPHQL_ENDPOINT and NEXT_PUBLIC_WS_ENDPOINT</subtask>
+        <subtask id="6.3">Create .env.local from template (gitignored)</subtask>
+        <subtask id="6.4">Verify pnpm build creates out/ directory</subtask>
+      </task>
+      <task id="7" ac="5">Create codegen configuration
+        <subtask id="7.1">Create codegen.ts with typescript-react-apollo plugin configuration</subtask>
+        <subtask id="7.2">Configure documents glob: features/**/*.graphql, graphql/**/*.graphql</subtask>
+        <subtask id="7.3">Point schema to docs/sprint-artifacts/api_schema.graphql</subtask>
+        <subtask id="7.4">Add codegen and codegen:watch scripts to package.json</subtask>
+        <subtask id="7.5">Verify pnpm codegen runs</subtask>
+      </task>
+      <task id="8" ac="all">Verify all scripts work correctly
+        <subtask id="8.1">pnpm dev starts Turbopack dev server</subtask>
+        <subtask id="8.2">pnpm build creates static export</subtask>
+        <subtask id="8.3">pnpm codegen runs GraphQL type generation</subtask>
+        <subtask id="8.4">pnpm test runs Vitest</subtask>
+        <subtask id="8.5">pnpm lint runs ESLint without errors</subtask>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-1.1.1">Project created with Next.js 15, TypeScript, Tailwind CSS 4, ESLint - pnpm dev starts without errors</criterion>
+    <criterion id="AC-1.1.2">shadcn/ui initialized with New York style - components.json exists with correct configuration</criterion>
+    <criterion id="AC-1.1.3">Apollo Client 4 with nextjs integration installed - Import @apollo/client-integration-nextjs succeeds</criterion>
+    <criterion id="AC-1.1.4">React Hook Form 7 with Zod 3 resolver installed - Import from packages succeeds</criterion>
+    <criterion id="AC-1.1.5">GraphQL Code Generator installed - pnpm codegen command exists</criterion>
+    <criterion id="AC-1.1.6">Vitest and Playwright configured - pnpm test and pnpm test:e2e run</criterion>
+    <criterion id="AC-1.1.7">Project runs on localhost:3000 - Dev server accessible</criterion>
+    <criterion id="AC-1.1.8">Static export configured - next.config.ts has output: 'export'</criterion>
+    <criterion id="AC-1.1.9">Environment template created - .env.example exists with required variables</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/architecture.md" title="Architecture" section="Project Initialization" snippet="Commands for create-next-app, shadcn/ui init, and core dependency installation. Includes Decision Summary with exact package versions." />
+      <doc path="docs/architecture.md" title="Architecture" section="Decision Summary" snippet="Technology decisions: Next.js 15.x, React 19.x, TypeScript 5.x, Apollo Client 4.x, Zod 3.x, Tailwind CSS 4.0, Vitest 3.x, Playwright 1.x" />
+      <doc path="docs/sprint-artifacts/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="Story 1.1 Acceptance Criteria" snippet="Detailed acceptance criteria AC-1.1.1 through AC-1.1.9 with testable statements and implementation notes." />
+      <doc path="docs/epics.md" title="Epic Breakdown" section="Story 1.1" snippet="User story statement, acceptance criteria, prerequisites (none - first story), and technical notes for project initialization." />
+      <doc path="docs/prd.md" title="PRD" section="Technology Stack" snippet="Frontend: Next.js 15.x, React 19.x, TypeScript 5.x, Apollo Client 4.x, React Hook Form 7.x, Zod 3.x, Tailwind CSS 4.x" />
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="Design System Foundation" snippet="shadcn/ui selected as component library with Daybreak brand customization. Tailwind CSS v4 native, accessible by default, React 19 compatible." />
+      <doc path="docs/sprint-artifacts/api_schema.graphql" title="GraphQL Schema" section="Full Schema" snippet="Complete GraphQL schema defining queries, mutations, subscriptions, and types for the Parent Onboarding AI backend API contract." />
+    </docs>
+    <code>
+      <!-- Greenfield project - no existing code artifacts -->
+      <note>This is a greenfield project. Story 1.1 creates the initial project structure. No existing code to reference.</note>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <!-- Core Dependencies (to be installed) -->
+        <package name="next" version="^15.x" purpose="App Router, RSC, Turbopack, static export" />
+        <package name="react" version="^19.x" purpose="UI library with latest features" />
+        <package name="react-dom" version="^19.x" purpose="React DOM bindings" />
+        <package name="@apollo/client" version="^4.x" purpose="GraphQL client, caching, subscriptions" />
+        <package name="@apollo/client-integration-nextjs" version="latest" purpose="App Router integration" />
+        <package name="graphql" version="^16.x" purpose="GraphQL runtime" />
+        <package name="graphql-ws" version="^6.x" purpose="WebSocket subscriptions" />
+        <package name="react-hook-form" version="^7.x" purpose="Form state management" />
+        <package name="@hookform/resolvers" version="^3.x" purpose="Zod integration" />
+        <package name="zod" version="^3.23" purpose="Schema validation (v3 for stability per ADR-004)" />
+        <!-- Dev Dependencies (to be installed) -->
+        <package name="typescript" version="^5.x" purpose="Type safety" dev="true" />
+        <package name="tailwindcss" version="^4.x" purpose="Utility CSS" dev="true" />
+        <package name="@graphql-codegen/cli" version="^5.x" purpose="Codegen CLI" dev="true" />
+        <package name="@graphql-codegen/typescript" version="latest" purpose="TS type generation" dev="true" />
+        <package name="@graphql-codegen/typescript-operations" version="latest" purpose="Operation types" dev="true" />
+        <package name="@graphql-codegen/typescript-react-apollo" version="latest" purpose="React hooks" dev="true" />
+        <package name="vitest" version="^3.x" purpose="Unit testing" dev="true" />
+        <package name="@testing-library/react" version="^16.x" purpose="Component testing" dev="true" />
+        <package name="playwright" version="^1.x" purpose="E2E testing" dev="true" />
+        <package name="eslint" version="^9.x" purpose="Linting" dev="true" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint source="ADR-004">Use Zod 3.x (not 4.x) due to known issues with React Hook Form integration.</constraint>
+    <constraint source="Architecture">Static export required for S3/CloudFront deployment - configure next.config.ts with output: 'export'</constraint>
+    <constraint source="Architecture">Package manager must be pnpm 9.x</constraint>
+    <constraint source="Architecture">shadcn/ui must use New York style variant</constraint>
+    <constraint source="Architecture">Tailwind CSS v4 requires modern browsers: Chrome 111+, Safari 16.4+, Firefox 128+</constraint>
+    <constraint source="PRD">HIPAA compliance required - no PHI in logs, URLs, or client-side storage</constraint>
+    <constraint source="Architecture">Import alias @/* must be configured for clean imports</constraint>
+    <constraint source="Architecture">GraphQL schema file location: docs/sprint-artifacts/api_schema.graphql</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="Environment Variables" kind="config">
+      <signature>NEXT_PUBLIC_GRAPHQL_ENDPOINT: string (e.g., http://localhost:3001/graphql)</signature>
+      <signature>NEXT_PUBLIC_WS_ENDPOINT: string (e.g., ws://localhost:3001/cable)</signature>
+      <path>.env.example, .env.local</path>
+    </interface>
+    <interface name="GraphQL Schema" kind="schema">
+      <signature>Query: getOnboardingSession, me, getAvailableSlots, getCostEstimate</signature>
+      <signature>Mutation: startOnboarding, submitAssessmentMessage, updateDemographics, submitInsuranceInfo, scheduleAppointment</signature>
+      <signature>Subscription: supportChatMessages</signature>
+      <path>docs/sprint-artifacts/api_schema.graphql</path>
+    </interface>
+    <interface name="Next.js Scripts" kind="npm-scripts">
+      <signature>pnpm dev - Start Turbopack dev server</signature>
+      <signature>pnpm build - Create static export to out/</signature>
+      <signature>pnpm start - Start production server (for testing)</signature>
+      <signature>pnpm codegen - Generate GraphQL types</signature>
+      <signature>pnpm codegen:watch - Watch mode for GraphQL codegen</signature>
+      <signature>pnpm test - Run Vitest unit tests</signature>
+      <signature>pnpm test:e2e - Run Playwright E2E tests</signature>
+      <signature>pnpm lint - Run ESLint</signature>
+      <path>package.json</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Unit tests use Vitest with React Testing Library in jsdom environment. E2E tests use Playwright for cross-browser testing. TypeScript strict mode enforced. GraphQL Codegen validates operations against schema at build time. All tests should be in tests/ directory, separate from source.</standards>
+    <locations>
+      <location>tests/unit/</location>
+      <location>tests/e2e/</location>
+    </locations>
+    <ideas>
+      <idea ac="AC-1.1.1">Verify pnpm dev starts without errors, check localhost:3000 responds</idea>
+      <idea ac="AC-1.1.2">Verify components.json exists with style: 'new-york'</idea>
+      <idea ac="AC-1.1.3">Create test file with Apollo Client imports, verify no TypeScript errors</idea>
+      <idea ac="AC-1.1.4">Create test file with RHF + Zod imports, verify Zod version is 3.x</idea>
+      <idea ac="AC-1.1.5">Verify pnpm codegen runs and generates types/graphql.ts</idea>
+      <idea ac="AC-1.1.6">Verify pnpm test runs Vitest, pnpm test:e2e initializes Playwright</idea>
+      <idea ac="AC-1.1.7">HTTP request to localhost:3000 returns 200</idea>
+      <idea ac="AC-1.1.8">Verify next.config.ts contains output: 'export', pnpm build creates out/</idea>
+      <idea ac="AC-1.1.9">Verify .env.example contains both required environment variables</idea>
+    </ideas>
+  </tests>
+</story-context>
