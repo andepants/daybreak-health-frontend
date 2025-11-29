@@ -139,7 +139,8 @@ export function SaveExitModal({
     } finally {
       setIsSendingReminder(false);
     }
-  }, [email, sessionId]);
+    // Note: sessionId will be needed when GraphQL mutation is implemented (see TODO above)
+  }, [email]);
 
   /**
    * Reset state when modal opens

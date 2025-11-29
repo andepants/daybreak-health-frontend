@@ -60,13 +60,13 @@ development_status:
   3-2-child-information-form: done
   3-3-clinical-intake-information: done
   3-4-form-based-assessment-fallback: done
-  epic-3-retrospective: optional
+  epic-3-retrospective: done
 
   # Epic 4: Insurance Submission (3 stories)
   epic-4: backlog
-  4-1-manual-insurance-entry-form: backlog
-  4-2-insurance-verification-and-confirmation: backlog
-  4-3-self-pay-option-flow: backlog
+  4-1-manual-insurance-entry-form: drafted
+  4-2-insurance-verification-and-confirmation: drafted
+  4-3-self-pay-option-flow: drafted
   epic-4-retrospective: optional
 
   # Epic 5: Therapist Matching & Booking (5 stories)

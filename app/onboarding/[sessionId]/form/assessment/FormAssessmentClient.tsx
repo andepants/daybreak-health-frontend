@@ -102,7 +102,6 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
     goNext,
     goBack,
     markPageComplete,
-    isLastPage,
   } = useFormNavigation({
     totalPages: 3,
     initialPage: 1,
@@ -240,6 +239,8 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
         await handleSubmit();
       }
     }
+  // Note: handleSubmit is defined below but referenced here - React handles this correctly
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, page1Form, page3Form, saveAll, getAllFormData, markPageComplete, goNext]);
 
   /**

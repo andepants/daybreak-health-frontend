@@ -11,14 +11,13 @@
  */
 "use client";
 
-import { use, useCallback, useEffect, useState } from "react";
+import { use, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ParentInfoForm,
   ChildInfoForm,
   ClinicalIntakeForm,
 } from "@/features/demographics";
-import { useOnboardingSession } from "@/hooks/useOnboardingSession";
 import type {
   ParentInfoInput,
   ChildInfoInput,
@@ -63,30 +62,14 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get current section from URL, default to "parent"
+  // Derive current section directly from URL params (no state needed)
   const sectionParam = searchParams.get("section");
-  const [currentSection, setCurrentSection] = useState<DemographicsSection>(
+  const currentSection: DemographicsSection =
     sectionParam === "child"
       ? "child"
       : sectionParam === "clinical"
         ? "clinical"
-        : "parent"
-  );
-
-  // Load session for assessment summary pre-fill
-  const { session: _session } = useOnboardingSession(sessionId);
-
-  // Sync section with URL params
-  useEffect(() => {
-    const section = searchParams.get("section");
-    if (section === "child") {
-      setCurrentSection("child");
-    } else if (section === "clinical") {
-      setCurrentSection("clinical");
-    } else if (section === "parent" || !section) {
-      setCurrentSection("parent");
-    }
-  }, [searchParams]);
+        : "parent";
 
   /**
    * Extract assessment summary for child form pre-population (AC-3.2.9)

@@ -17,7 +17,6 @@ import {
   useCompleteAssessmentMutation,
   useConfirmAssessmentSummaryMutation,
   useResetAssessmentMutation,
-  type SubmitAssessmentMessageInput,
   type AssessmentSummary,
 } from "@/types/graphql";
 
@@ -239,8 +238,8 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
           crisisDetected: false,
         };
 
-        // Process AI response
-        const { aiResponse, nextQuestion, isComplete: responseComplete, crisisDetected: crisis } = mockResponse;
+        // Process AI response (nextQuestion available in mockResponse for future branching logic)
+        const { aiResponse, isComplete: responseComplete, crisisDetected: crisis } = mockResponse;
 
         // Check if response contains structured question
         if (aiResponse.structuredQuestion) {
