@@ -1,0 +1,17 @@
+# SubmitAssessmentMessage Mutation
+# Sends a message to the AI assessment chatbot and gets a response
+
+mutation SubmitAssessmentMessage($input: SubmitAssessmentMessageInput!) {
+  submitAssessmentMessage(input: $input) {
+    id
+    summary
+    isFitForDaybreak
+    suggestedNextSteps
+    conversationHistory {
+      id
+      sender
+      content
+      timestamp
+    }
+  }
+}

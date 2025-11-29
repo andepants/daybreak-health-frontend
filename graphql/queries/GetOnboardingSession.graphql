@@ -1,0 +1,50 @@
+# GetOnboardingSession Query
+# Fetches the current state of an onboarding session by ID
+
+query GetOnboardingSession($sessionId: ID!) {
+  getOnboardingSession(id: $sessionId) {
+    id
+    status
+    createdAt
+    updatedAt
+    parent {
+      id
+      email
+      firstName
+      lastName
+    }
+    child {
+      id
+      firstName
+      dateOfBirth
+      pronouns
+      concerns
+    }
+    assessment {
+      id
+      summary
+      isFitForDaybreak
+      suggestedNextSteps
+      conversationHistory {
+        id
+        sender
+        content
+        timestamp
+      }
+    }
+    insuranceInfo {
+      id
+      provider
+      planName
+      memberId
+      groupId
+    }
+    appointment {
+      id
+      therapistName
+      startTime
+      endTime
+      confirmationId
+    }
+  }
+}

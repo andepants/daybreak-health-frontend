@@ -1,115 +1,195 @@
+/**
+ * Daybreak Health Global Styles
+ *
+ * This file defines the Daybreak design system tokens including:
+ * - Brand colors (daybreak-teal, warm-orange, cream, deep-text)
+ * - Semantic colors (success, warning, error, info)
+ * - Typography (Fraunces for headings, Inter for body)
+ * - Spacing scale (4px base unit)
+ * - Border radius tokens
+ */
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* === Font Families === */
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-fraunces);
+
+  /* === Daybreak Brand Colors === */
+  --color-daybreak-teal: var(--daybreak-teal);
+  --color-teal-light: var(--teal-light);
+  --color-warm-orange: var(--warm-orange);
+  --color-cream: var(--cream);
+  --color-deep-text: var(--deep-text);
+
+  /* === Semantic Colors === */
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+
+  /* === shadcn/ui Semantic Mappings === */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* === Chart Colors === */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* === Sidebar Colors === */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* === Border Radius (Daybreak Design System) === */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* === Spacing Scale (4px base) === */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* === Daybreak Brand Colors (hex values) === */
+  --daybreak-teal: #2A9D8F;
+  --teal-light: #3DBCB0;
+  --warm-orange: #E9A23B;
+  --cream: #FEF7ED;
+  --deep-text: #1A3C34;
+
+  /* === Semantic Colors === */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #E85D5D;
+  --info: #3B82F6;
+
+  /* === Typography === */
+  --font-fraunces: "Fraunces", serif;
+  --font-inter: "Inter", sans-serif;
+
+  /* === Spacing Scale (4px base) === */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* === Border Radius === */
+  --radius: 8px;
+
+  /* === shadcn/ui Semantic Colors (mapped to Daybreak palette) === */
+  --background: #FEF7ED;
+  --foreground: #1A3C34;
+  --card: #FFFFFF;
+  --card-foreground: #1A3C34;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A3C34;
+  --primary: #2A9D8F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3EDE4;
+  --secondary-foreground: #1A3C34;
+  --muted: #F3EDE4;
+  --muted-foreground: #5A6B66;
+  --accent: #E9A23B;
+  --accent-foreground: #1A3C34;
+  --destructive: #E85D5D;
+  --border: #E5DDD4;
+  --input: #E5DDD4;
+  --ring: #2A9D8F;
+
+  /* === Chart Colors (Daybreak palette) === */
+  --chart-1: #2A9D8F;
+  --chart-2: #3DBCB0;
+  --chart-3: #E9A23B;
+  --chart-4: #10B981;
+  --chart-5: #3B82F6;
+
+  /* === Sidebar Colors === */
+  --sidebar: #FEF7ED;
+  --sidebar-foreground: #1A3C34;
+  --sidebar-primary: #2A9D8F;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F3EDE4;
+  --sidebar-accent-foreground: #1A3C34;
+  --sidebar-border: #E5DDD4;
+  --sidebar-ring: #2A9D8F;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* === Dark mode Daybreak palette === */
+  --background: #0F1F1C;
+  --foreground: #F5F5F5;
+  --card: #162926;
+  --card-foreground: #F5F5F5;
+  --popover: #162926;
+  --popover-foreground: #F5F5F5;
+  --primary: #3DBCB0;
+  --primary-foreground: #0F1F1C;
+  --secondary: #1E3330;
+  --secondary-foreground: #F5F5F5;
+  --muted: #1E3330;
+  --muted-foreground: #A3B3AF;
+  --accent: #E9A23B;
+  --accent-foreground: #0F1F1C;
+  --destructive: #F87171;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #3DBCB0;
+
+  /* === Chart Colors (Dark mode) === */
+  --chart-1: #3DBCB0;
+  --chart-2: #2A9D8F;
+  --chart-3: #E9A23B;
+  --chart-4: #34D399;
+  --chart-5: #60A5FA;
+
+  /* === Sidebar Colors (Dark mode) === */
+  --sidebar: #162926;
+  --sidebar-foreground: #F5F5F5;
+  --sidebar-primary: #3DBCB0;
+  --sidebar-primary-foreground: #0F1F1C;
+  --sidebar-accent: #1E3330;
+  --sidebar-accent-foreground: #F5F5F5;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #3DBCB0;
 }
 
 @layer base {

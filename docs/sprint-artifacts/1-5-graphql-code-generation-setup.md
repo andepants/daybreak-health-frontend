@@ -1,6 +1,6 @@
 # Story 1.5: GraphQL Code Generation Setup
 
-Status: drafted
+Status: review
 
 ## Story
 
@@ -21,63 +21,63 @@ so that **I have type-safe, auto-generated Apollo hooks for all queries, mutatio
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create codegen.ts configuration file (AC: 1, 2)
-  - [ ] 1.1 Create `codegen.ts` in project root
-  - [ ] 1.2 Import `CodegenConfig` type from `@graphql-codegen/cli`
-  - [ ] 1.3 Configure schema path to point to `docs/sprint-artifacts/api_schema.graphql`
-  - [ ] 1.4 Set generates output path to `types/graphql.ts`
-  - [ ] 1.5 Verify file structure matches architecture standards
+- [x] Task 1: Create codegen.ts configuration file (AC: 1, 2)
+  - [x] 1.1 Create `codegen.ts` in project root
+  - [x] 1.2 Import `CodegenConfig` type from `@graphql-codegen/cli`
+  - [x] 1.3 Configure schema path to point to `docs/sprint-artifacts/api_schema.graphql`
+  - [x] 1.4 Set generates output path to `types/graphql.ts`
+  - [x] 1.5 Verify file structure matches architecture standards
 
-- [ ] Task 2: Configure TypeScript base type generation (AC: 2)
-  - [ ] 2.1 Add `typescript` plugin to generates config
-  - [ ] 2.2 Add `typescript-operations` plugin for operation types
-  - [ ] 2.3 Configure plugin options (avoidOptionals, scalars mapping)
-  - [ ] 2.4 Set enumsAsTypes to true for better TypeScript integration
+- [x] Task 2: Configure TypeScript base type generation (AC: 2)
+  - [x] 2.1 Add `typescript` plugin to generates config
+  - [x] 2.2 Add `typescript-operations` plugin for operation types
+  - [x] 2.3 Configure plugin options (avoidOptionals, scalars mapping)
+  - [x] 2.4 Set enumsAsTypes to true for better TypeScript integration
 
-- [ ] Task 3: Configure React Apollo hooks generation (AC: 3, 4, 5)
-  - [ ] 3.1 Add `typescript-react-apollo` plugin to config
-  - [ ] 3.2 Configure withHooks: true
-  - [ ] 3.3 Configure withComponent: false (hooks only, no HOCs)
-  - [ ] 3.4 Configure withHOC: false
-  - [ ] 3.5 Set apolloReactCommonImportFrom to '@apollo/client'
+- [x] Task 3: Configure React Apollo hooks generation (AC: 3, 4, 5)
+  - [x] 3.1 Add `typescript-react-apollo` plugin to config
+  - [x] 3.2 Configure withHooks: true
+  - [x] 3.3 Configure withComponent: false (hooks only, no HOCs)
+  - [x] 3.4 Configure withHOC: false
+  - [x] 3.5 Set apolloReactCommonImportFrom to '@apollo/client'
 
-- [ ] Task 4: Set up documents glob patterns (AC: 8)
-  - [ ] 4.1 Configure documents glob: `graphql/**/*.graphql`
-  - [ ] 4.2 Add additional pattern: `features/**/*.graphql`
-  - [ ] 4.3 Add pattern: `app/**/*.graphql`
-  - [ ] 4.4 Verify glob patterns will capture all operation files
+- [x] Task 4: Set up documents glob patterns (AC: 8)
+  - [x] 4.1 Configure documents glob: `graphql/**/*.graphql`
+  - [x] 4.2 Add additional pattern: `features/**/*.graphql`
+  - [x] 4.3 Add pattern: `app/**/*.graphql`
+  - [x] 4.4 Verify glob patterns will capture all operation files
 
-- [ ] Task 5: Create sample GraphQL operations for testing (AC: 8)
-  - [ ] 5.1 Create `graphql/` directory in project root
-  - [ ] 5.2 Create `graphql/queries/GetOnboardingSession.graphql`
-  - [ ] 5.3 Write sample query with sessionId variable
-  - [ ] 5.4 Create `graphql/mutations/sample.graphql` placeholder
-  - [ ] 5.5 Create `graphql/subscriptions/sample.graphql` placeholder
+- [x] Task 5: Create sample GraphQL operations for testing (AC: 8)
+  - [x] 5.1 Create `graphql/` directory in project root
+  - [x] 5.2 Create `graphql/queries/GetOnboardingSession.graphql`
+  - [x] 5.3 Write sample query with sessionId variable
+  - [x] 5.4 Create `graphql/mutations/StartOnboarding.graphql` and `SubmitAssessmentMessage.graphql`
+  - [x] 5.5 Create `graphql/subscriptions/SupportChatMessages.graphql`
 
-- [ ] Task 6: Add codegen npm scripts (AC: 6, 7)
-  - [ ] 6.1 Add `"codegen": "graphql-codegen --config codegen.ts"` to package.json scripts
-  - [ ] 6.2 Add `"codegen:watch": "graphql-codegen --config codegen.ts --watch"` to package.json
-  - [ ] 6.3 Verify scripts are callable via pnpm
+- [x] Task 6: Add codegen npm scripts (AC: 6, 7)
+  - [x] 6.1 Add `"codegen": "graphql-codegen --config codegen.ts"` to package.json scripts
+  - [x] 6.2 Add `"codegen:watch": "graphql-codegen --config codegen.ts --watch"` to package.json
+  - [x] 6.3 Verify scripts are callable via pnpm
 
-- [ ] Task 7: Run initial code generation (AC: 2, 3, 4, 5, 8)
-  - [ ] 7.1 Run `pnpm codegen` for first time
-  - [ ] 7.2 Verify `types/graphql.ts` is created
-  - [ ] 7.3 Verify file contains TypeScript interfaces for schema types
-  - [ ] 7.4 Verify file contains generated React hooks (useGetOnboardingSessionQuery)
-  - [ ] 7.5 Check for any codegen warnings or errors
+- [x] Task 7: Run initial code generation (AC: 2, 3, 4, 5, 8)
+  - [x] 7.1 Run `pnpm codegen` for first time
+  - [x] 7.2 Verify `types/graphql.ts` is created
+  - [x] 7.3 Verify file contains TypeScript interfaces for schema types
+  - [x] 7.4 Verify file contains generated React hooks (useGetOnboardingSessionQuery)
+  - [x] 7.5 Check for any codegen warnings or errors
 
-- [ ] Task 8: Verify generated types integrate with Apollo Client (AC: 3, 4, 5)
-  - [ ] 8.1 Import `useGetOnboardingSessionQuery` in a test file
-  - [ ] 8.2 Verify TypeScript recognizes the hook signature
-  - [ ] 8.3 Verify hook returns properly typed data, loading, error
-  - [ ] 8.4 Check that variables are properly typed
-  - [ ] 8.5 Verify hook integrates with Apollo Client configuration from Story 1.4
+- [x] Task 8: Verify generated types integrate with Apollo Client (AC: 3, 4, 5)
+  - [x] 8.1 Import `useGetOnboardingSessionQuery` in a test file
+  - [x] 8.2 Verify TypeScript recognizes the hook signature
+  - [x] 8.3 Verify hook returns properly typed data, loading, error
+  - [x] 8.4 Check that variables are properly typed
+  - [x] 8.5 Verify hook integrates with Apollo Client configuration from Story 1.4
 
-- [ ] Task 9: Document codegen workflow (AC: all)
-  - [ ] 9.1 Add comments to codegen.ts explaining configuration
-  - [ ] 9.2 Document where to place new .graphql files
-  - [ ] 9.3 Note that codegen must run after schema changes
-  - [ ] 9.4 Document watch mode for development
+- [x] Task 9: Document codegen workflow (AC: all)
+  - [x] 9.1 Add comments to codegen.ts explaining configuration
+  - [x] 9.2 Document where to place new .graphql files
+  - [x] 9.3 Note that codegen must run after schema changes
+  - [x] 9.4 Document watch mode for development
 
 ## Dev Notes
 
@@ -221,16 +221,34 @@ function OnboardingPage({ sessionId }: { sessionId: string }) {
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude claude-opus-4-5-20251101
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- Updated codegen.ts with proper configuration and documentation
+- Created 5 sample GraphQL operations (2 queries, 2 mutations, 1 subscription)
+- Successfully ran pnpm codegen - all hooks generated
+- Generated hooks: 9 total (3 query variants x 2 + 2 mutations + 1 subscription)
+- All 79 tests pass including 16 new codegen verification tests
+- Lint passes with no errors
+
 ### File List
+
+- codegen.ts (modified - added documentation and improved config)
+- graphql/queries/GetOnboardingSession.graphql (new)
+- graphql/queries/GetCurrentUser.graphql (new)
+- graphql/mutations/StartOnboarding.graphql (new)
+- graphql/mutations/SubmitAssessmentMessage.graphql (new)
+- graphql/subscriptions/SupportChatMessages.graphql (new)
+- types/graphql.ts (regenerated - now includes operation types and hooks)
+- tests/unit/lib/graphql/codegen.test.ts (new)
+- docs/sprint-artifacts/sprint-status.yaml (modified)
 
 ## Changelog
 
 | Date | Change | Author |
 |------|--------|--------|
 | 2025-11-29 | Story drafted from tech spec and epics | SM Agent (Bob) |
+| 2025-11-29 | Story implementation complete - codegen configured, 79 tests passing | Dev Agent (Amelia) |

@@ -1,0 +1,19 @@
+# StartOnboarding Mutation
+# Starts the onboarding process and creates initial records
+
+mutation StartOnboarding($input: StartOnboardingInput!) {
+  startOnboarding(input: $input) {
+    id
+    status
+    createdAt
+    parent {
+      id
+      email
+    }
+    child {
+      id
+      firstName
+      dateOfBirth
+    }
+  }
+}

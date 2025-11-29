@@ -1,0 +1,11 @@
+# SupportChatMessages Subscription
+# Subscribes to new messages in a support chat session
+
+subscription SupportChatMessages($onboardingSessionId: ID!) {
+  supportChatMessages(onboardingSessionId: $onboardingSessionId) {
+    id
+    sender
+    content
+    timestamp
+  }
+}

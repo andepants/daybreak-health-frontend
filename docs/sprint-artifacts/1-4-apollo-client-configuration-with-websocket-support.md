@@ -1,6 +1,6 @@
 # Story 1.4: Apollo Client Configuration with WebSocket Support
 
-Status: drafted
+Status: review
 
 ## Story
 
@@ -21,63 +21,63 @@ so that **I can communicate with the Rails GraphQL API and receive real-time upd
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create HTTP link with authorization header (AC: 1, 2)
-  - [ ] 1.1 Create `lib/apollo/links.ts` file with proper module documentation
-  - [ ] 1.2 Implement `createHttpLink()` function that reads `NEXT_PUBLIC_GRAPHQL_ENDPOINT`
-  - [ ] 1.3 Add `setContext` middleware to attach Bearer token from memory/context
-  - [ ] 1.4 Add error handling for network failures
-  - [ ] 1.5 Write unit tests for HTTP link creation
+- [x] Task 1: Create HTTP link with authorization header (AC: 1, 2)
+  - [x] 1.1 Create `lib/apollo/links.ts` file with proper module documentation
+  - [x] 1.2 Implement `createHttpLink()` function that reads `NEXT_PUBLIC_GRAPHQL_ENDPOINT`
+  - [x] 1.3 Add `setContext` middleware to attach Bearer token from memory/context
+  - [x] 1.4 Add error handling for network failures
+  - [x] 1.5 Write unit tests for HTTP link creation
 
-- [ ] Task 2: Create WebSocket link with graphql-ws (AC: 3, 7)
-  - [ ] 2.1 Implement `createWsLink()` function using `graphql-ws` client
-  - [ ] 2.2 Configure WebSocket endpoint from `NEXT_PUBLIC_WS_ENDPOINT`
-  - [ ] 2.3 Add `connectionParams` callback to include auth token
-  - [ ] 2.4 Configure exponential backoff reconnection (1s, 2s, 4s, max 30s)
-  - [ ] 2.5 Add connection lifecycle event handlers (opened, closed, error)
-  - [ ] 2.6 Write unit tests for WebSocket link creation
+- [x] Task 2: Create WebSocket link with graphql-ws (AC: 3, 7)
+  - [x] 2.1 Implement `createWsLink()` function using `graphql-ws` client
+  - [x] 2.2 Configure WebSocket endpoint from `NEXT_PUBLIC_WS_ENDPOINT`
+  - [x] 2.3 Add `connectionParams` callback to include auth token
+  - [x] 2.4 Configure exponential backoff reconnection (1s, 2s, 4s, max 30s)
+  - [x] 2.5 Add connection lifecycle event handlers (opened, closed, error)
+  - [x] 2.6 Write unit tests for WebSocket link creation
 
-- [ ] Task 3: Configure split link for routing (AC: 4)
-  - [ ] 3.1 Implement `createSplitLink()` function
-  - [ ] 3.2 Use `getMainDefinition` to detect subscription operations
-  - [ ] 3.3 Route subscriptions to WebSocket link, queries/mutations to HTTP link
-  - [ ] 3.4 Write unit tests for split link logic
+- [x] Task 3: Configure split link for routing (AC: 4)
+  - [x] 3.1 Implement `createSplitLink()` function
+  - [x] 3.2 Use `getMainDefinition` to detect subscription operations
+  - [x] 3.3 Route subscriptions to WebSocket link, queries/mutations to HTTP link
+  - [x] 3.4 Write unit tests for split link logic
 
-- [ ] Task 4: Configure InMemoryCache with type policies (AC: 5)
-  - [ ] 4.1 Create `lib/apollo/client.ts` file
-  - [ ] 4.2 Implement `makeClient()` function
-  - [ ] 4.3 Configure `InMemoryCache` with OnboardingSession policy (keyFields: ['id'], fields.assessment: merge)
-  - [ ] 4.4 Configure Message cache policy (keyFields: ['id'])
-  - [ ] 4.5 Configure TherapistMatch cache policy (keyFields: ['therapistId'])
-  - [ ] 4.6 Write unit tests for cache policy configuration
+- [x] Task 4: Configure InMemoryCache with type policies (AC: 5)
+  - [x] 4.1 Create `lib/apollo/client.ts` file
+  - [x] 4.2 Implement `makeClient()` function
+  - [x] 4.3 Configure `InMemoryCache` with OnboardingSession policy (keyFields: ['id'], fields.assessment: merge)
+  - [x] 4.4 Configure Message cache policy (keyFields: ['id'])
+  - [x] 4.5 Configure TherapistMatch cache policy (keyFields: ['therapistId'])
+  - [x] 4.6 Write unit tests for cache policy configuration
 
-- [ ] Task 5: Create ApolloProvider wrapper component (AC: 6)
-  - [ ] 5.1 Create `lib/apollo/provider.tsx` file
-  - [ ] 5.2 Implement `ApolloWrapper` component using `@apollo/client-integration-nextjs`
-  - [ ] 5.3 Use `ApolloNextAppProvider` for App Router compatibility
-  - [ ] 5.4 Export client factory function for SSR/CSR
-  - [ ] 5.5 Write render test for provider component
+- [x] Task 5: Create ApolloProvider wrapper component (AC: 6)
+  - [x] 5.1 Create `lib/apollo/provider.tsx` file
+  - [x] 5.2 Implement `ApolloWrapper` component using `@apollo/client-integration-nextjs`
+  - [x] 5.3 Use `ApolloNextAppProvider` for App Router compatibility
+  - [x] 5.4 Export client factory function for SSR/CSR
+  - [x] 5.5 Write render test for provider component
 
-- [ ] Task 6: Create useWebSocketReconnect hook (AC: 8)
-  - [ ] 6.1 Create `hooks/useWebSocketReconnect.ts` file
-  - [ ] 6.2 Implement hook to expose WebSocket connection status
-  - [ ] 6.3 Return connection state (connecting, connected, disconnected, error)
-  - [ ] 6.4 Provide manual reconnect function
-  - [ ] 6.5 Add TypeScript interface for return type
-  - [ ] 6.6 Write unit tests with mock WebSocket client
+- [x] Task 6: Create useWebSocketReconnect hook (AC: 8)
+  - [x] 6.1 Create `hooks/useWebSocketReconnect.ts` file
+  - [x] 6.2 Implement hook to expose WebSocket connection status
+  - [x] 6.3 Return connection state (connecting, connected, disconnected, error)
+  - [x] 6.4 Provide manual reconnect function
+  - [x] 6.5 Add TypeScript interface for return type
+  - [x] 6.6 Write unit tests with mock WebSocket client
 
-- [ ] Task 7: Integrate ApolloProvider in root layout (AC: 6)
-  - [ ] 7.1 Update `app/layout.tsx` to wrap children with `ApolloWrapper`
-  - [ ] 7.2 Verify provider is available in component tree
-  - [ ] 7.3 Test with simple query component (or mock)
+- [x] Task 7: Integrate ApolloProvider in root layout (AC: 6)
+  - [x] 7.1 Update `app/layout.tsx` to wrap children with `ApolloWrapper`
+  - [x] 7.2 Verify provider is available in component tree
+  - [x] 7.3 Test with simple query component (or mock)
 
-- [ ] Task 8: Verify Apollo Client setup (AC: all)
-  - [ ] 8.1 Test HTTP link makes requests to correct endpoint
-  - [ ] 8.2 Test auth header included when token available
-  - [ ] 8.3 Test WebSocket connects to correct endpoint
-  - [ ] 8.4 Test split link routes operations correctly
-  - [ ] 8.5 Test cache policies merge/normalize data correctly
-  - [ ] 8.6 Test WebSocket reconnects after simulated disconnect
-  - [ ] 8.7 Run `pnpm typecheck` and `pnpm lint` without errors
+- [x] Task 8: Verify Apollo Client setup (AC: all)
+  - [x] 8.1 Test HTTP link makes requests to correct endpoint
+  - [x] 8.2 Test auth header included when token available
+  - [x] 8.3 Test WebSocket connects to correct endpoint
+  - [x] 8.4 Test split link routes operations correctly
+  - [x] 8.5 Test cache policies merge/normalize data correctly
+  - [x] 8.6 Test WebSocket reconnects after simulated disconnect
+  - [x] 8.7 Run `pnpm typecheck` and `pnpm lint` without errors
 
 ## Dev Notes
 
@@ -223,16 +223,39 @@ const wsClient = createClient({
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude claude-opus-4-5-20251101
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- Created Apollo Client configuration with HTTP and WebSocket links
+- Implemented split link to route subscriptions to WebSocket, queries/mutations to HTTP
+- Added InMemoryCache with type policies for OnboardingSession, Message, TherapistMatch
+- Created ApolloWrapper provider using @apollo/client-integration-nextjs
+- Implemented useWebSocketReconnect hook for connection status monitoring
+- Integrated ApolloProvider in root layout
+- All 63 tests passing (including 21 new Apollo-related tests)
+- Lint passes with only one warning (unrelated to this story)
+
 ### File List
+
+- lib/apollo/links.ts (new)
+- lib/apollo/client.ts (new)
+- lib/apollo/provider.tsx (new)
+- lib/apollo/index.ts (new)
+- hooks/useWebSocketReconnect.ts (new)
+- hooks/index.ts (new)
+- app/layout.tsx (modified - added ApolloWrapper)
+- tests/unit/lib/apollo/client.test.ts (new)
+- tests/unit/lib/apollo/links.test.ts (new)
+- tests/unit/lib/apollo/provider.test.tsx (new)
+- tests/unit/hooks/useWebSocketReconnect.test.tsx (new)
+- docs/sprint-artifacts/sprint-status.yaml (modified)
 
 ## Changelog
 
 | Date | Change | Author |
 |------|--------|--------|
 | 2025-11-29 | Story drafted from tech spec and epics | SM Agent (Bob) |
+| 2025-11-29 | Story implementation complete - Apollo client configured with WS support, 63 tests passing | Dev Agent (Amelia) |

@@ -1,0 +1,18 @@
+# GetCurrentUser Query
+# Fetches the current authenticated user
+
+query GetCurrentUser {
+  me {
+    id
+    email
+    firstName
+    lastName
+    role
+    createdAt
+    children {
+      id
+      firstName
+      dateOfBirth
+    }
+  }
+}
