@@ -1,0 +1,300 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.2</storyId>
+    <title>Message Input and Quick Reply Chips</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-2-message-input-and-quick-reply-chips.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>to respond to the AI via text input or quick reply buttons</iWant>
+    <soThat>I can share as much or as little as I want with minimal effort</soThat>
+    <tasks>
+- [ ] **Task 1: Create QuickReplyChips component** (AC: 2.2.1, 2.2.2, 2.2.3, 2.2.4, 2.2.11)
+  - [ ] Create `features/assessment/QuickReplyChips.tsx`
+  - [ ] Implement horizontal scrollable container
+  - [ ] Style pill-shaped buttons with teal outline
+  - [ ] Add filled state on selection
+  - [ ] Implement `onSelect` callback that sends immediately
+  - [ ] Add hide/show logic based on typing state
+  - [ ] Ensure 44x44px minimum touch targets
+  - [ ] Export `QuickReplyChipsProps` interface
+
+- [ ] **Task 2: Create MessageInput component** (AC: 2.2.5, 2.2.6, 2.2.7, 2.2.9, 2.2.10, 2.2.12)
+  - [ ] Create `features/assessment/MessageInput.tsx`
+  - [ ] Implement fixed bottom positioning on mobile
+  - [ ] Use textarea that auto-expands to 3 lines max
+  - [ ] Style send button with teal color
+  - [ ] Implement send button enabled/disabled state
+  - [ ] Add Enter to send, Shift+Enter for newline logic
+  - [ ] Add disabled state with visual indicator when AI responding
+  - [ ] Add "Type your message..." placeholder
+
+- [ ] **Task 3: Implement character limit** (AC: 2.2.8)
+  - [ ] Add 2000 character limit to textarea
+  - [ ] Show character counter when input exceeds 1800 characters
+  - [ ] Style counter with muted text, warning color near limit
+  - [ ] Prevent input beyond 2000 characters
+
+- [ ] **Task 4: Integrate with ChatWindow** (AC: all)
+  - [ ] Add MessageInput to ChatWindow component
+  - [ ] Add QuickReplyChips above input area
+  - [ ] Wire up `onSend` callback to parent
+  - [ ] Pass `suggestedReplies` prop to QuickReplyChips
+  - [ ] Implement `isAiResponding` state management
+  - [ ] Hide chips when user starts typing
+
+- [ ] **Task 5: Implement optimistic message sending** (AC: 2.2.3)
+  - [ ] Create `useAssessmentChat` hook in `features/assessment/useAssessmentChat.ts`
+  - [ ] Implement `sendMessage` function with optimistic UI
+  - [ ] Handle quick reply sends
+  - [ ] Clear input after successful send
+  - [ ] Store draft message in sessionStorage for persistence
+
+- [ ] **Task 6: Write unit tests** (AC: all)
+  - [ ] Create `tests/unit/components/assessment/QuickReplyChips.test.tsx`
+  - [ ] Create `tests/unit/components/assessment/MessageInput.test.tsx`
+  - [ ] Test chip selection triggers callback
+  - [ ] Test chips hide on typing
+  - [ ] Test send button state changes
+  - [ ] Test character counter display
+  - [ ] Test keyboard shortcuts (Enter, Shift+Enter)
+  - [ ] Test disabled state during AI response
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. **AC-2.2.1:** Quick reply chips appear as horizontal scrollable row of 2-4 options
+2. **AC-2.2.2:** Quick reply chips are pill-shaped buttons with teal outline
+3. **AC-2.2.3:** Tapping a chip fills it with teal and sends immediately
+4. **AC-2.2.4:** Quick replies disappear after selection or when typing starts
+5. **AC-2.2.5:** Text input bar is fixed to bottom on mobile
+6. **AC-2.2.6:** Textarea expands to 3 lines maximum
+7. **AC-2.2.7:** Send button is teal and enabled only when text is present
+8. **AC-2.2.8:** Character limit of 2000 with counter appearing at 1800+
+9. **AC-2.2.9:** Pressing Enter sends message (Shift+Enter for newline)
+10. **AC-2.2.10:** Input is disabled while AI is responding (with visual indicator)
+11. **AC-2.2.11:** Touch targets are minimum 44x44px (WCAG)
+12. **AC-2.2.12:** Placeholder text shows "Type your message..."
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Project Structure - features/assessment/</section>
+        <snippet>Component location: features/assessment/ per Architecture project structure. Components include ChatWindow, ChatBubble, QuickReplyChips, MessageInput, and useAssessmentChat hook.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Implementation Patterns - Naming Patterns</section>
+        <snippet>Components: PascalCase (MessageInput.tsx), Hooks: camelCase with 'use' prefix (useAssessmentChat.ts), Props: PascalCase with 'Props' suffix (MessageInputProps)</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Consistency Rules - Code Organization</section>
+        <snippet>Component file structure: 1) Imports (external, then internal, then types), 2) Types/interfaces, 3) Constants, 4) Helper functions, 5) Component, 6) Export</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>Detailed Design - Services and Modules</section>
+        <snippet>QuickReplyChips: Renders quick reply options, handles selection. Inputs: Options array, onSelect callback. MessageInput: Text input with send button, handles submission. Inputs: onSend callback, isDisabled state.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>Data Models and Contracts</section>
+        <snippet>Message interface: {id, sender: 'AI'|'USER'|'SYSTEM', content, timestamp, suggestedReplies?: string[]}. QuickReplyOption: {label, value, icon?}</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>APIs and Interfaces - GraphQL Operations</section>
+        <snippet>mutation SubmitAssessmentMessage($input: MessageInput!) returns {message, aiResponse, nextQuestion}. MessageInput: {sessionId: ID!, content: String!, isQuickReply: Boolean}</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>3.1 Color System - Primary Palette</section>
+        <snippet>Daybreak Teal: #2A9D8F (primary actions, buttons), Teal Light: #3DBCB0 (hover states). Quick reply outline and fill use daybreak-teal.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>6.2 Custom Components - Quick Reply Chips</section>
+        <snippet>Purpose: Provide tap-to-respond options in chat. Anatomy: Text label, optional icon. States: Default (outline), Hover (filled), Selected (teal fill), Disabled. Touch targets minimum 44x44px.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>8.2 Accessibility Requirements</section>
+        <snippet>WCAG 2.1 Level AA compliance. Touch targets minimum 44x44px, keyboard navigation required, visible focus indicators (2px teal outline), ARIA labels on interactive elements.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>daybreak-health-frontend - Epic Breakdown</title>
+        <section>Story 2.2: Message Input and Quick Reply Chips</section>
+        <snippet>Quick replies: horizontal scrollable row, pill-shaped with teal outline, tap to send immediately. Text input: fixed bottom, 3-line max, 2000 char limit with counter at 1800+, Enter sends, Shift+Enter newline.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Button component to be used as base for send button and quick reply chips</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/textarea.tsx</path>
+        <kind>component</kind>
+        <symbol>Textarea</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Textarea component to be used as base for message input</reason>
+      </artifact>
+      <artifact>
+        <path>lib/apollo/client.ts</path>
+        <kind>apollo-config</kind>
+        <symbol>makeClient</symbol>
+        <lines>all</lines>
+        <reason>Apollo Client configuration for GraphQL mutations and optimistic updates</reason>
+      </artifact>
+      <artifact>
+        <path>docs/sprint-artifacts/api_schema.graphql</path>
+        <kind>schema</kind>
+        <symbol>ChatMessage, MessageSender</symbol>
+        <lines>69-82</lines>
+        <reason>GraphQL types for chat messages used in mutations and queries</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>@apollo/client</package>
+        <version>^4.0.9</version>
+        <usage>GraphQL client for mutations and optimistic UI</usage>
+      </node>
+      <node>
+        <package>react-hook-form</package>
+        <version>^7.67.0</version>
+        <usage>Form state management if needed for input validation</usage>
+      </node>
+      <node>
+        <package>zod</package>
+        <version>^3.25.76</version>
+        <usage>Schema validation for message content</usage>
+      </node>
+      <node>
+        <package>clsx</package>
+        <version>^2.1.1</version>
+        <usage>Conditional className joining for component states</usage>
+      </node>
+      <node>
+        <package>lucide-react</package>
+        <version>^0.555.0</version>
+        <usage>Icons for send button and quick reply chips</usage>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+- **Component Location:** All components must be created in `features/assessment/` directory per Architecture project structure
+- **Naming Convention:** Components use PascalCase (QuickReplyChips.tsx), hooks use camelCase with 'use' prefix (useAssessmentChat.ts)
+- **File Organization:** Follow Architecture code organization pattern: imports, types, constants, helpers, component, export
+- **File Size:** Components should not exceed 500 lines per CLAUDE.md requirements
+- **Styling:** Use Tailwind utilities with Daybreak design tokens (daybreak-teal, cream, deep-text)
+- **Typography:** Use Inter font for UI elements (body text)
+- **Spacing:** Use 4px base unit (xs=4, sm=8, md=16, lg=24, xl=32)
+- **Border Radius:** Use md=12px for buttons, full=9999px for pills
+- **PHI Protection:** No console.log of message content, no PHI in logs (use phi-guard utility if needed)
+- **Accessibility:** Minimum 44x44px touch targets, WCAG 2.1 Level AA compliance, keyboard navigation support
+- **State Management:** Use Apollo cache for messages, local state for UI interactions
+- **Performance:** Use React.memo for optimization, debounce typing state updates (500ms)
+- **Mobile-First:** Design for mobile viewport first, then enhance for desktop
+- **Testing:** Write unit tests using Vitest and React Testing Library
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>QuickReplyChipsProps</name>
+      <kind>React Component Props</kind>
+      <signature>
+interface QuickReplyChipsProps {
+  options: Array&lt;{label: string; value: string; icon?: string}&gt;;
+  onSelect: (value: string) =&gt; void;
+  isVisible: boolean;
+}
+      </signature>
+      <path>features/assessment/QuickReplyChips.tsx</path>
+    </interface>
+    <interface>
+      <name>MessageInputProps</name>
+      <kind>React Component Props</kind>
+      <signature>
+interface MessageInputProps {
+  onSend: (message: string) =&gt; void;
+  isDisabled?: boolean;
+  placeholder?: string;
+  maxLength?: number;
+}
+      </signature>
+      <path>features/assessment/MessageInput.tsx</path>
+    </interface>
+    <interface>
+      <name>useAssessmentChat</name>
+      <kind>React Hook</kind>
+      <signature>
+function useAssessmentChat(sessionId: string): {
+  messages: Message[];
+  sendMessage: (content: string, isQuickReply?: boolean) =&gt; Promise&lt;void&gt;;
+  isAiResponding: boolean;
+  suggestedReplies: string[];
+  error: ApolloError | undefined;
+}
+      </signature>
+      <path>features/assessment/useAssessmentChat.ts</path>
+    </interface>
+    <interface>
+      <name>SubmitAssessmentMessage</name>
+      <kind>GraphQL Mutation</kind>
+      <signature>
+mutation SubmitAssessmentMessage($input: MessageInput!) {
+  submitAssessmentMessage(input: $input) {
+    message { id sender content timestamp }
+    aiResponse { id sender content timestamp suggestedReplies }
+    nextQuestion
+  }
+}
+      </signature>
+      <path>features/assessment/assessment.graphql</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Unit tests should use Vitest and React Testing Library. Tests should cover component rendering, user interactions, state changes, and edge cases. Follow AAA pattern (Arrange, Act, Assert). Use data-testid attributes for reliable element selection. Mock Apollo Client mutations and queries. Test accessibility features including keyboard navigation and ARIA attributes.
+    </standards>
+    <locations>
+- tests/unit/components/assessment/QuickReplyChips.test.tsx
+- tests/unit/components/assessment/MessageInput.test.tsx
+- tests/unit/hooks/useAssessmentChat.test.ts
+    </locations>
+    <ideas>
+- **AC-2.2.1-2.2.4:** Test QuickReplyChips renders options, horizontal scroll works, clicking chip calls onSelect with correct value, chips hide when isVisible=false
+- **AC-2.2.5-2.2.7:** Test MessageInput renders textarea and send button, send button disabled when empty, enabled when text present, button has teal styling
+- **AC-2.2.8:** Test character counter appears at 1800 characters, shows warning color approaching 2000, prevents input beyond 2000
+- **AC-2.2.9:** Test Enter key triggers send, Shift+Enter adds newline without sending
+- **AC-2.2.10:** Test input disabled when isDisabled=true, visual indicator shown
+- **AC-2.2.11:** Test touch targets are minimum 44x44px (getBoundingClientRect)
+- **AC-2.2.12:** Test placeholder text displays correctly
+- **Integration:** Test useAssessmentChat hook sends mutation, handles optimistic updates, clears input after send, manages isAiResponding state
+    </ideas>
+  </tests>
+</story-context>

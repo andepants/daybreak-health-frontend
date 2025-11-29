@@ -1,6 +1,6 @@
 # Story 2.1: Chat Window and Message Display
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -69,6 +69,11 @@ so that **the experience feels natural and supportive, not like filling out form
   - [ ] Test auto-scroll behavior
   - [ ] Test accessibility attributes
 
+## Prerequisites
+
+- **Story 1.2:** Daybreak Design System and Theme Configuration (design tokens)
+- **Story 1.3:** Core Layout Components (Header, Footer, page structure)
+
 ## Dev Notes
 
 ### Architecture Patterns
@@ -92,8 +97,11 @@ From UX Design Specification (Section 3.1):
 features/assessment/
 ├── ChatWindow.tsx          # Main chat container
 ├── ChatBubble.tsx          # Message display component
-├── ChatBubble.test.tsx     # Unit tests (in tests/ mirror)
 └── index.ts                # Re-exports
+
+tests/unit/components/assessment/
+├── ChatWindow.test.tsx     # Unit tests
+└── ChatBubble.test.tsx     # Unit tests
 ```
 
 ### Performance Considerations
@@ -120,7 +128,7 @@ features/assessment/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- [Story Context XML](./2-1-chat-window-and-message-display.context.xml)
 
 ### Agent Model Used
 

@@ -1,0 +1,450 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.6</storyId>
+    <title>Session Persistence and Resume</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-6-session-persistence-and-resume.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>my progress saved automatically so I can leave and return later</iWant>
+    <soThat>I don't lose everything if I get interrupted or need a break</soThat>
+    <tasks>
+- [ ] **Task 1: Implement auto-save on message send** (AC: 2.6.1)
+  - [ ] Modify useAssessmentChat to save after every mutation
+  - [ ] Use optimistic updates - show message immediately
+  - [ ] Handle save failure gracefully (don't lose message)
+  - [ ] Add retry logic for failed saves
+
+- [ ] **Task 2: Implement session restoration on page load** (AC: 2.6.2, 2.6.3)
+  - [ ] Fetch session data on assessment page mount
+  - [ ] Populate chat with existing conversationHistory
+  - [ ] Restore assessment state (structured progress, etc.)
+  - [ ] Handle case where session doesn't exist (redirect to start)
+
+- [ ] **Task 3: Implement "Welcome back" logic** (AC: 2.6.4)
+  - [ ] Detect if session has existing messages
+  - [ ] If returning, request welcome back message from API
+  - [ ] Display welcome message before continuing
+  - [ ] Track session resume events for analytics
+
+- [ ] **Task 4: Implement "Save & Exit" functionality** (AC: 2.6.5, 2.6.6, 2.6.7)
+  - [ ] Add "Save & Exit" button to Header component (from Story 1.3)
+  - [ ] On click, trigger explicit save of current state
+  - [ ] Show confirmation modal with:
+    - Success message
+    - Session URL for returning
+    - Copy link button
+    - Email reminder option (optional email input)
+  - [ ] Use shadcn/ui Dialog for confirmation modal
+
+- [ ] **Task 5: Implement email reminder option** (AC: 2.6.7)
+  - [ ] Add email input to save confirmation modal
+  - [ ] Pre-fill with parent email if already collected
+  - [ ] Create GraphQL mutation to request reminder email
+  - [ ] Show success feedback on email request
+
+- [ ] **Task 6: Implement network failure handling** (AC: 2.6.9)
+  - [ ] Detect network errors on save mutations
+  - [ ] Show "Saving..." indicator with spinner
+  - [ ] On failure, show error toast with retry button
+  - [ ] Queue failed saves and retry on reconnection
+  - [ ] Use Apollo Client error handling patterns
+
+- [ ] **Task 7: Implement localStorage backup** (AC: 2.6.10)
+  - [ ] Store session ID in localStorage on session start
+  - [ ] On page load, check localStorage for session ID
+  - [ ] If URL session ID missing, attempt recovery from localStorage
+  - [ ] Clear localStorage on session completion
+
+- [ ] **Task 8: Create useAutoSave hook** (AC: 2.6.1, 2.6.9)
+  - [ ] Create `hooks/useAutoSave.ts` per Architecture
+  - [ ] Implement debounced save (but not batched - each message triggers)
+  - [ ] Track save status (idle, saving, error)
+  - [ ] Expose retry function for manual retry
+  - [ ] Integrate with useAssessmentChat
+
+- [ ] **Task 9: Create useOnboardingSession hook** (AC: 2.6.2, 2.6.3, 2.6.8)
+  - [ ] Create `hooks/useOnboardingSession.ts` per Architecture
+  - [ ] Manage session state across onboarding steps
+  - [ ] Handle session expiry (30 day limit)
+  - [ ] Provide session recovery utilities
+  - [ ] Expose session status for UI display
+
+- [ ] **Task 10: Write integration tests** (AC: all)
+  - [ ] Test message persistence on send
+  - [ ] Test session restoration on page load
+  - [ ] Test "Save & Exit" flow
+  - [ ] Test network failure handling
+  - [ ] Test localStorage recovery
+  - [ ] Mock GraphQL for persistence tests
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+**AC-2.6.1:** Every message saves to backend on send (not batched)
+
+**AC-2.6.2:** Closing browser preserves conversation state
+
+**AC-2.6.3:** Returning to same session URL restores all messages
+
+**AC-2.6.4:** AI acknowledges return ("Welcome back! Let's continue...")
+
+**AC-2.6.5:** "Save & Exit" in header saves state and shows confirmation
+
+**AC-2.6.6:** Confirmation shows session link for returning
+
+**AC-2.6.7:** Option to receive email reminder in save confirmation
+
+**AC-2.6.8:** Session recoverable for 30 days
+
+**AC-2.6.9:** Network failure shows "Saving..." indicator with retry option
+
+**AC-2.6.10:** Session ID stored in localStorage as backup recovery method
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <!-- Architecture Documentation -->
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Session Persistence</title>
+        <section>Pre-mortem Risk Mitigations</section>
+        <snippet>Context lost on refresh: Persist every message to backend immediately (MVP). Optimistic save on every `sendMessage`</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Project Structure - Hooks</title>
+        <section>Project Structure</section>
+        <snippet>hooks/useAutoSave.ts - Aggressive auto-save hook; hooks/useOnboardingSession.ts - Session state management</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Fundamental Truths</title>
+        <section>Fundamental Truths</section>
+        <snippet>Parents are emotionally stressed: UX must be warm, forgiving of errors, allow pause/resume. Save progress on every interaction.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: PHI Protection</title>
+        <section>Security Architecture - PHI Protection Checklist</section>
+        <snippet>Session ID is safe to store in localStorage. Do not store message content in localStorage. Session recovery should re-fetch from backend.</snippet>
+      </doc>
+
+      <!-- Tech Spec Documentation -->
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Tech Spec: Session Persistence and Resume</title>
+        <section>Acceptance Criteria - AC-2.6</section>
+        <snippet>Every message saves to backend on send (not batched). Closing browser preserves conversation. Network failure shows "Saving..." with retry option. Session recoverable for 30 days.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Tech Spec: Data Models</title>
+        <section>Data Models and Contracts</section>
+        <snippet>AssessmentState includes conversationHistory, currentQuestion, isComplete, summary. OnboardingSession includes id, status, createdAt, updatedAt.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Tech Spec: Non-Functional Requirements - Reliability</title>
+        <section>Reliability/Availability</section>
+        <snippet>Network disconnect: Show "Connection lost" toast, auto-reconnect with backoff. Session recovery: All messages persisted, resume from any device.</snippet>
+      </doc>
+
+      <!-- Epics Documentation -->
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic 2: Story 2.6 - Session Persistence</title>
+        <section>Epic 2 - Story 2.6</section>
+        <snippet>As a parent, I want my progress saved automatically so I can leave and return later, so that I don't lose everything if I get interrupted or need a break.</snippet>
+      </doc>
+
+      <!-- UX Design Specification -->
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design: Core Experience Principles</title>
+        <section>Core Experience Principles</section>
+        <snippet>Flexibility: Quick replies for common answers + free text for those who want to explain. Parents shouldn't have to guess what's next.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design: Emotional Design Goals</title>
+        <section>Emotional Design Goals</section>
+        <snippet>Primary Feeling: Supported and understood (not judged). Design Implications: "Save & Exit" always accessible. Progress visibility at all times.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <!-- Existing Components -->
+      <artifact>
+        <path>components/layout/Header.tsx</path>
+        <kind>component</kind>
+        <symbol>Header</symbol>
+        <lines>1-89</lines>
+        <reason>Header component already has "Save & Exit" button structure. Need to wire up the onSaveExit callback to trigger save modal.</reason>
+      </artifact>
+      <artifact>
+        <path>hooks/useWebSocketReconnect.ts</path>
+        <kind>hook</kind>
+        <symbol>useWebSocketReconnect</symbol>
+        <lines>1-91</lines>
+        <reason>Existing hook for WebSocket reconnection. Can be used as a pattern for network failure detection in useAutoSave.</reason>
+      </artifact>
+      <artifact>
+        <path>graphql/queries/GetOnboardingSession.graphql</path>
+        <kind>graphql-query</kind>
+        <symbol>GetOnboardingSession</symbol>
+        <lines>1-51</lines>
+        <reason>Query to fetch existing session state including conversationHistory. Used for session restoration on page load.</reason>
+      </artifact>
+      <artifact>
+        <path>graphql/mutations/SubmitAssessmentMessage.graphql</path>
+        <kind>graphql-mutation</kind>
+        <symbol>SubmitAssessmentMessage</symbol>
+        <lines>1-18</lines>
+        <reason>Mutation that saves messages to backend. Returns updated conversationHistory. Already implements auto-save pattern.</reason>
+      </artifact>
+
+      <!-- Components to Create -->
+      <artifact>
+        <path>hooks/useAutoSave.ts</path>
+        <kind>hook</kind>
+        <symbol>useAutoSave</symbol>
+        <lines>NEW</lines>
+        <reason>Core hook for auto-save functionality. Tracks save status, handles retry, exposes save function.</reason>
+      </artifact>
+      <artifact>
+        <path>hooks/useOnboardingSession.ts</path>
+        <kind>hook</kind>
+        <symbol>useOnboardingSession</symbol>
+        <lines>NEW</lines>
+        <reason>Manages session state across onboarding steps. Handles session recovery, expiry, and status tracking.</reason>
+      </artifact>
+      <artifact>
+        <path>components/layout/SaveExitModal.tsx</path>
+        <kind>component</kind>
+        <symbol>SaveExitModal</symbol>
+        <lines>NEW</lines>
+        <reason>Modal shown when user clicks "Save & Exit". Displays session URL, copy button, email reminder option.</reason>
+      </artifact>
+
+      <!-- GraphQL Operations to Create -->
+      <artifact>
+        <path>graphql/mutations/SendSessionReminder.graphql</path>
+        <kind>graphql-mutation</kind>
+        <symbol>SendSessionReminder</symbol>
+        <lines>NEW</lines>
+        <reason>Mutation to request email reminder for returning to session. Takes email and session ID as input.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <node>
+        <package>@apollo/client</package>
+        <version>^4.0.9</version>
+        <usage>GraphQL client with optimistic updates, error handling, and cache management for auto-save</usage>
+      </node>
+      <node>
+        <package>react-hook-form</package>
+        <version>^7.67.0</version>
+        <usage>Form handling for email reminder input in save confirmation modal</usage>
+      </node>
+      <node>
+        <package>zod</package>
+        <version>^3.25.76</version>
+        <usage>Email validation for reminder feature</usage>
+      </node>
+      <node>
+        <package>@radix-ui/react-slot</package>
+        <version>^1.2.4</version>
+        <usage>Used by shadcn/ui Dialog component for save confirmation modal</usage>
+      </node>
+      <node>
+        <package>lucide-react</package>
+        <version>^0.555.0</version>
+        <usage>Icons for save status indicators, copy button, spinner</usage>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+**Architecture Constraints:**
+- No PHI in localStorage - only store session ID
+- Session recovery must re-fetch from backend, never cache PHI locally
+- All mutations must use optimistic updates for immediate UI feedback
+- Error handling must follow Architecture patterns (toast notifications with retry)
+- Auto-save on every message send, not batched
+
+**Development Patterns:**
+- Hooks placed in `hooks/` directory per Architecture project structure
+- Use Apollo Client error link for network failure detection
+- Follow existing useWebSocketReconnect pattern for connection monitoring
+- Modal components use shadcn/ui Dialog component
+- Toast notifications use shadcn/ui toast (sonner integration)
+
+**Testing Requirements:**
+- Unit tests for hooks (useAutoSave, useOnboardingSession)
+- Integration tests for save/restore flow
+- E2E tests for session persistence across page reloads
+- Mock GraphQL mutations for reliable testing
+
+**PHI Protection:**
+- Session ID is safe to store in localStorage
+- Do not store message content client-side
+- Session URL contains only session ID, no PHI
+- Email reminder is optional and not stored client-side
+  </constraints>
+
+  <interfaces>
+**useAutoSave Hook Interface:**
+```typescript
+interface UseAutoSaveOptions {
+  sessionId: string;
+  onSaveSuccess?: () => void;
+  onSaveError?: (error: Error) => void;
+}
+
+interface UseAutoSaveReturn {
+  saveStatus: 'idle' | 'saving' | 'error' | 'saved';
+  lastSaved: Date | null;
+  error: Error | null;
+  retry: () => void;
+  save: (data: any) => Promise<void>;
+}
+
+function useAutoSave(options: UseAutoSaveOptions): UseAutoSaveReturn;
+```
+
+**useOnboardingSession Hook Interface:**
+```typescript
+interface UseOnboardingSessionReturn {
+  session: OnboardingSession | null;
+  isLoading: boolean;
+  error: Error | null;
+  isReturningUser: boolean;
+  sessionExpiresAt: Date | null;
+  refetch: () => void;
+}
+
+function useOnboardingSession(sessionId: string): UseOnboardingSessionReturn;
+```
+
+**GraphQL Mutation: SendSessionReminder**
+```graphql
+mutation SendSessionReminder($input: SendSessionReminderInput!) {
+  sendSessionReminder(input: $input) {
+    success
+    message
+  }
+}
+
+input SendSessionReminderInput {
+  sessionId: ID!
+  email: String!
+}
+```
+
+**SaveExitModal Component Interface:**
+```typescript
+interface SaveExitModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  sessionId: string;
+  parentEmail?: string;
+}
+```
+
+**Apollo Error Handling Pattern:**
+```typescript
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (networkError) {
+    // Queue for retry
+    queueFailedSave(operation);
+    toast.error('Connection lost. Retrying...', {
+      action: { label: 'Retry now', onClick: () => retry() }
+    });
+  }
+});
+```
+  </interfaces>
+
+  <tests>
+    <standards>
+**Testing Framework:** Vitest with React Testing Library for unit tests, Playwright for E2E tests
+
+**Test Location:**
+- Unit tests: `tests/unit/hooks/` for hook tests
+- Component tests: `tests/unit/components/` for component tests
+- Integration tests: `tests/e2e/` for Playwright tests
+
+**Coverage Requirements:**
+- All hooks must have unit tests with 80%+ coverage
+- Integration tests for critical flows (save, restore, network failure)
+- E2E tests for session persistence across page reloads
+
+**Mocking Strategy:**
+- Use MSW (Mock Service Worker) for GraphQL mocking
+- Mock Apollo Client for isolated hook testing
+- Mock localStorage for storage tests
+    </standards>
+
+    <locations>
+- `tests/unit/hooks/useAutoSave.test.ts` - Unit tests for useAutoSave hook
+- `tests/unit/hooks/useOnboardingSession.test.ts` - Unit tests for useOnboardingSession hook
+- `tests/unit/components/SaveExitModal.test.tsx` - Component tests for save modal
+- `tests/e2e/session-persistence.spec.ts` - E2E tests for session save/restore flow
+    </locations>
+
+    <ideas>
+**AC-2.6.1 - Auto-save on message send:**
+- Test that submitting a message triggers save mutation
+- Test optimistic update shows message immediately
+- Test save failure doesn't lose user's message
+- Test retry logic after failed save
+
+**AC-2.6.2 & AC-2.6.3 - Session restoration:**
+- Test that closing and reopening browser restores all messages
+- Test that navigating to session URL loads conversation history
+- Test that session state (currentQuestion, isComplete) is restored
+- Test redirect to start if session doesn't exist
+
+**AC-2.6.4 - Welcome back message:**
+- Test that returning user sees "Welcome back" message
+- Test that first-time user doesn't see welcome message
+- Test that welcome message is added to conversation history
+
+**AC-2.6.5 & AC-2.6.6 - Save & Exit:**
+- Test that clicking "Save & Exit" triggers save
+- Test that confirmation modal appears with session URL
+- Test that copy button copies URL to clipboard
+- Test modal can be dismissed
+
+**AC-2.6.7 - Email reminder:**
+- Test email input is pre-filled if parent email exists
+- Test email validation (valid/invalid email formats)
+- Test reminder mutation is called with correct data
+- Test success message after sending reminder
+
+**AC-2.6.8 - 30 day expiry:**
+- Test that session expiry date is calculated correctly
+- Test that expired session shows appropriate error
+- Test that session within 30 days loads normally
+
+**AC-2.6.9 - Network failure handling:**
+- Test "Saving..." indicator appears during save
+- Test error toast appears on network failure
+- Test retry button in toast triggers save retry
+- Test queue mechanism for failed saves
+
+**AC-2.6.10 - localStorage backup:**
+- Test session ID is stored in localStorage on session start
+- Test localStorage is checked on page load
+- Test recovery from localStorage if URL param missing
+- Test localStorage is cleared on session completion
+    </ideas>
+  </tests>
+</story-context>

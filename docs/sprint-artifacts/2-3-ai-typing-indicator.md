@@ -1,6 +1,6 @@
 # Story 2.3: AI Typing Indicator
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -71,6 +71,11 @@ so that **I know help is coming and the system hasn't frozen**.
   - [ ] Test retry button click handler
   - [ ] Test accessibility attributes
   - [ ] Test fade-in animation presence
+
+## Prerequisites
+
+- **Story 2-1:** Chat Window and Message Display (ChatWindow, ChatBubble, avatar pattern)
+- **Story 2-2:** Message Input and Quick Reply Chips (useAssessmentChat hook)
 
 ## Dev Notes
 
@@ -154,7 +159,7 @@ features/assessment/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- [Story Context XML](./2-3-ai-typing-indicator.context.xml)
 
 ### Agent Model Used
 

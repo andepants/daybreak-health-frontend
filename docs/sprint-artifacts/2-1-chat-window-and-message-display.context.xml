@@ -1,0 +1,373 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.1</storyId>
+    <title>Chat Window and Message Display</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-1-chat-window-and-message-display.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>to see my conversation with the AI in a familiar chat interface</iWant>
+    <soThat>the experience feels natural and supportive, not like filling out forms</soThat>
+    <tasks>
+- [ ] **Task 1: Create ChatWindow component** (AC: 2.1.1, 2.1.2, 2.1.3, 2.1.4, 2.1.10)
+  - [ ] Create `features/assessment/ChatWindow.tsx`
+  - [ ] Implement full viewport height minus header calculation
+  - [ ] Add centered max-width 640px container for desktop
+  - [ ] Implement scroll container with `useRef` for programmatic scroll
+  - [ ] Add auto-scroll on message array change
+  - [ ] Add smooth scroll with CSS `scroll-behavior: smooth`
+  - [ ] Test mobile momentum scrolling
+
+- [ ] **Task 2: Create ChatBubble component** (AC: 2.1.5, 2.1.6, 2.1.7, 2.1.9)
+  - [ ] Create `features/assessment/ChatBubble.tsx`
+  - [ ] Implement `variant="ai"` with light teal background, left-aligned
+  - [ ] Implement `variant="user"` with teal background, white text, right-aligned
+  - [ ] Add Daybreak mountain icon avatar for AI messages (40x40px)
+  - [ ] Implement 75% max-width constraint
+  - [ ] Add fade-in animation using CSS keyframes or Tailwind `animate-`
+  - [ ] Export `ChatBubbleProps` interface
+
+- [ ] **Task 3: Implement timestamp display** (AC: 2.1.8)
+  - [ ] Create relative time formatter utility in `lib/utils/formatters.ts`
+  - [ ] Handle "Just now", "X min ago", "X hours ago" formats
+  - [ ] Add timestamp element to ChatBubble
+  - [ ] Style timestamp with muted color below message
+
+- [ ] **Task 4: Implement accessibility features** (AC: 2.1.11, 2.1.12)
+  - [ ] Add `role="log"` to chat container
+  - [ ] Add `aria-live="polite"` region for new messages
+  - [ ] Ensure focus management doesn't break on new messages
+  - [ ] Test with VoiceOver - verify each message announces
+
+- [ ] **Task 5: Create assessment page route** (AC: all)
+  - [ ] Create `app/onboarding/[sessionId]/assessment/page.tsx`
+  - [ ] Integrate ChatWindow component
+  - [ ] Add mock message data for development
+  - [ ] Verify layout at mobile (375px) and desktop (1280px) viewports
+
+- [ ] **Task 6: Write unit tests** (AC: all)
+  - [ ] Create `tests/unit/components/assessment/ChatWindow.test.tsx`
+  - [ ] Create `tests/unit/components/assessment/ChatBubble.test.tsx`
+  - [ ] Test AI message rendering with correct styles
+  - [ ] Test user message rendering with correct styles
+  - [ ] Test auto-scroll behavior
+  - [ ] Test accessibility attributes
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. **AC-2.1.1:** Chat window renders full viewport height minus header on mobile
+2. **AC-2.1.2:** Chat window is centered with max-width 640px on desktop
+3. **AC-2.1.3:** Messages scroll from bottom up with newest visible
+4. **AC-2.1.4:** Auto-scroll to newest message on update
+5. **AC-2.1.5:** AI messages display with light teal background (#F0FDFA), left-aligned, 75% max-width
+6. **AC-2.1.6:** User messages display with teal background (#2A9D8F), white text, right-aligned, 75% max-width
+7. **AC-2.1.7:** AI messages show Daybreak mountain icon avatar (40x40px)
+8. **AC-2.1.8:** Each message shows relative timestamp ("Just now", "2 min ago")
+9. **AC-2.1.9:** Messages have smooth fade-in animation on appear
+10. **AC-2.1.10:** Scrolling is smooth with momentum on mobile
+11. **AC-2.1.11:** Screen reader announces new messages with `aria-live="polite"`
+12. **AC-2.1.12:** Chat container has `role="log"` for accessibility
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Project Structure</section>
+        <snippet>Component Location: features/assessment/ per Architecture project structure. Route Location: app/onboarding/[sessionId]/assessment/page.tsx. Features directory contains feature-specific components co-located with logic.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Implementation Patterns - Structure Patterns</section>
+        <snippet>Feature components in features/[feature]/, shared UI in components/ui/, layout components in components/layout/. GraphQL operations co-located with consumers in features/[feature]/*.graphql. Custom hooks near usage or in hooks/ for shared.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Security Architecture - PHI Protection Checklist</section>
+        <snippet>No PHI in console.log/error, URL parameters, browser history, error messages, or Sentry payloads. Use replace not push for sensitive routes. role="log" indicates region where new information added. aria-live="polite" announces without interrupting.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>Data Models and Contracts</section>
+        <snippet>Message interface: { id, sender: 'AI'|'USER'|'SYSTEM', content, timestamp (ISO 8601), suggestedReplies? }. AssessmentState contains conversationHistory array, currentQuestion, isComplete, summary.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>Non-Functional Requirements - Performance</section>
+        <snippet>Message render time &lt; 100ms via React.memo on ChatBubble. Auto-scroll latency &lt; 50ms via useRef scrollIntoView. Consider virtualization if &gt; 50 messages. Initial load LCP &lt; 1.5s via code splitting.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>3.1 Color System - Chat Interface Colors</section>
+        <snippet>AI Message Background: #F0FDFA (light teal tint). User Message Background: #2A9D8F (primary teal). User Message Text: #FFFFFF. Border radius xl (24px) for chat bubbles.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>6.2 Custom Components - AI Chat Bubble</section>
+        <snippet>Avatar (AI: Daybreak mountain icon, User: initials or blank). Message content supports markdown/links. Timestamp. Typing indicator (AI only). Variants: AI (light teal, left), User (teal, white text, right), System (centered, muted).</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>8.1 Responsive Strategy - Breakpoints & Adaptation</section>
+        <snippet>Mobile (&lt;640px): Single column, bottom nav. Desktop (&gt;1024px): Centered content max-width 640px for chat. Chat bubbles: Full width - 16px on mobile, Max 75% width on desktop.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>daybreak-health-frontend - Epic Breakdown</title>
+        <section>Story 2.1: Chat Window and Message Display</section>
+        <snippet>Chat container full viewport minus header (mobile), centered 640px (desktop), cream background. AI messages light teal left-aligned with avatar. User messages teal right-aligned white text. Relative timestamps, fade-in animation, smooth scroll.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>graphql/queries/GetOnboardingSession.graphql</path>
+        <kind>graphql-query</kind>
+        <symbol>GetOnboardingSession</symbol>
+        <lines>1-51</lines>
+        <reason>Query for fetching onboarding session state including assessment.conversationHistory which contains messages to display</reason>
+      </artifact>
+      <artifact>
+        <path>graphql/mutations/SubmitAssessmentMessage.graphql</path>
+        <kind>graphql-mutation</kind>
+        <symbol>SubmitAssessmentMessage</symbol>
+        <lines>1-17</lines>
+        <reason>Mutation for sending messages and receiving AI responses. Returns updated conversationHistory with new messages.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui button component - already styled to Daybreak theme, may be useful for chat UI elements</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/card.tsx</path>
+        <kind>component</kind>
+        <symbol>Card</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui card component - can be base for chat bubble structure</reason>
+      </artifact>
+      <artifact>
+        <path>components/layout/Header.tsx</path>
+        <kind>component</kind>
+        <symbol>Header</symbol>
+        <lines>all</lines>
+        <reason>Layout header component - need to calculate viewport height minus header height for chat container</reason>
+      </artifact>
+      <artifact>
+        <path>components/layout/OnboardingProgress.tsx</path>
+        <kind>component</kind>
+        <symbol>OnboardingProgress</symbol>
+        <lines>all</lines>
+        <reason>Shows current onboarding step - needed to understand full layout structure for viewport calculations</reason>
+      </artifact>
+      <artifact>
+        <path>components/shared/ErrorBoundary.tsx</path>
+        <kind>component</kind>
+        <symbol>ErrorBoundary</symbol>
+        <lines>all</lines>
+        <reason>Error handling pattern to follow for chat component error handling</reason>
+      </artifact>
+      <artifact>
+        <path>lib/utils.ts</path>
+        <kind>utility</kind>
+        <symbol>cn</symbol>
+        <lines>all</lines>
+        <reason>Tailwind className utility for merging classes in chat components</reason>
+      </artifact>
+      <artifact>
+        <path>lib/apollo/client.ts</path>
+        <kind>config</kind>
+        <symbol>apolloClient</symbol>
+        <lines>all</lines>
+        <reason>Apollo Client configuration - needed to understand cache structure for message data</reason>
+      </artifact>
+      <artifact>
+        <path>hooks/useWebSocketReconnect.ts</path>
+        <kind>hook</kind>
+        <symbol>useWebSocketReconnect</symbol>
+        <lines>all</lines>
+        <reason>WebSocket reconnection hook - pattern to follow for real-time message updates</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>@apollo/client</package>
+        <version>^4.0.9</version>
+        <purpose>GraphQL client for fetching/caching messages</purpose>
+      </node>
+      <node>
+        <package>@apollo/client-integration-nextjs</package>
+        <version>^0.14.1</version>
+        <purpose>Next.js App Router integration for Apollo</purpose>
+      </node>
+      <node>
+        <package>react</package>
+        <version>19.2.0</version>
+        <purpose>UI library with hooks for component logic</purpose>
+      </node>
+      <node>
+        <package>next</package>
+        <version>16.0.5</version>
+        <purpose>Framework for routing and App Router structure</purpose>
+      </node>
+      <node>
+        <package>lucide-react</package>
+        <version>^0.555.0</version>
+        <purpose>Icon library for avatar/UI icons</purpose>
+      </node>
+      <node>
+        <package>clsx</package>
+        <version>^2.1.1</version>
+        <purpose>Utility for conditional className joining</purpose>
+      </node>
+      <node>
+        <package>tailwind-merge</package>
+        <version>^3.4.0</version>
+        <purpose>Merge Tailwind classes intelligently</purpose>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+**Architecture Constraints:**
+- Component must be in features/assessment/ directory per project structure
+- Route must be at app/onboarding/[sessionId]/assessment/page.tsx
+- Use shadcn/ui components as foundation, styled to Daybreak theme
+- Follow Tailwind CSS 4 conventions with design tokens from theme
+- No PHI in console.log, URLs, or browser history
+
+**Design Constraints:**
+- Mobile-first approach: design for 375px first, then scale up
+- Chat bubbles max 75% width to maintain readability
+- AI messages left-aligned, user messages right-aligned
+- Use Daybreak color palette: AI #F0FDFA, User #2A9D8F
+- Border radius xl (24px) for warm, friendly feel
+
+**Performance Constraints:**
+- Message render time &lt; 100ms (use React.memo)
+- Auto-scroll latency &lt; 50ms (useRef + scrollIntoView)
+- Consider virtualization if conversation exceeds 50 messages
+- Code split if needed to meet LCP &lt; 1.5s target
+
+**Testing Constraints:**
+- WCAG 2.1 AA compliance required
+- Test with VoiceOver screen reader
+- Test keyboard navigation
+- Minimum 44x44px touch targets
+- Color contrast 4.5:1 for body text
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Message</name>
+      <kind>TypeScript Interface</kind>
+      <signature>
+interface Message {
+  id: string;
+  sender: 'AI' | 'USER' | 'SYSTEM';
+  content: string;
+  timestamp: string; // ISO 8601
+  suggestedReplies?: string[];
+}
+      </signature>
+      <path>types/graphql.ts</path>
+    </interface>
+    <interface>
+      <name>GetOnboardingSession</name>
+      <kind>GraphQL Query</kind>
+      <signature>
+query GetOnboardingSession($sessionId: ID!) {
+  getOnboardingSession(id: $sessionId) {
+    id
+    assessment {
+      conversationHistory {
+        id
+        sender
+        content
+        timestamp
+      }
+    }
+  }
+}
+      </signature>
+      <path>graphql/queries/GetOnboardingSession.graphql</path>
+    </interface>
+    <interface>
+      <name>ChatBubbleProps</name>
+      <kind>Component Props Interface</kind>
+      <signature>
+interface ChatBubbleProps {
+  message: Message;
+  variant: 'ai' | 'user' | 'system';
+  showAvatar?: boolean;
+}
+      </signature>
+      <path>features/assessment/ChatBubble.tsx (to be created)</path>
+    </interface>
+    <interface>
+      <name>ChatWindowProps</name>
+      <kind>Component Props Interface</kind>
+      <signature>
+interface ChatWindowProps {
+  sessionId: string;
+  messages: Message[];
+  onMessageUpdate?: () => void;
+}
+      </signature>
+      <path>features/assessment/ChatWindow.tsx (to be created)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Use Vitest with React Testing Library for unit tests. Follow existing test patterns from tests/setup.ts. Tests should be in tests/unit/ directory mirroring source structure. Use @testing-library/jest-dom matchers. Mock Apollo Client queries/mutations. Test components in isolation with proper mocks for dependencies.
+    </standards>
+    <locations>
+- tests/unit/components/assessment/ChatWindow.test.tsx
+- tests/unit/components/assessment/ChatBubble.test.tsx
+- tests/unit/lib/utils/formatters.test.ts (for timestamp formatting)
+    </locations>
+    <ideas>
+**ChatBubble Component Tests (AC 2.1.5, 2.1.6, 2.1.7, 2.1.8, 2.1.9):**
+- Test AI variant renders with light teal background (#F0FDFA)
+- Test AI variant is left-aligned
+- Test AI variant shows avatar icon
+- Test user variant renders with teal background (#2A9D8F) and white text
+- Test user variant is right-aligned
+- Test user variant does not show avatar
+- Test both variants have max-width 75%
+- Test timestamp displays relative time format
+- Test fade-in animation class is applied
+
+**ChatWindow Component Tests (AC 2.1.1, 2.1.2, 2.1.3, 2.1.4, 2.1.10):**
+- Test container has full viewport height calculation
+- Test desktop max-width is 640px
+- Test messages render in correct order (newest at bottom)
+- Test auto-scroll behavior when new message added
+- Test scroll container has smooth scrolling enabled
+- Test accessibility: role="log" on container
+- Test accessibility: aria-live="polite" for new messages
+
+**Timestamp Formatter Tests (AC 2.1.8):**
+- Test "Just now" for messages &lt; 1 minute old
+- Test "X min ago" for messages 1-59 minutes old
+- Test "X hours ago" for messages 1-23 hours old
+- Test "X days ago" for older messages
+    </ideas>
+  </tests>
+</story-context>

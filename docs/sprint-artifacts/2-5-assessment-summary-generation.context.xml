@@ -1,0 +1,253 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.5</storyId>
+    <title>Assessment Summary Generation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-5-assessment-summary-generation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>to see a summary of what the AI understood about my child</iWant>
+    <soThat>I can confirm it's accurate before moving forward</soThat>
+    <tasks>
+      - [ ] Task 1: Create AssessmentSummary component (AC: 2.5.1, 2.5.2, 2.5.3, 2.5.4, 2.5.5)
+      - [ ] Task 2: Implement action buttons (AC: 2.5.6, 2.5.7, 2.5.8)
+      - [ ] Task 3: Create GraphQL operations (AC: 2.5.9, 2.5.10)
+      - [ ] Task 4: Implement summary display logic (AC: 2.5.1)
+      - [ ] Task 5: Implement "add something" flow (AC: 2.5.7)
+      - [ ] Task 6: Implement "start over" flow (AC: 2.5.8)
+      - [ ] Task 7: Implement confirmation and navigation (AC: 2.5.9)
+      - [ ] Task 8: Write unit tests (AC: all)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC-2.5.1: Summary displays as a card (not chat bubble) when assessment complete
+    AC-2.5.2: Heading shows "Here's what I'm hearing..."
+    AC-2.5.3: Bullet points list key concerns identified from conversation
+    AC-2.5.4: Child's name used naturally in summary text
+    AC-2.5.5: Warm, empathetic tone (not clinical language)
+    AC-2.5.6: "Yes, continue" primary button (teal) proceeds to demographics
+    AC-2.5.7: "I'd like to add something" secondary button returns to chat
+    AC-2.5.8: "Start over" link (ghost style) available with confirmation modal
+    AC-2.5.9: Confirming summary saves to session and triggers navigation
+    AC-2.5.10: Summary is stored for therapist matching (FR-003)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>AC-2.5: Assessment Summary Generation</section>
+        <snippet>Summary displays as card (not chat bubble). Heading: "Here's what I'm hearing..." with bullet points of key concerns. Child's name used naturally. Warm, empathetic tone. Three action buttons: "Yes, continue" (primary teal), "I'd like to add something" (secondary outline), "Start over" (ghost with confirmation).</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>Data Models and Contracts</section>
+        <snippet>AssessmentSummary interface defines keyConcerns: string[], childName: string, recommendedFocus: string[], generatedAt: string. GraphQL operations include CompleteAssessment and ConfirmAssessmentSummary mutations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>API Contracts - GraphQL Operation Patterns</section>
+        <snippet>Mutation pattern with optimistic update. CompleteAssessment generates summary with keyConcerns array. ConfirmAssessmentSummary updates session status and triggers navigation. Session state managed by Apollo Client cache.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Project Structure</section>
+        <snippet>Feature components in features/assessment/ directory. AssessmentSummary.tsx co-located with ChatWindow, ChatBubble, QuickReplyChips. GraphQL operations in assessment.graphql. Uses Next.js router for navigation to /onboarding/[sessionId]/demographics.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>7.1 Button Hierarchy</section>
+        <snippet>Primary buttons: Solid teal (#2A9D8F), pill shape for main actions. Secondary: Outline teal for secondary actions. Ghost: Text only teal for minimal actions like "Start over". All buttons minimum 44x44px touch targets.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>3.1 Color System</section>
+        <snippet>Daybreak Teal (#2A9D8F) for primary actions, Cream Background (#FEF7ED) for pages, Deep Text (#1A3C34) for body text. Success color (#10B981) for confirmation states. Card border radius: lg (16px) for cards.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown - Story 2.5</title>
+        <section>Story 2.5: Assessment Summary Generation</section>
+        <snippet>Summary card displays when assessment complete. Three actions: confirm to proceed, add something to return to chat, start over with confirmation. Summary stored for therapist matching (FR-003). Navigation to demographics page on confirmation.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <lines>1-61</lines>
+        <reason>shadcn/ui Button component with variants (default, destructive, outline, ghost) used for action buttons in AssessmentSummary</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/card.tsx</path>
+        <kind>component</kind>
+        <symbol>Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter</symbol>
+        <lines>1-93</lines>
+        <reason>shadcn/ui Card components used for summary card layout with proper styling and structure</reason>
+      </artifact>
+      <artifact>
+        <path>graphql/queries/GetOnboardingSession.graphql</path>
+        <kind>graphql-query</kind>
+        <symbol>GetOnboardingSession</symbol>
+        <lines>1-51</lines>
+        <reason>Existing query that fetches assessment data including summary field - will be used to detect when summary is available</reason>
+      </artifact>
+      <artifact>
+        <path>graphql/mutations/SubmitAssessmentMessage.graphql</path>
+        <kind>graphql-mutation</kind>
+        <symbol>SubmitAssessmentMessage</symbol>
+        <lines>1-18</lines>
+        <reason>Pattern for mutations - shows how assessment data is updated. Will create similar mutations for CompleteAssessment and ConfirmAssessmentSummary</reason>
+      </artifact>
+      <artifact>
+        <path>docs/sprint-artifacts/api_schema.graphql</path>
+        <kind>schema</kind>
+        <symbol>Assessment</symbol>
+        <lines>69-75</lines>
+        <reason>Assessment type defines summary: String field. This is the data source for the summary display. Note: May need to extend schema if keyConcerns array not present.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/apollo/provider.tsx</path>
+        <kind>provider</kind>
+        <symbol>ApolloProvider</symbol>
+        <lines>all</lines>
+        <reason>Apollo Client provider setup - mutations will use this configured client for optimistic updates and cache management</reason>
+      </artifact>
+      <artifact>
+        <path>components/layout/OnboardingProgress.tsx</path>
+        <kind>component</kind>
+        <symbol>OnboardingProgress</symbol>
+        <lines>all</lines>
+        <reason>Shows progress through onboarding steps. AssessmentSummary is last step before Demographics, so progress indicator context is relevant</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="@apollo/client" version="^4.0.9">GraphQL client for mutations and cache updates</package>
+        <package name="react-hook-form" version="^7.67.0">Not directly used in summary but pattern established in project</package>
+        <package name="zod" version="^3.25.76">Not directly used in summary but validation pattern established</package>
+        <package name="next" version="16.0.5">Next.js router for navigation to demographics page</package>
+        <package name="react" version="19.2.0">React 19 features for component implementation</package>
+        <package name="lucide-react" version="^0.555.0">Icons for buttons and confirmation modal</package>
+        <package name="clsx" version="^2.1.1">Conditional className joining for styling</package>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Component location: features/assessment/AssessmentSummary.tsx (per Architecture project structure)</constraint>
+    <constraint>GraphQL operations: Add to features/assessment/assessment.graphql (co-located pattern)</constraint>
+    <constraint>Navigation: Use Next.js useRouter with router.push() to /onboarding/[sessionId]/demographics</constraint>
+    <constraint>PHI Protection: No console.log of summary content, no PHI in URLs (Architecture requirement)</constraint>
+    <constraint>Mobile-first: Summary card must work on 375px mobile viewport with appropriate padding</constraint>
+    <constraint>Styling: Use Daybreak design tokens - Teal (#2A9D8F) for primary, Cream (#FEF7ED) background, Deep Text (#1A3C34)</constraint>
+    <constraint>State Management: Summary data from Apollo cache, state managed via useQuery hook</constraint>
+    <constraint>Accessibility: WCAG AA compliance - 4.5:1 contrast ratio, keyboard navigation, ARIA labels, 44x44px touch targets</constraint>
+    <constraint>Testing: Unit tests required for component rendering, button interactions, modal, navigation (Vitest + RTL)</constraint>
+    <constraint>Warm tone: Copy must be empathetic, not clinical - "Here's what I'm hearing..." not "Assessment Results"</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>CompleteAssessment Mutation</name>
+      <kind>GraphQL Mutation</kind>
+      <signature>
+        mutation CompleteAssessment($sessionId: ID!) {
+          completeAssessment(sessionId: $sessionId) {
+            summary {
+              keyConcerns
+              childName
+              recommendedFocus
+              generatedAt
+            }
+          }
+        }
+      </signature>
+      <path>graphql/mutations/CompleteAssessment.graphql (to be created)</path>
+    </interface>
+    <interface>
+      <name>ConfirmAssessmentSummary Mutation</name>
+      <kind>GraphQL Mutation</kind>
+      <signature>
+        mutation ConfirmAssessmentSummary($sessionId: ID!, $confirmed: Boolean!) {
+          confirmAssessmentSummary(sessionId: $sessionId, confirmed: $confirmed) {
+            session {
+              id
+              status
+              assessment {
+                isComplete
+              }
+            }
+          }
+        }
+      </signature>
+      <path>graphql/mutations/ConfirmAssessmentSummary.graphql (to be created)</path>
+    </interface>
+    <interface>
+      <name>AssessmentSummary Component Props</name>
+      <kind>React Component Interface</kind>
+      <signature>
+        interface AssessmentSummaryProps {
+          sessionId: string
+          summary: {
+            keyConcerns: string[]
+            childName: string
+            recommendedFocus?: string[]
+            generatedAt: string
+          }
+          onContinue: () => void
+          onAddSomething: () => void
+          onStartOver: () => void
+        }
+      </signature>
+      <path>features/assessment/AssessmentSummary.tsx</path>
+    </interface>
+    <interface>
+      <name>Next.js Navigation</name>
+      <kind>Next.js Router API</kind>
+      <signature>
+        import { useRouter } from 'next/navigation'
+        const router = useRouter()
+        router.push(`/onboarding/${sessionId}/demographics`)
+      </signature>
+      <path>Next.js 15 App Router navigation pattern</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Project uses Vitest 4.x with React Testing Library 16.x for unit tests. Tests located in tests/unit/ directory mirroring source structure. Test files named *.test.tsx. Use @testing-library/react for rendering, @testing-library/jest-dom for assertions. Mock Apollo Client mutations with MockedProvider. Test accessibility with screen reader queries (getByRole, getByLabelText).
+    </standards>
+    <locations>
+      tests/unit/components/assessment/AssessmentSummary.test.tsx
+      tests/unit/features/assessment/ (if integration tests needed)
+    </locations>
+    <ideas>
+      <test ac="AC-2.5.1, AC-2.5.2">Verify summary card renders with "Here's what I'm hearing..." heading when assessment complete</test>
+      <test ac="AC-2.5.3, AC-2.5.4">Verify bullet points display keyConcerns array and child's name appears in summary text</test>
+      <test ac="AC-2.5.5">Verify warm, empathetic tone in displayed text (test copy content)</test>
+      <test ac="AC-2.5.6">Verify "Yes, continue" button calls onContinue callback and navigates to demographics</test>
+      <test ac="AC-2.5.7">Verify "I'd like to add something" button returns to chat mode with appropriate message</test>
+      <test ac="AC-2.5.8">Verify "Start over" link shows confirmation modal, clears session on confirm, cancels gracefully</test>
+      <test ac="AC-2.5.9">Verify confirming summary calls ConfirmAssessmentSummary mutation and navigates with router.push()</test>
+      <test ac="AC-2.5.10">Verify summary data is stored in Apollo cache for later retrieval by therapist matching</test>
+      <test ac="Accessibility">Verify keyboard navigation through all buttons, screen reader announcements, focus management</test>
+      <test ac="Mobile">Verify component layout works correctly at 375px viewport width with proper touch targets</test>
+      <test ac="Error Handling">Verify mutation errors show appropriate error messages and retry options</test>
+      <test ac="Loading States">Verify loading indicators during mutation calls and navigation</test>
+    </ideas>
+  </tests>
+</story-context>

@@ -1,0 +1,256 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.3</storyId>
+    <title>AI Typing Indicator</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-3-ai-typing-indicator.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>to see when the AI is "thinking" about my response</iWant>
+    <soThat>I know help is coming and the system hasn't frozen</soThat>
+    <tasks>
+      - Task 1: Create TypingIndicator component (AC: 2.3.1, 2.3.2, 2.3.3, 2.3.4, 2.3.5, 2.3.10)
+        - Create `features/assessment/TypingIndicator.tsx`
+        - Style as AI chat bubble (light teal background, left-aligned)
+        - Add Daybreak avatar (40x40px) matching ChatBubble
+        - Implement three-dot animation using CSS keyframes
+        - Add fade-in animation on mount
+        - Position in message flow (renders at end of messages list)
+
+      - Task 2: Implement dot animation (AC: 2.3.2)
+        - Create CSS keyframe for bounce animation
+        - Stagger animation delay for sequential effect (0ms, 150ms, 300ms)
+        - Use Tailwind `animate-bounce` as base or custom keyframes
+        - Dots should be 8px circles with teal color
+
+      - Task 3: Implement timeout states (AC: 2.3.7, 2.3.8)
+        - Add `useState` for timeout stages: 'typing' | 'still-thinking' | 'taking-long'
+        - Set 5-second timer for "Still thinking..." state
+        - Set 15-second timer for "Taking longer than usual..." state
+        - Add retry button in "taking-long" state
+        - Reset timers when new response arrives
+
+      - Task 4: Implement accessibility (AC: 2.3.6)
+        - Add `aria-label="AI is typing"` to container
+        - Add `role="status"` for screen reader announcement
+        - Ensure timeout state changes are announced
+        - Add `aria-live="polite"` for state transitions
+
+      - Task 5: Integrate with ChatWindow and useAssessmentChat (AC: 2.3.1, 2.3.9)
+        - Add `isTyping` state to useAssessmentChat hook
+        - Set `isTyping=true` immediately on message send (within 200ms)
+        - Set `isTyping=false` when AI response received
+        - Conditionally render TypingIndicator in ChatWindow
+        - Ensure indicator replaced by response seamlessly
+
+      - Task 6: Implement retry functionality (AC: 2.3.8)
+        - Add `onRetry` callback prop to TypingIndicator
+        - Wire retry button to resend last message
+        - Reset timeout timers on retry
+        - Show feedback on retry initiation
+
+      - Task 7: Write unit tests (AC: all)
+        - Create `tests/unit/components/assessment/TypingIndicator.test.tsx`
+        - Test initial render with dots animation
+        - Test 5-second timeout transition
+        - Test 15-second timeout with retry button
+        - Test retry button click handler
+        - Test accessibility attributes
+        - Test fade-in animation presence
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC-2.3.1: Typing indicator appears within 200ms of sending a message
+    AC-2.3.2: Indicator shows three animated dots bouncing sequentially
+    AC-2.3.3: Light teal background (#F0FDFA) matching AI bubbles
+    AC-2.3.4: Daybreak avatar present (40x40px)
+    AC-2.3.5: Smooth fade-in animation on appear
+    AC-2.3.6: Has `aria-label="AI is typing"` for accessibility
+    AC-2.3.7: Shows "Still thinking..." text after 5 seconds
+    AC-2.3.8: Shows "Taking longer than usual..." with retry option after 15 seconds
+    AC-2.3.9: Indicator is replaced by actual AI response when ready
+    AC-2.3.10: Indicator positioned in message flow as AI chat bubble
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>6.2 Custom Components - AI Chat Bubble and Typing Indicator</section>
+        <snippet>TypingIndicator component displays AI thinking state with animated dots. Purpose: Show AI "thinking" state in conversation. Anatomy: Avatar (Daybreak mountain icon), three animated dots, timestamp. States: Default, Loading (typing dots), Error. Shows "Still thinking..." after 5 seconds, "Taking longer than usual..." with retry after 15 seconds.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>Detailed Design - TypingIndicator Module</section>
+        <snippet>Module Responsibility: Shows AI thinking state with animated dots. Inputs: isTyping boolean. Outputs: Animated indicator. Appears within 200ms of sending message, has three animated dots bouncing sequentially, light teal background matching AI bubbles.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Project Structure - features/assessment/</section>
+        <snippet>TypingIndicator.tsx - AI "thinking" animation. Located in features/assessment/ directory. Displays three animated dots bouncing sequentially with light teal background (#F0FDFA).</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Lifecycle Patterns</section>
+        <snippet>AI thinking: Typing indicator with animated dots. Shows within 200ms of message send. If response >5s show "Still thinking...", if >15s show "Taking longer than usual..." with retry option.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>6.2 Custom Components - AI Chat Bubble</section>
+        <snippet>Typing indicator (AI only) - three animated dots in light teal bubble with Daybreak avatar. States: Default, Loading (typing dots), Error. Accessible with aria-label="AI is typing" and role="status".</snippet>
+      </doc>
+      <doc>
+        <path>docs/design-tokens.md</path>
+        <title>Daybreak Design Tokens</title>
+        <section>Color Palette - Chat Interface Colors</section>
+        <snippet>AI Message Background: #F0FDFA (light teal tint). Used for AI chat bubbles and typing indicator background. Provides subtle contrast against cream (#FEF7ED) page background.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>daybreak-health-frontend - Epic Breakdown</title>
+        <section>Story 2.3: AI Typing Indicator</section>
+        <snippet>As a parent, I want to see when the AI is "thinking" about my response, so that I know help is coming and the system hasn't frozen. Typing indicator appears as AI chat bubble in message flow. Three animated dots bouncing sequentially. If response >5s show "Still thinking...", if >15s show "Taking longer than usual..." with retry option.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <reason>shadcn/ui Button component - use for retry button in "taking-long" state</reason>
+      </artifact>
+      <artifact>
+        <path>graphql/mutations/SubmitAssessmentMessage.graphql</path>
+        <kind>graphql</kind>
+        <symbol>SubmitAssessmentMessage</symbol>
+        <reason>Mutation used to send messages to AI. Response triggers hiding of typing indicator. Used in retry functionality.</reason>
+      </artifact>
+      <artifact>
+        <path>app/globals.css</path>
+        <kind>stylesheet</kind>
+        <symbol>CSS custom properties</symbol>
+        <reason>Contains Daybreak design tokens including --daybreak-teal color and animation utilities. Will need custom keyframes for dot bounce animation.</reason>
+      </artifact>
+      <artifact>
+        <path>components/layout/Header.tsx</path>
+        <kind>component</kind>
+        <symbol>Header</symbol>
+        <reason>Reference for component structure patterns and Daybreak styling approach</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <node>
+        <package>react</package>
+        <version>^19.2.0</version>
+        <reason>useState and useEffect hooks for timeout state management</reason>
+      </node>
+      <node>
+        <package>clsx</package>
+        <version>^2.1.1</version>
+        <reason>Conditional className joining for state-based styling</reason>
+      </node>
+      <node>
+        <package>lucide-react</package>
+        <version>^0.555.0</version>
+        <reason>Icon library - may use for Daybreak avatar icon if needed</reason>
+      </node>
+      <node>
+        <package>@apollo/client</package>
+        <version>^4.0.9</version>
+        <reason>useMutation hook for retry functionality</reason>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Component must be created in features/assessment/TypingIndicator.tsx per Architecture project structure
+    - Must match ChatBubble AI variant styling exactly (light teal background #F0FDFA, left-aligned)
+    - Must use Daybreak avatar (40x40px) consistent with ChatBubble pattern
+    - Typing state must be managed in useAssessmentChat hook (to be created or modified in Story 2.2)
+    - Indicator must appear within 200ms of message send (performance requirement)
+    - Must support accessibility: aria-label, role="status", aria-live="polite"
+    - Must implement timeout states: 5s for "still-thinking", 15s for "taking-long"
+    - Must not exceed 500 lines per file (AI-first codebase requirement)
+    - All functions must have descriptive JSDoc comments
+    - No PHI in console.log or any logging (use phi-guard utility if logging needed)
+    - Must work seamlessly with ChatWindow component (position in message flow)
+    - Animation must use CSS keyframes, not JavaScript animation
+    - Must be mobile-first responsive design
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>TypingIndicatorProps</name>
+      <kind>React component props</kind>
+      <signature>
+interface TypingIndicatorProps {
+  isVisible: boolean;
+  onRetry?: () => void;
+  className?: string;
+}
+      </signature>
+      <path>features/assessment/TypingIndicator.tsx</path>
+    </interface>
+    <interface>
+      <name>TimeoutState</name>
+      <kind>TypeScript type</kind>
+      <signature>
+type TimeoutState = 'typing' | 'still-thinking' | 'taking-long';
+      </signature>
+      <path>features/assessment/TypingIndicator.tsx</path>
+    </interface>
+    <interface>
+      <name>useAssessmentChat</name>
+      <kind>React custom hook</kind>
+      <signature>
+function useAssessmentChat(sessionId: string): {
+  messages: Message[];
+  isTyping: boolean;
+  sendMessage: (content: string) => Promise&lt;void&gt;;
+  // ... other chat state
+}
+      </signature>
+      <path>features/assessment/useAssessmentChat.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit tests use Vitest with React Testing Library. Tests are located in tests/unit/ directory, mirroring the source structure. All components must have corresponding test files. Tests should cover rendering, user interactions, state changes, accessibility attributes, and edge cases. Use @testing-library/react for component testing with userEvent for interactions.
+    </standards>
+
+    <locations>
+      tests/unit/components/assessment/TypingIndicator.test.tsx
+      tests/unit/features/assessment/ (integration tests if needed)
+    </locations>
+
+    <ideas>
+      - AC-2.3.1: Test that component renders when isVisible is true, doesn't render when false
+      - AC-2.3.2: Test that three dots are present in the DOM, verify animation classes applied
+      - AC-2.3.3: Test that background color matches #F0FDFA (light teal)
+      - AC-2.3.4: Test that Daybreak avatar is rendered with correct dimensions (40x40px)
+      - AC-2.3.5: Test fade-in animation class is applied on mount
+      - AC-2.3.6: Test aria-label="AI is typing", role="status", aria-live="polite" attributes present
+      - AC-2.3.7: Test that after 5 seconds, "Still thinking..." text appears (use fake timers)
+      - AC-2.3.8: Test that after 15 seconds, "Taking longer than usual..." and retry button appear
+      - AC-2.3.8: Test that clicking retry button calls onRetry callback
+      - AC-2.3.9: Test that when isVisible changes to false, component unmounts/hides
+      - AC-2.3.10: Test component structure matches AI chat bubble pattern (left-aligned, proper spacing)
+      - Test that timers are cleared on unmount to prevent memory leaks
+      - Test that setting isVisible to false resets timeout state
+    </ideas>
+  </tests>
+</story-context>

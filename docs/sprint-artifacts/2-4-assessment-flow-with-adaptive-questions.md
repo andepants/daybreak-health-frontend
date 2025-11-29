@@ -1,6 +1,6 @@
 # Story 2.4: Assessment Flow with Adaptive Questions
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -17,7 +17,7 @@ so that **it truly understands my child's situation instead of following a rigid
 5. **AC-2.4.5:** Quick reply options plus "Other" text option in structured questions
 6. **AC-2.4.6:** Progress indicator visible within structured section
 7. **AC-2.4.7:** Back button allows revising previous answer in structured section
-8. **AC-2.4.8:** Total assessment completes in ~5 minutes for typical case
+8. **AC-2.4.8:** Assessment flow supports branching without frontend timeouts (UX target: ~5 min typical completion)
 9. **AC-2.4.9:** AI validates completeness before allowing transition to summary
 10. **AC-2.4.10:** Crisis keywords trigger support option visibility (backend-detected)
 
@@ -79,14 +79,22 @@ so that **it truly understands my child's situation instead of following a rigid
   - [ ] Test progress indicator accuracy
   - [ ] Mock GraphQL responses for flow testing
 
+## Prerequisites
+
+- **Story 2-1:** Chat Window and Message Display (ChatWindow, ChatBubble)
+- **Story 2-2:** Message Input and Quick Reply Chips (MessageInput, QuickReplyChips, useAssessmentChat)
+- **Story 2-3:** AI Typing Indicator (TypingIndicator)
+
 ## Dev Notes
 
 ### Architecture Patterns
 
 - **Component Location:** `features/assessment/AssessmentCard.tsx`
 - **GraphQL Location:** `features/assessment/assessment.graphql`
-- **Backend Responsibility:** AI adaptation logic, crisis detection
-- **Frontend Responsibility:** Display and user interaction
+- **Backend Responsibility:** AI adaptation logic, crisis detection, question branching, completeness validation
+- **Frontend Responsibility:** Display responses, render structured cards, handle user input, show crisis resources when flagged
+
+**Note:** The adaptive/branching logic is entirely backend-driven. Frontend simply renders what the API returns (`suggestedReplies`, `structuredQuestion`, `crisisDetected` flags) without client-side decision logic.
 
 ### AssessmentCard Layout
 
@@ -208,7 +216,7 @@ features/assessment/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- [Story Context XML](./2-4-assessment-flow-with-adaptive-questions.context.xml)
 
 ### Agent Model Used
 

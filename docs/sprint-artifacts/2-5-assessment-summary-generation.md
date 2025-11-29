@@ -1,6 +1,6 @@
 # Story 2.5: Assessment Summary Generation
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -76,6 +76,12 @@ so that **I can confirm it's accurate before moving forward**.
   - [ ] Test navigation on confirmation
   - [ ] Mock GraphQL mutations for testing
 
+## Prerequisites
+
+- **Story 2-1:** Chat Window and Message Display (ChatWindow)
+- **Story 2-2:** Message Input and Quick Reply Chips (useAssessmentChat hook)
+- **Story 2-4:** Assessment Flow with Adaptive Questions (assessment.graphql, isComplete detection)
+
 ## Dev Notes
 
 ### Architecture Patterns
@@ -121,9 +127,14 @@ so that **I can confirm it's accurate before moving forward**.
 
 ### GraphQL Operations
 
+**Two mutations are needed:**
+1. `CompleteAssessment` - Called when assessment reaches completion, triggers AI summary generation
+2. `ConfirmAssessmentSummary` - Called when user clicks "Yes, continue", saves confirmation and enables navigation
+
 ```graphql
 # Add to features/assessment/assessment.graphql
 
+# Called automatically when isComplete=true, fetches/generates summary
 mutation CompleteAssessment($sessionId: ID!) {
   completeAssessment(sessionId: $sessionId) {
     summary {
@@ -135,6 +146,7 @@ mutation CompleteAssessment($sessionId: ID!) {
   }
 }
 
+# Called on "Yes, continue" click - saves user confirmation and stores for therapist matching (FR-003)
 mutation ConfirmAssessmentSummary($sessionId: ID!, $confirmed: Boolean!) {
   confirmAssessmentSummary(sessionId: $sessionId, confirmed: $confirmed) {
     session {
@@ -196,7 +208,7 @@ features/assessment/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- docs/sprint-artifacts/2-5-assessment-summary-generation.context.xml
 
 ### Agent Model Used
 

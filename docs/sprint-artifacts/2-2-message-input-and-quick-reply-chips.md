@@ -1,6 +1,6 @@
 # Story 2.2: Message Input and Quick Reply Chips
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -20,7 +20,7 @@ so that **I can share as much or as little as I want with minimal effort**.
 8. **AC-2.2.8:** Character limit of 2000 with counter appearing at 1800+
 9. **AC-2.2.9:** Pressing Enter sends message (Shift+Enter for newline)
 10. **AC-2.2.10:** Input is disabled while AI is responding (with visual indicator)
-11. **AC-2.2.11:** Touch targets are minimum 44x44px (WCAG)
+11. **AC-2.2.11:** Touch targets are minimum 44x44px (WCAG 2.1 AAA / Apple HIG)
 12. **AC-2.2.12:** Placeholder text shows "Type your message..."
 
 ## Tasks / Subtasks
@@ -75,6 +75,10 @@ so that **I can share as much or as little as I want with minimal effort**.
   - [ ] Test character counter display
   - [ ] Test keyboard shortcuts (Enter, Shift+Enter)
   - [ ] Test disabled state during AI response
+
+## Prerequisites
+
+- **Story 2-1:** Chat Window and Message Display (ChatWindow, ChatBubble components)
 
 ## Dev Notes
 
@@ -146,7 +150,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- [Story Context XML](./2-2-message-input-and-quick-reply-chips.context.xml)
 
 ### Agent Model Used
 

@@ -46,12 +46,12 @@ development_status:
 
   # Epic 2: AI-Guided Assessment Experience (6 stories)
   epic-2: contexted
-  2-1-chat-window-and-message-display: drafted
-  2-2-message-input-and-quick-reply-chips: drafted
-  2-3-ai-typing-indicator: drafted
-  2-4-assessment-flow-with-adaptive-questions: drafted
-  2-5-assessment-summary-generation: drafted
-  2-6-session-persistence-and-resume: drafted
+  2-1-chat-window-and-message-display: ready-for-dev
+  2-2-message-input-and-quick-reply-chips: ready-for-dev
+  2-3-ai-typing-indicator: ready-for-dev
+  2-4-assessment-flow-with-adaptive-questions: ready-for-dev
+  2-5-assessment-summary-generation: ready-for-dev
+  2-6-session-persistence-and-resume: ready-for-dev
   epic-2-retrospective: optional
 
   # Epic 3: Parent & Child Information Collection (4 stories)

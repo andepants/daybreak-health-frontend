@@ -1,0 +1,567 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.4</storyId>
+    <title>Assessment Flow with Adaptive Questions</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-4-assessment-flow-with-adaptive-questions.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>the AI to ask follow-up questions based on my answers</iWant>
+    <soThat>it truly understands my child's situation instead of following a rigid script</soThat>
+    <tasks>
+      - Task 1: Create AssessmentCard component (AC: 2.4.3, 2.4.4, 2.4.5)
+        - Create features/assessment/AssessmentCard.tsx
+        - Implement single-question card layout
+        - Center card on screen with appropriate padding
+        - Add question text with large readable font
+        - Add quick reply options as selectable buttons
+        - Add "Other" option that reveals text input
+        - Style to match Daybreak design system
+
+      - Task 2: Implement structured question progress (AC: 2.4.6, 2.4.7)
+        - Create progress indicator showing current/total (e.g., "3 of 5")
+        - Add back button in card header
+        - Implement onBack callback to revise previous answer
+        - Store previous answers for back navigation
+        - Animate card transitions (slide left/right)
+
+      - Task 3: Implement assessment mode switching (AC: 2.4.3)
+        - Add assessmentMode state: 'chat' | 'structured'
+        - Detect when AI response contains structuredQuestion type
+        - Switch to AssessmentCard display for structured questions
+        - Return to chat mode after structured section complete
+
+      - Task 4: Create GraphQL operations for assessment (AC: 2.4.1, 2.4.2, 2.4.9)
+        - Create features/assessment/assessment.graphql
+        - Define SubmitAssessmentMessage mutation
+        - Define GetAssessmentState query
+        - Run pnpm codegen to generate typed hooks
+        - Implement mutation call in useAssessmentChat hook
+
+      - Task 5: Implement greeting and adaptive flow (AC: 2.4.1, 2.4.2)
+        - On new session, trigger initial AI greeting
+        - Parse AI response for suggestedReplies (quick replies)
+        - Parse AI response for nextQuestion context
+        - Update chat state with new messages from API response
+
+      - Task 6: Implement completeness validation (AC: 2.4.9)
+        - Track assessment progress via isComplete flag from API
+        - Show transition prompt when assessment complete
+        - Prevent transition until API confirms completeness
+        - Display "Almost done!" messaging near completion
+
+      - Task 7: Handle crisis detection display (AC: 2.4.10)
+        - Parse API response for crisisDetected flag
+        - If flagged, show prominent support button
+        - Display crisis resource information (988, Crisis Text Line)
+        - Continue assessment flow while showing resources
+
+      - Task 8: Write integration tests (AC: all)
+        - Create tests/unit/components/assessment/AssessmentCard.test.tsx
+        - Test card renders question and options
+        - Test option selection behavior
+        - Test "Other" text input toggle
+        - Test back button navigation
+        - Test progress indicator accuracy
+        - Mock GraphQL responses for flow testing
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC-2.4.1: AI greets with open-ended question like "Tell me what's been going on with [child name if known]"
+
+    AC-2.4.2: AI asks relevant follow-up questions based on keywords in responses (duration, severity, impact)
+
+    AC-2.4.3: Structured questions (sleep, appetite, mood) display in single-card format (Typeform style)
+
+    AC-2.4.4: One question per screen in structured section
+
+    AC-2.4.5: Quick reply options plus "Other" text option in structured questions
+
+    AC-2.4.6: Progress indicator visible within structured section
+
+    AC-2.4.7: Back button allows revising previous answer in structured section
+
+    AC-2.4.8: Total assessment completes in ~5 minutes for typical case
+
+    AC-2.4.9: AI validates completeness before allowing transition to summary
+
+    AC-2.4.10: Crisis keywords trigger support option visibility (backend-detected)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <!-- Tech Spec Epic 2 -->
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>Detailed Design - Data Models and Contracts</section>
+        <snippet>
+          Message interface defines sender ('AI' | 'USER' | 'SYSTEM'), content, timestamp, and optional suggestedReplies for quick reply options. AssessmentState tracks conversationHistory array, currentQuestion, isComplete flag, and optional summary. Backend handles AI adaptation logic while frontend manages display and user interaction.
+        </snippet>
+      </doc>
+
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>APIs and Interfaces - GraphQL Operations</section>
+        <snippet>
+          SubmitAssessmentMessage mutation accepts MessageInput (sessionId, content, isQuickReply) and returns message, aiResponse with suggestedReplies and optional structuredQuestion (id, type, question, options, allowOther), nextQuestion context, isComplete flag, and crisisDetected boolean.
+        </snippet>
+      </doc>
+
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: AI-Guided Assessment Experience</title>
+        <section>Workflows and Sequencing - Happy Path</section>
+        <snippet>
+          User sends message (text or quick reply) → Optimistic UI shows user message immediately → TypingIndicator appears → submitAssessmentMessage mutation fires → AI response arrives (1-3s typically) → Message appears with fade-in animation → Quick replies update based on context → Loop until assessment complete → AI generates summary.
+        </snippet>
+      </doc>
+
+      <!-- Architecture -->
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Project Structure - Features</section>
+        <snippet>
+          Assessment feature components located in features/assessment/: ChatWindow.tsx (main container), ChatBubble.tsx (AI/user message display), QuickReplyChips.tsx (tap-to-respond options), TypingIndicator.tsx (AI "thinking" animation), useAssessmentChat.ts (chat state + mutations), assessment.graphql (GraphQL operations).
+        </snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>API Contracts - GraphQL Operation Patterns</section>
+        <snippet>
+          Mutation pattern for SubmitAssessmentMessage: accepts MessageInput with content and sessionId, returns message object, aiResponse with content/timestamp/suggestedReplies, and nextQuestion context. Use optimistic updates via Apollo optimisticResponse for immediate UI feedback.
+        </snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Security Architecture - PHI Protection Checklist</section>
+        <snippet>
+          No PHI in console.log or any logging, no PHI in URL parameters or fragments, no PHI in browser history (use replace not push), no PHI in error messages, no PHI in Sentry/error tracking, session tokens use secure httpOnly cookies, form autofill disabled for sensitive fields (autoComplete="off").
+        </snippet>
+      </doc>
+
+      <!-- UX Design -->
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>Design Direction - Adaptive Hybrid Layout</section>
+        <snippet>
+          Structured questions use single-card wizard (Typeform style) for clinical assessments. One question per screen, quick reply options, progress indicator, back button for revisions. Spacious layout with breathing room for emotional content. Warm teal primary actions, generous border radii (xl: 24px for cards).
+        </snippet>
+      </doc>
+
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>Component Library - AI Chat Bubble</section>
+        <snippet>
+          AI Message: light teal background (#F0FDFA), left-aligned, 75% max-width, Daybreak mountain icon avatar (40x40px), rounded corners (xl: 24px), Inter 16px body text in deep text color. User Message: teal background (#2A9D8F), white text, right-aligned. Supports typing indicator, timestamps, markdown, smooth fade-in animation.
+        </snippet>
+      </doc>
+
+      <!-- Epics -->
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown - Story 2.4</title>
+        <section>Epic 2: AI-Guided Assessment Experience</section>
+        <snippet>
+          Story 2.4 implements adaptive questioning where AI asks relevant follow-ups based on keywords (duration, severity, impact). Structured questions (sleep, appetite, mood) use single-card format with one question per screen, quick reply options plus "Other" text option, progress indicator, and back button for revisions. Backend handles AI adaptation logic, frontend manages display.
+        </snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <!-- Existing GraphQL Queries -->
+      <file>
+        <path>graphql/queries/GetOnboardingSession.graphql</path>
+        <kind>graphql-query</kind>
+        <symbol>GetOnboardingSession</symbol>
+        <lines>4-50</lines>
+        <reason>
+          Existing query that fetches onboarding session including assessment.conversationHistory array. Story 2.4 will extend this or create similar query to track structured question progress and assessment state.
+        </reason>
+      </file>
+
+      <!-- Existing GraphQL Mutations -->
+      <file>
+        <path>graphql/mutations/SubmitAssessmentMessage.graphql</path>
+        <kind>graphql-mutation</kind>
+        <symbol>SubmitAssessmentMessage</symbol>
+        <lines>4-17</lines>
+        <reason>
+          Existing mutation for submitting assessment messages. Story 2.4 needs to extend this mutation response to include suggestedReplies, structuredQuestion object, nextQuestion context, isComplete flag, and crisisDetected boolean as defined in tech spec.
+        </reason>
+      </file>
+
+      <!-- Apollo Client Configuration -->
+      <file>
+        <path>lib/apollo/client.ts</path>
+        <kind>apollo-config</kind>
+        <symbol>makeClient</symbol>
+        <lines>1-102</lines>
+        <reason>
+          Apollo Client configuration with InMemoryCache type policies. OnboardingSession.assessment field uses merge:true for deep merging updates. This supports incremental assessment state updates needed for Story 2.4's adaptive questioning flow.
+        </reason>
+      </file>
+
+      <!-- UI Components - Button -->
+      <file>
+        <path>components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <lines>1-61</lines>
+        <reason>
+          shadcn/ui Button component with variants (default, outline, ghost). Used for quick reply chips, back button, and other interactive elements in AssessmentCard component. Supports all required variants per UX spec.
+        </reason>
+      </file>
+
+      <!-- UI Components - Card -->
+      <file>
+        <path>components/ui/card.tsx</path>
+        <kind>component</kind>
+        <symbol>Card</symbol>
+        <lines>all</lines>
+        <reason>
+          shadcn/ui Card component for structured question display. AssessmentCard will extend this with custom header (back button, progress), body (question text, options), and animations for card transitions.
+        </reason>
+      </file>
+
+      <!-- UI Components - Input/Textarea -->
+      <file>
+        <path>components/ui/input.tsx</path>
+        <kind>component</kind>
+        <symbol>Input</symbol>
+        <lines>all</lines>
+        <reason>
+          Input component for "Other" text option in structured questions. Needs to integrate with AssessmentCard's option selection logic and support Daybreak design tokens.
+        </reason>
+      </file>
+
+      <!-- Generated GraphQL Types -->
+      <file>
+        <path>types/graphql.ts</path>
+        <kind>typescript-types</kind>
+        <symbol>ChatMessage, Assessment, MessageSender</symbol>
+        <lines>1-100</lines>
+        <reason>
+          Generated TypeScript types from GraphQL schema. Includes ChatMessage (id, sender, content, timestamp), Assessment (conversationHistory, summary, isFitForDaybreak), MessageSender enum ('AI' | 'USER' | 'SUPPORT'). Story 2.4 will generate additional types for structuredQuestion and enhanced mutation responses.
+        </reason>
+      </file>
+
+      <!-- WebSocket Reconnect Hook -->
+      <file>
+        <path>hooks/useWebSocketReconnect.ts</path>
+        <kind>hook</kind>
+        <symbol>useWebSocketReconnect</symbol>
+        <lines>all</lines>
+        <reason>
+          WebSocket reconnection hook with exponential backoff. Relevant for real-time assessment updates if subscriptions are used. Ensures connection reliability during assessment flow.
+        </reason>
+      </file>
+
+      <!-- Layout Components -->
+      <file>
+        <path>components/layout/Header.tsx</path>
+        <kind>component</kind>
+        <symbol>Header</symbol>
+        <lines>all</lines>
+        <reason>
+          Onboarding header with "Save &amp; Exit" functionality. Assessment flow needs to integrate with this for session persistence and user control during adaptive questioning.
+        </reason>
+      </file>
+
+      <file>
+        <path>components/layout/OnboardingProgress.tsx</path>
+        <kind>component</kind>
+        <symbol>OnboardingProgress</symbol>
+        <lines>all</lines>
+        <reason>
+          Progress stepper showing onboarding steps (Assessment → Info → Insurance → Match → Book). Story 2.4 implements progress indicator WITHIN structured section, separate from overall onboarding progress.
+        </reason>
+      </file>
+    </code>
+
+    <dependencies>
+      <node>
+        <package>@apollo/client</package>
+        <version>^4.0.9</version>
+        <usage>GraphQL client for mutations, queries, cache management</usage>
+      </node>
+      <node>
+        <package>@apollo/client-integration-nextjs</package>
+        <version>^0.14.1</version>
+        <usage>Next.js App Router integration for Apollo Client</usage>
+      </node>
+      <node>
+        <package>react-hook-form</package>
+        <version>^7.67.0</version>
+        <usage>Form state management for "Other" text input option</usage>
+      </node>
+      <node>
+        <package>zod</package>
+        <version>^3.25.76</version>
+        <usage>Schema validation for user input in text fields</usage>
+      </node>
+      <node>
+        <package>graphql</package>
+        <version>^16.12.0</version>
+        <usage>GraphQL query language and type system</usage>
+      </node>
+      <node>
+        <package>@radix-ui/react-label</package>
+        <version>^2.1.8</version>
+        <usage>Accessible labels for form inputs in AssessmentCard</usage>
+      </node>
+      <node>
+        <package>lucide-react</package>
+        <version>^0.555.0</version>
+        <usage>Icons for back button, progress indicators, other UI elements</usage>
+      </node>
+      <node>
+        <package>class-variance-authority</package>
+        <version>^0.7.1</version>
+        <usage>Variant-based styling for AssessmentCard states and options</usage>
+      </node>
+      <node>
+        <package>clsx</package>
+        <version>^2.1.1</version>
+        <usage>Conditional className composition</usage>
+      </node>
+      <node>
+        <package>tailwind-merge</package>
+        <version>^3.4.0</version>
+        <usage>Merge Tailwind classes without conflicts</usage>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    1. PHI Protection: No console.log of message content, no PHI in URLs, use phiGuard utility for any logging
+    2. Mobile-first Design: AssessmentCard optimized for 640px max-width, full viewport height minus header
+    3. Session Persistence: Every message and answer saves to backend immediately via optimistic UI
+    4. Backend Responsibility: AI adaptation logic, crisis detection handled by backend; frontend only displays results
+    5. Graceful Degradation: Form fallback available if structured questions don't work for user
+    6. Accessibility: WCAG AA compliance - keyboard navigation, screen reader support, 44x44px touch targets
+    7. Component Location: All assessment components in features/assessment/ per architecture structure
+    8. Type Safety: Use GraphQL Codegen for all API types, run pnpm codegen after creating new .graphql files
+    9. State Management: Apollo Client cache for assessment state, local state for UI (mode switching, animations)
+    10. Testing: Unit tests for AssessmentCard component, integration tests for mode switching, E2E for full flow
+  </constraints>
+
+  <interfaces>
+    <!-- GraphQL Mutation for Assessment Messages -->
+    <interface>
+      <name>SubmitAssessmentMessage</name>
+      <kind>GraphQL Mutation</kind>
+      <signature>
+        mutation SubmitAssessmentMessage($input: MessageInput!) {
+          submitAssessmentMessage(input: $input) {
+            message { id, sender, content, timestamp }
+            aiResponse {
+              id, sender, content, timestamp, suggestedReplies
+              structuredQuestion {
+                id, type, question, options, allowOther
+              }
+            }
+            nextQuestion
+            isComplete
+            crisisDetected
+          }
+        }
+      </signature>
+      <path>features/assessment/assessment.graphql</path>
+    </interface>
+
+    <!-- GraphQL Query for Assessment State -->
+    <interface>
+      <name>GetAssessmentState</name>
+      <kind>GraphQL Query</kind>
+      <signature>
+        query GetAssessmentState($sessionId: ID!) {
+          getOnboardingSession(id: $sessionId) {
+            id, status
+            child { firstName }
+            assessment {
+              conversationHistory { id, sender, content, timestamp, suggestedReplies }
+              currentQuestion
+              isComplete
+              structuredProgress { current, total }
+            }
+          }
+        }
+      </signature>
+      <path>features/assessment/assessment.graphql</path>
+    </interface>
+
+    <!-- AssessmentCard Component Props -->
+    <interface>
+      <name>AssessmentCardProps</name>
+      <kind>TypeScript Interface</kind>
+      <signature>
+        interface AssessmentCardProps {
+          question: string;
+          options: QuickReplyOption[];
+          allowOther?: boolean;
+          currentStep: number;
+          totalSteps: number;
+          onSelect: (value: string) => void;
+          onBack?: () => void;
+          isLoading?: boolean;
+        }
+
+        interface QuickReplyOption {
+          label: string;
+          value: string;
+          icon?: string;
+        }
+      </signature>
+      <path>features/assessment/AssessmentCard.tsx</path>
+    </interface>
+
+    <!-- useAssessmentChat Hook Interface -->
+    <interface>
+      <name>useAssessmentChat</name>
+      <kind>React Hook</kind>
+      <signature>
+        function useAssessmentChat(sessionId: string) {
+          return {
+            messages: Message[];
+            assessmentMode: 'chat' | 'structured';
+            structuredQuestion?: StructuredQuestion;
+            progress?: { current: number; total: number };
+            isComplete: boolean;
+            isTyping: boolean;
+            sendMessage: (content: string, isQuickReply?: boolean) => Promise&lt;void&gt;;
+            selectOption: (value: string) => Promise&lt;void&gt;;
+            goBack: () => void;
+          }
+        }
+      </signature>
+      <path>features/assessment/useAssessmentChat.ts</path>
+    </interface>
+
+    <!-- Message Type from GraphQL -->
+    <interface>
+      <name>Message</name>
+      <kind>TypeScript Type (Generated)</kind>
+      <signature>
+        interface Message {
+          id: string;
+          sender: 'AI' | 'USER' | 'SYSTEM';
+          content: string;
+          timestamp: string; // ISO 8601
+          suggestedReplies?: string[];
+        }
+      </signature>
+      <path>types/graphql.ts</path>
+    </interface>
+
+    <!-- StructuredQuestion Type -->
+    <interface>
+      <name>StructuredQuestion</name>
+      <kind>TypeScript Type (to be generated)</kind>
+      <signature>
+        interface StructuredQuestion {
+          id: string;
+          type: string;
+          question: string;
+          options: string[];
+          allowOther: boolean;
+        }
+      </signature>
+      <path>types/graphql.ts (generated)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing framework: Vitest with React Testing Library for unit tests, Playwright for E2E. Component tests should mock Apollo Client responses using MockedProvider. Test accessibility with @testing-library/jest-dom matchers. Follow Architecture patterns: test files in tests/unit/ and tests/e2e/ directories, not co-located with components. Use MSW for API mocking in integration tests.
+    </standards>
+
+    <locations>
+      tests/unit/components/assessment/AssessmentCard.test.tsx
+      tests/unit/hooks/useAssessmentChat.test.ts
+      tests/e2e/assessment-flow.spec.ts
+    </locations>
+
+    <ideas>
+      <!-- AC 2.4.1 -->
+      - Test: AI greeting displays on new session with open-ended question
+        - Mock GetAssessmentState query returning empty conversationHistory
+        - Verify AI message appears with child name (if known) in greeting
+        - Verify open-ended question like "Tell me what's been going on with [child]"
+
+      <!-- AC 2.4.2 -->
+      - Test: AI asks adaptive follow-ups based on keywords
+        - Mock SubmitAssessmentMessage mutation returning follow-up questions
+        - Verify follow-up questions adapt to user input keywords (duration, severity, impact)
+        - Test multiple conversation turns to verify context tracking
+
+      <!-- AC 2.4.3, 2.4.4, 2.4.5 -->
+      - Test: AssessmentCard renders structured question in single-card format
+        - Mock structured question response with options array
+        - Verify card displays question text prominently
+        - Verify quick reply options render as buttons
+        - Verify "Other" option reveals text input when selected
+        - Verify only one question visible at a time
+
+      <!-- AC 2.4.6 -->
+      - Test: Progress indicator shows current/total within structured section
+        - Render AssessmentCard with currentStep=3, totalSteps=5
+        - Verify "3 of 5" or similar indicator visible
+        - Verify progress updates as user advances
+
+      <!-- AC 2.4.7 -->
+      - Test: Back button allows revising previous answer
+        - Render AssessmentCard with onBack callback
+        - Click back button
+        - Verify onBack called
+        - Verify previous question restored with previous answer pre-selected
+
+      <!-- AC 2.4.8 -->
+      - Test: Assessment completion time (E2E only)
+        - E2E test measuring time from start to summary
+        - Verify typical case completes in ~5 minutes
+        - Use Playwright performance timing APIs
+
+      <!-- AC 2.4.9 -->
+      - Test: Completeness validation before transition
+        - Mock assessment with isComplete=false
+        - Verify "Continue" button disabled or not shown
+        - Mock assessment with isComplete=true
+        - Verify transition enabled
+
+      <!-- AC 2.4.10 -->
+      - Test: Crisis detection triggers support option display
+        - Mock SubmitAssessmentMessage returning crisisDetected=true
+        - Verify prominent support button appears
+        - Verify crisis resource information displayed (988, Crisis Text Line)
+        - Verify assessment continues while resources shown
+
+      <!-- Mode Switching -->
+      - Test: Mode switches from chat to structured on structuredQuestion response
+        - Mock AI response with structuredQuestion object
+        - Verify assessmentMode changes to 'structured'
+        - Verify AssessmentCard component renders instead of chat bubbles
+
+      <!-- Integration -->
+      - Test: Full assessment flow from greeting to completion
+        - Mock complete assessment conversation sequence
+        - Verify mode switching works correctly
+        - Verify all answers persist in conversationHistory
+        - Verify isComplete flag tracked properly
+    </ideas>
+  </tests>
+</story-context>

@@ -1,6 +1,6 @@
 # Story 2.6: Session Persistence and Resume
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -17,7 +17,7 @@ so that **I don't lose everything if I get interrupted or need a break**.
 5. **AC-2.6.5:** "Save & Exit" in header saves state and shows confirmation
 6. **AC-2.6.6:** Confirmation shows session link for returning
 7. **AC-2.6.7:** Option to receive email reminder in save confirmation
-8. **AC-2.6.8:** Session recoverable for 30 days
+8. **AC-2.6.8:** Frontend supports session recovery (30-day expiry enforced by backend)
 9. **AC-2.6.9:** Network failure shows "Saving..." indicator with retry option
 10. **AC-2.6.10:** Session ID stored in localStorage as backup recovery method
 
@@ -80,7 +80,7 @@ so that **I don't lose everything if I get interrupted or need a break**.
 - [ ] **Task 9: Create useOnboardingSession hook** (AC: 2.6.2, 2.6.3, 2.6.8)
   - [ ] Create `hooks/useOnboardingSession.ts` per Architecture
   - [ ] Manage session state across onboarding steps
-  - [ ] Handle session expiry (30 day limit)
+  - [ ] Handle session expiry gracefully (display expired message if backend returns 410/expired)
   - [ ] Provide session recovery utilities
   - [ ] Expose session status for UI display
 
@@ -91,6 +91,13 @@ so that **I don't lose everything if I get interrupted or need a break**.
   - [ ] Test network failure handling
   - [ ] Test localStorage recovery
   - [ ] Mock GraphQL for persistence tests
+
+## Prerequisites
+
+- **Story 1-3:** Core Layout Components (Header component for Save & Exit button)
+- **Story 2-1:** Chat Window and Message Display (ChatWindow)
+- **Story 2-2:** Message Input and Quick Reply Chips (useAssessmentChat hook)
+- **Story 2-4:** Assessment Flow (GraphQL operations, session state)
 
 ## Dev Notes
 
@@ -228,7 +235,7 @@ components/layout/
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- [Story Context XML](./2-6-session-persistence-and-resume.context.xml) - Generated 2025-11-29
 
 ### Agent Model Used
 
