@@ -1,0 +1,30 @@
+# Mutation to set user's payment preference for therapy sessions
+#
+# Updates the onboarding session with the user's selected payment
+# preference (insurance or self-pay) and optionally a self-pay package.
+#
+# Input:
+# - sessionId: Onboarding session identifier
+# - input.preferenceType: Either "insurance" or "self_pay"
+# - input.packageId: Optional package ID for self-pay bulk purchase
+#
+# Response:
+# - success: Boolean indicating if preference was saved
+# - session: Updated session with payment preference
+#
+# Usage: Called when user clicks "Choose self-pay" or selects
+# a self-pay package option from the cost comparison screen.
+
+mutation SetPaymentPreference(
+  $sessionId: ID!
+  $input: PaymentPreferenceInput!
+) {
+  setPaymentPreference(sessionId: $sessionId, input: $input) {
+    success
+    session {
+      id
+      paymentPreference
+      selectedPackageId
+    }
+  }
+}

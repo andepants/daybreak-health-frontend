@@ -1,0 +1,247 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>7.2</storyId>
+    <title>Session Context Passing</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-30</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/stories/7-2-session-context-passing.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>support staff member</asA>
+    <iWant>to see the parent's onboarding context when they reach out</iWant>
+    <soThat>I can help them quickly without asking repetitive questions</soThat>
+    <tasks>
+      - Task 1: Create Intercom context hook (AC: #1, #2, #3)
+        - Create `useIntercomContext` hook in `features/support-chat/`
+        - Implement context update logic using Intercom `update` method
+        - Define TypeScript interface for Intercom user attributes
+        - Add PHI filtering utility
+      - Task 2: Integrate context updates on route changes (AC: #3)
+        - Add `useEffect` in onboarding layout to detect route changes
+        - Call context update on step transitions
+        - Ensure session data is available before update
+      - Task 3: Map onboarding session state to Intercom attributes (AC: #1, #2, #5)
+        - Extract parent name and email from session
+        - Extract child name from session (if available)
+        - Map current route to onboarding step name
+        - Calculate boolean flags (assessment_complete, insurance_submitted)
+        - Filter out PHI fields
+      - Task 4: Testing and validation (AC: #4, #5)
+        - Write unit tests for `useIntercomContext` hook
+        - Test PHI filtering utility
+        - Verify Intercom receives correct attributes
+        - Test context updates on navigation
+        - Verify no PHI in Intercom payload
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Context Data Passed to Intercom
+       - When parent opens Intercom chat during onboarding, the following User Attributes are passed:
+         - Parent name (if collected)
+         - Email address
+         - Current onboarding step (e.g., "assessment", "insurance", "scheduling")
+         - Session ID for lookup
+         - Child's name (if collected, for context)
+
+    2. Custom Attributes Configuration
+       - `onboarding_step`: Current step in flow
+       - `session_id`: Onboarding session ID
+       - `assessment_complete`: Boolean
+       - `insurance_submitted`: Boolean
+
+    3. Context Updates
+       - Context updates as parent progresses through onboarding
+       - Updates triggered on route changes
+
+    4. Backend Integration
+       - Staff can view full session in Daybreak admin via session ID
+       - Session lookup uses the passed session ID
+
+    5. PHI Protection
+       - No sensitive PHI is passed to Intercom (assessment details stay in backend)
+       - Only non-sensitive identifiers are transmitted
+       - Filter out any protected health information
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/prd.md</path>
+        <title>Product Requirements Document</title>
+        <section>Support &amp; Communication (FR-014)</section>
+        <snippet>FR-014: The system shall provide real-time chat support connecting parents with Daybreak staff during onboarding. [MVP] - Per Architecture ADR-005, moved to MVP for emotional safety.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Security Architecture - PHI Protection Checklist</section>
+        <snippet>Lines 652-662: PHI Protection Checklist - All agents MUST verify before marking story complete: No PHI in console.log, No PHI in URL parameters, No PHI in error messages, No PHI in Sentry/error tracking payloads. Session tokens use secure, httpOnly cookies where possible.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Data Architecture - OnboardingSession Interface</section>
+        <snippet>Lines 482-527: OnboardingSession state model with child info, assessment state, demographics state, insurance state, matched therapists, and scheduled appointment. Managed by Apollo Client cache.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Consistency Rules - Logging Strategy and PHI Guard</section>
+        <snippet>Lines 456-472: PHI Guard utility (lib/utils/phi-guard.ts) strips PHI before logging. NEVER log PHI - console.log('User data:', userData) is FORBIDDEN. Use phiGuard(userData) to sanitize before logging.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Story 7.2 - Session Context Passing</section>
+        <snippet>Lines 1294-1340: As support staff, context data should be passed to Intercom including parent name, email, current onboarding step, session ID, and child's name. Custom attributes for onboarding_step, session_id, assessment_complete, insurance_submitted. No sensitive PHI passed to Intercom.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/stories/7-1-intercom-widget-integration.md</path>
+        <title>Story 7.1 - Intercom Widget Integration</title>
+        <section>Prerequisites and Implementation Context</section>
+        <snippet>Story 7.1 provides the foundation Intercom widget integration. Story 7.2 extends this by implementing user identification and context passing via Intercom update method.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>app/onboarding/[sessionId]/layout.tsx</path>
+        <kind>component</kind>
+        <symbol>OnboardingLayout</symbol>
+        <lines>76-131</lines>
+        <reason>Main onboarding layout where context updates should be triggered on route changes. Already uses useOnboardingSession hook for session data access.</reason>
+      </artifact>
+      <artifact>
+        <path>hooks/useOnboardingSession.ts</path>
+        <kind>hook</kind>
+        <symbol>useOnboardingSession</symbol>
+        <lines>1-180</lines>
+        <reason>Provides session state management with OnboardingSession interface including parent, child, assessment, and demographics data needed for Intercom context.</reason>
+      </artifact>
+      <artifact>
+        <path>app/layout.tsx</path>
+        <kind>component</kind>
+        <symbol>RootLayout</symbol>
+        <lines>entire file</lines>
+        <reason>Root layout where IntercomProvider will be initialized (from Story 7.1), context for where Intercom is available globally.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>@intercom/messenger-js-sdk</package>
+        <version>to be installed</version>
+        <reason>Intercom SDK for JavaScript integration, provides update method for passing user attributes</reason>
+      </node>
+      <node>
+        <package>next</package>
+        <version>16.0.5</version>
+        <reason>Next.js framework with App Router, provides usePathname and useEffect hooks needed for route change detection</reason>
+      </node>
+      <node>
+        <package>react</package>
+        <version>19.2.0</version>
+        <reason>React hooks (useEffect, useCallback) for implementing context update logic</reason>
+      </node>
+      <node>
+        <package>typescript</package>
+        <version>^5</version>
+        <reason>TypeScript for type-safe Intercom attributes interface definition</reason>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>PHI Protection: NEVER pass assessment content, specific concerns, or clinical details to Intercom. Only pass non-sensitive identifiers: session ID, step names, boolean flags. Assessment details must remain in backend only.</constraint>
+    <constraint>Use PHI filtering utility before any third-party data transmission. Create lib/utils/phi-filter.ts to strip sensitive fields.</constraint>
+    <constraint>State Management: Context data sourced from Apollo Client cache (OnboardingSession). Session state includes demographics, assessment completion, insurance submission status.</constraint>
+    <constraint>Route Detection: Use Next.js usePathname hook or layout props to detect current onboarding step.</constraint>
+    <constraint>Error Handling: Gracefully handle missing session data (early in onboarding). Don't block user flow if Intercom update fails. Log errors for debugging but continue.</constraint>
+    <constraint>Feature Organization: Co-locate Intercom logic in features/support-chat/ directory following project structure conventions.</constraint>
+    <constraint>Follow Architecture PHI Protection Checklist (lines 652-662): No PHI in logs, URLs, error messages, or third-party payloads.</constraint>
+    <constraint>Use existing session state hooks (useOnboardingSession) - do not recreate session management logic.</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Intercom User Attributes</name>
+      <kind>TypeScript Interface</kind>
+      <signature>
+interface IntercomUserAttributes {
+  name?: string;           // Parent full name
+  email?: string;          // Parent email
+  onboarding_step: string; // Current step: "assessment" | "demographics" | "insurance" | "matching" | "scheduling"
+  session_id: string;      // Onboarding session ID
+  child_first_name?: string; // Child's first name (for context, non-PHI)
+  assessment_complete: boolean;
+  insurance_submitted: boolean;
+}
+      </signature>
+      <path>features/support-chat/types.ts</path>
+    </interface>
+    <interface>
+      <name>Intercom Update Method</name>
+      <kind>JavaScript API</kind>
+      <signature>
+window.Intercom('update', {
+  name: string,
+  email: string,
+  onboarding_step: string,
+  session_id: string,
+  child_first_name?: string,
+  assessment_complete: boolean,
+  insurance_submitted: boolean
+})
+      </signature>
+      <path>Intercom JavaScript API</path>
+    </interface>
+    <interface>
+      <name>OnboardingSession</name>
+      <kind>TypeScript Interface</kind>
+      <signature>
+interface OnboardingSession {
+  id: string;
+  status: "in-progress" | "completed" | "expired";
+  assessment?: { conversationHistory: unknown[]; isComplete: boolean; };
+  parent?: { email?: string; firstName?: string; lastName?: string; };
+  child?: { firstName?: string; lastName?: string; dateOfBirth?: string; };
+  demographics?: unknown;
+  createdAt: string;
+  expiresAt: string;
+}
+      </signature>
+      <path>hooks/useOnboardingSession.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit tests use Vitest + React Testing Library. Test hooks with mock session data.
+      Integration tests verify Intercom API calls with correct attributes.
+      E2E tests (optional) verify context updates during navigation flow.
+      PHI filtering utility must have comprehensive unit tests to ensure no sensitive data leaks.
+      All tests must verify no PHI in any Intercom payloads.
+    </standards>
+    <locations>
+      - features/support-chat/useIntercomContext.test.ts
+      - lib/utils/phi-filter.test.ts
+      - tests/integration/intercom-context.test.ts (optional)
+    </locations>
+    <ideas>
+      <test ac="1">Test useIntercomContext hook calls Intercom update with parent name, email, session ID when session data available</test>
+      <test ac="1">Test useIntercomContext hook handles missing parent data gracefully (early in onboarding)</test>
+      <test ac="2">Test custom attributes (onboarding_step, session_id, assessment_complete, insurance_submitted) are correctly mapped</test>
+      <test ac="2">Test assessment_complete is true when assessment.isComplete is true, false otherwise</test>
+      <test ac="3">Test context update is triggered on route change (pathname change)</test>
+      <test ac="3">Test context updates when navigating from assessment to demographics to insurance</test>
+      <test ac="5">Test PHI filter utility removes assessment conversationHistory from payload</test>
+      <test ac="5">Test PHI filter utility removes child dateOfBirth from payload</test>
+      <test ac="5">Test PHI filter utility allows non-sensitive fields (first names, email, session ID)</test>
+      <test ac="5">Test no PHI in Intercom update call (verify payload before sending)</test>
+      <test>Test Intercom update is not called if Intercom is not initialized</test>
+      <test>Test error handling when Intercom update fails (log error, don't crash)</test>
+    </ideas>
+  </tests>
+</story-context>

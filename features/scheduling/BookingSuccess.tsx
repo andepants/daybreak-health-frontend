@@ -27,7 +27,9 @@ import { celebrateBooking, clearConfetti } from "@/lib/utils/confetti";
 import { AppointmentDetailsCard } from "./AppointmentDetailsCard";
 import { CalendarLinks } from "./CalendarLinks";
 import { WhatsNext } from "./WhatsNext";
+import { EmailConfirmationMessage } from "./EmailConfirmationMessage";
 import type { TherapistInfo } from "./AppointmentDetailsCard";
+import type { EmailConfirmationStatus } from "./EmailConfirmationMessage";
 
 /**
  * Appointment data for success display
@@ -47,6 +49,8 @@ export interface AppointmentData {
 export interface BookingSuccessProps {
   /** Appointment data to display */
   appointment: AppointmentData;
+  /** Email confirmation status from booking mutation */
+  emailConfirmation?: EmailConfirmationStatus | null;
   /** Callback when "Done" button is clicked (optional) */
   onDone?: () => void;
   /** Return URL for Done button (default: "/") */
@@ -92,6 +96,7 @@ export interface BookingSuccessProps {
  */
 export function BookingSuccess({
   appointment,
+  emailConfirmation,
   onDone,
   returnUrl = "/",
 }: BookingSuccessProps) {
@@ -154,6 +159,11 @@ export function BookingSuccess({
               </p>
             </div>
           </div>
+
+          {/* Email Confirmation Status */}
+          <EmailConfirmationMessage
+            emailConfirmation={emailConfirmation ?? null}
+          />
 
           {/* Appointment Details Card */}
           <AppointmentDetailsCard

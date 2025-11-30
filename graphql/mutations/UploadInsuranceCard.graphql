@@ -1,0 +1,34 @@
+# UploadInsuranceCard Mutation
+# Uploads insurance card images (front and optional back) for OCR processing
+# Uses Apollo Upload Client for file uploads
+# Returns updated insurance record with presigned URLs
+
+mutation UploadInsuranceCard(
+  $sessionId: ID!
+  $frontImage: Upload!
+  $backImage: Upload
+) {
+  uploadInsuranceCard(
+    sessionId: $sessionId
+    frontImage: $frontImage
+    backImage: $backImage
+  ) {
+    insurance {
+      id
+      payerName
+      subscriberName
+      memberId
+      groupNumber
+      verificationStatus
+      cardImageFrontUrl
+      cardImageBackUrl
+      ocrProcessed
+      ocrExtracted
+      ocrConfidence
+      ocrLowConfidenceFields
+      needsReview
+      ocrError
+    }
+    errors
+  }
+}

@@ -1,6 +1,6 @@
 # Daybreak Health Frontend Codebase Exploration Summary
 
-Generated: 2025-11-29
+Generated: 2025-11-30 (Updated)
 Project: daybreak-health-frontend at /Users/andre/coding/daybreak/daybreak-health-frontend
 
 ---
@@ -9,7 +9,7 @@ Project: daybreak-health-frontend at /Users/andre/coding/daybreak/daybreak-healt
 
 The Daybreak Health Parent Onboarding AI is a Next.js 15 + Apollo Client + GraphQL frontend for a HIPAA-compliant mental health intake system. This is a mobile-first web application designed to guide stressed parents through mental health assessment and onboarding for their children (ages 10-19).
 
-**Status:** Early stage - Epic 1 (Foundation & Project Setup) is currently ready for development
+**Status:** Active development - Epics 1-3 COMPLETE, Epic 4 nearly complete, Epics 5-7 in progress
 
 ---
 
@@ -58,10 +58,68 @@ daybreak-health-frontend/
 │   └── favicon.ico
 ├── types/
 │   └── graphql.ts               # Generated GraphQL types (manually created - no GraphQL docs yet)
-├── lib/
-│   └── utils.ts                 # Utility functions (cn() for class merging)
-├── graphql/                     # GraphQL query/mutation documents (empty - to be created)
-├── features/                    # Feature modules (empty - to be created)
+├── lib/                         # Shared utilities (IMPLEMENTED)
+│   ├── apollo/                  # Apollo Client setup
+│   │   ├── client.ts            # Apollo Client configuration
+│   │   ├── provider.tsx         # ApolloProvider wrapper
+│   │   └── links.ts             # HTTP/WebSocket links
+│   ├── validations/             # Zod schemas
+│   │   ├── insurance.ts
+│   │   ├── demographics.ts
+│   │   └── assessment.ts
+│   ├── utils/                   # Utility functions
+│   │   ├── formatters.ts
+│   │   ├── calendar-links.ts
+│   │   ├── confetti.ts
+│   │   └── age-validation.ts
+│   ├── data/
+│   │   └── insurance-carriers.ts
+│   └── utils.ts                 # cn() for class merging
+├── hooks/                       # Shared React hooks
+│   ├── useOnboardingSession.ts  # Session state management
+│   ├── useAutoSave.ts           # Form auto-save
+│   └── useWebSocketReconnect.ts # WS reconnection logic
+├── components/                  # Shared components
+│   ├── ui/                      # shadcn/ui components (button, card, dialog, etc.)
+│   ├── layout/                  # Header, Footer, OnboardingProgress, SaveExitModal
+│   └── shared/                  # ErrorBoundary
+├── graphql/                     # GraphQL operations (IMPLEMENTED)
+│   ├── mutations/               # CreateSession, SendMessage, SubmitInsuranceInfo, etc.
+│   ├── queries/                 # GetOnboardingSession, SessionByRecoveryToken
+│   └── subscriptions/           # SessionUpdated
+├── features/                    # Feature modules (IMPLEMENTED)
+│   ├── assessment/              # AI chat + form-based assessment
+│   │   ├── form/                # Form-based fallback
+│   │   │   ├── components/      # Page1, Page2, Page3, Progress, Navigation
+│   │   │   ├── hooks/           # useFormNavigation, useFormAutoSave
+│   │   │   └── utils/           # formToSummary, chatToFormMapper
+│   │   ├── ChatWindow.tsx       # Main chat UI
+│   │   ├── ChatBubble.tsx       # Message bubbles
+│   │   ├── MessageInput.tsx     # Text input component
+│   │   ├── QuickReplyChips.tsx  # Suggested replies
+│   │   ├── TypingIndicator.tsx  # AI typing animation
+│   │   ├── AssessmentSummary.tsx
+│   │   └── useAssessmentChat.ts # Chat state management
+│   ├── demographics/            # Parent/Child info forms
+│   │   ├── ParentInfoForm.tsx
+│   │   ├── ChildInfoForm.tsx
+│   │   └── ClinicalIntakeForm.tsx
+│   ├── insurance/               # Insurance submission
+│   │   ├── InsuranceForm.tsx
+│   │   ├── SelfPayModal.tsx
+│   │   └── useInsurance.ts
+│   ├── matching/                # Therapist matching
+│   │   ├── TherapistCard.tsx
+│   │   ├── TherapistMatchResults.tsx
+│   │   ├── TherapistProfileSheet.tsx
+│   │   ├── MatchRationale.tsx
+│   │   └── ProfileAvailabilitySection.tsx
+│   └── scheduling/              # Appointment booking
+│       ├── AppointmentDetailsCard.tsx
+│       ├── BookingSuccess.tsx
+│       ├── CalendarLinks.tsx
+│       ├── WhatsNext.tsx
+│       └── BookingProcessingState.tsx
 ├── public/                      # Static assets
 ├── docs/
 │   ├── sprint-artifacts/        # Sprint planning & status
@@ -374,25 +432,53 @@ generates: {
 }
 ```
 
-**Status:** Setup but not yet used - no GraphQL document files (*.graphql) in features/ or graphql/ directories
+**Status:** ACTIVE - GraphQL documents exist in:
+- graphql/mutations/*.graphql (7 files)
+- graphql/queries/*.graphql (2 files)
+- graphql/subscriptions/*.graphql (1 file)
+- features/*/graphql/*.graphql (per-feature operations)
 
 ---
 
 ## 9. Current Development Status
 
-### Epic 1: Foundation & Project Setup - CONTEXTED
-- Story 1-1: "Project Initialization & Core Dependencies" - READY FOR DEV
-- Story 1-2: "Design System & Theme Configuration" - DRAFTED
-- Story 1-3: "Core Layout Components" - DRAFTED
-- Story 1-4: "Apollo Client Configuration with WebSocket" - DRAFTED
-- Story 1-5: "GraphQL Code Generation Setup" - DRAFTED
+### Epic 1: Foundation & Project Setup - COMPLETE ✓
+- Story 1-1: "Project Initialization & Core Dependencies" - DONE
+- Story 1-2: "Design System & Theme Configuration" - DONE
+- Story 1-3: "Core Layout Components" - DONE
+- Story 1-4: "Apollo Client Configuration with WebSocket" - DONE
+- Story 1-5: "GraphQL Code Generation Setup" - DONE
 
-### Epics 2-6: All BACKLOG
-- Epic 2: AI-Guided Assessment Experience (6 stories)
-- Epic 3: Parent & Child Information Collection (4 stories)
-- Epic 4: Insurance Submission (3 stories)
-- Epic 5: Therapist Matching & Booking (5 stories)
-- Epic 6: Human Support Integration (3 stories)
+### Epic 2: AI-Guided Assessment Experience - COMPLETE ✓
+- Story 2-1: "Chat Window and Message Display" - DONE
+- Story 2-2: "Message Input and Quick Reply Chips" - DONE
+- Story 2-3: "AI Typing Indicator" - DONE
+- Story 2-4: "Assessment Flow with Adaptive Questions" - DONE
+- Story 2-5: "Assessment Summary Generation" - DONE
+- Story 2-6: "Session Persistence and Resume" - DONE
+
+### Epic 3: Parent & Child Information Collection - COMPLETE ✓
+- Story 3-1: "Parent Information Form" - DONE
+- Story 3-2: "Child Information Form" - DONE
+- Story 3-3: "Clinical Intake Information" - DONE
+- Story 3-4: "Form-Based Assessment Fallback" - DONE
+
+### Epic 4: Insurance Submission - IN PROGRESS
+- Story 4-1: "Manual Insurance Entry Form" - DONE
+- Story 4-2: "Insurance Verification and Confirmation" - READY FOR DEV
+
+### Epic 5: Enhanced Scheduling Module - READY
+- Story 5-1: "Therapist Matching Results Display" - READY FOR DEV
+- Story 5-2: "Therapist Profile Detail View" - READY FOR DEV
+- Story 5-3: "Availability Calendar and Time Selection" - READY FOR DEV
+- Story 5-4: "Booking Confirmation and Success" - DRAFTED
+- Story 5-5: "Email Confirmation and Reminders" - DRAFTED
+
+### Epic 6: Cost Estimation Tool - BACKLOG
+- Story 6-1 through 6-4: All READY FOR DEV
+
+### Epic 7: Support Interface - Intercom - BACKLOG
+- Story 7-1 through 7-3: All READY FOR DEV
 
 ---
 
@@ -528,4 +614,49 @@ To achieve comprehensive type coverage:
 
 **Scope:** Comprehensive test data exists for all major entities (clinicians, patients, organizations, contracts, insurance, referrals, questionnaires). These data structures need to be modeled as GraphQL types and generated into the frontend.
 
-**Next Steps:** Complete the GraphQL schema definition and code generation setup to achieve full type coverage across all backend entities.
+**Next Steps:** Complete Epic 4 (insurance verification), then proceed to Epics 5-7 (scheduling, cost estimation, support).
+
+---
+
+## 15. App Routes (Next.js App Router)
+
+```
+app/
+├── layout.tsx                              # Root layout
+├── page.tsx                                # Landing/entry page
+├── globals.css
+└── onboarding/
+    └── [sessionId]/
+        ├── layout.tsx                      # Onboarding layout wrapper
+        ├── page.tsx                        # Session entry point
+        ├── assessment/
+        │   ├── page.tsx                    # AI chat assessment
+        │   └── AssessmentClient.tsx
+        ├── form/
+        │   └── assessment/
+        │       ├── page.tsx                # Form-based fallback
+        │       └── FormAssessmentClient.tsx
+        ├── demographics/
+        │   └── page.tsx                    # Parent/child info
+        ├── insurance/
+        │   └── page.tsx                    # Insurance submission
+        └── matching/
+            └── page.tsx                    # Therapist matching
+```
+
+---
+
+## 16. Deployment Infrastructure
+
+### Containerization
+- **Dockerfile** - Multi-stage production build
+- **.dockerignore** - Build context optimization
+
+### Cloud Deployment  
+- **.aptible.yml** - Aptible PaaS configuration
+- Static export mode (`next.config: output='export'`)
+- Target: S3 + CloudFront CDN
+
+### Environment
+- **.env.local** - Local development
+- **.env.example** - Environment template

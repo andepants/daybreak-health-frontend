@@ -1,0 +1,16 @@
+# SetPaymentPreference Mutation
+# Updates the payment preference for a given session
+# Accepts preference type (insurance/self_pay) and optional payment plan ID
+
+mutation SetPaymentPreference($sessionId: ID!, $input: PaymentPreferenceInput!) {
+  setPaymentPreference(sessionId: $sessionId, input: $input) {
+    success
+    session {
+      id
+      paymentPreference {
+        preferenceType
+        paymentPlanId
+      }
+    }
+  }
+}

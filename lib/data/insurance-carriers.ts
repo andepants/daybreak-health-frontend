@@ -77,3 +77,56 @@ export function filterCarriers(query: string): InsuranceCarrier[] {
 export function getCarrierById(id: string): InsuranceCarrier | undefined {
   return INSURANCE_CARRIERS.find((carrier) => carrier.id === id);
 }
+
+/**
+ * Find carrier by name (fuzzy match for OCR results)
+ *
+ * Uses case-insensitive partial matching to find carriers
+ * from OCR-extracted payer names.
+ *
+ * @param name - Payer name from OCR extraction
+ * @returns Carrier object or undefined if no match found
+ */
+export function findCarrierByName(name: string): InsuranceCarrier | undefined {
+  if (!name) return undefined;
+
+  const lowerName = name.toLowerCase();
+
+  // First try exact match
+  const exactMatch = INSURANCE_CARRIERS.find(
+    (carrier) => carrier.name.toLowerCase() === lowerName
+  );
+  if (exactMatch) return exactMatch;
+
+  // Then try partial match
+  const partialMatch = INSURANCE_CARRIERS.find(
+    (carrier) =>
+      carrier.name.toLowerCase().includes(lowerName) ||
+      lowerName.includes(carrier.name.toLowerCase())
+  );
+  if (partialMatch) return partialMatch;
+
+  // Handle common OCR variations
+  const ocrMappings: Record<string, string> = {
+    "blue cross": "bcbs",
+    "blue shield": "bcbs",
+    "bcbs": "bcbs",
+    "united healthcare": "united",
+    "unitedhealthcare": "united",
+    "united health": "united",
+    "anthem blue": "anthem",
+    "kaiser": "kaiser",
+    "cigna": "cigna",
+    "aetna": "aetna",
+    "humana": "humana",
+    "molina": "molina",
+  };
+
+  for (const [pattern, carrierId] of Object.entries(ocrMappings)) {
+    if (lowerName.includes(pattern)) {
+      return INSURANCE_CARRIERS.find((c) => c.id === carrierId);
+    }
+  }
+
+  return undefined;
+}

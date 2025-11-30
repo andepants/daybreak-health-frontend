@@ -278,6 +278,26 @@ type SetSelfPayPayload {
   session: OnboardingSession!
 }
 
+"""Appointment booking record"""
+type Appointment {
+  id: ID!
+  sessionId: ID!
+  therapistId: ID!
+  startTime: DateTime!
+  endTime: DateTime!
+  duration: Int!
+  status: String!
+  meetingUrl: String
+  therapist: Therapist!
+}
+
+"""Response from bookAppointment mutation"""
+type BookAppointmentPayload {
+  appointment: Appointment!
+  success: Boolean!
+  message: String
+}
+
 # ------------------------------------------------------------------
 # INPUT TYPES
 # ------------------------------------------------------------------
@@ -290,6 +310,16 @@ input SubmitInsuranceInfoInput {
   memberId: String!
   groupNumber: String
   relationshipToSubscriber: String!
+}
+
+"""Input for booking an appointment"""
+input BookAppointmentInput {
+  sessionId: ID!
+  therapistId: ID!
+  startTime: DateTime!
+  endTime: DateTime!
+  duration: Int
+  timezone: String
 }
 
 # ------------------------------------------------------------------
@@ -390,6 +420,12 @@ type Mutation {
   Skips insurance verification step.
   """
   setSelfPay(sessionId: ID!): SetSelfPayPayload
+
+  """
+  Book an appointment with a matched therapist.
+  Creates appointment record and triggers confirmation email.
+  """
+  bookAppointment(input: BookAppointmentInput!): BookAppointmentPayload
 }
 
 # ------------------------------------------------------------------

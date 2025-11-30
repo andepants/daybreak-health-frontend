@@ -1,0 +1,15 @@
+# GetPaymentPlans Query
+# Fetches available payment plan options for a given session
+# Returns plan details including frequency, amounts, and terms
+
+query GetPaymentPlans($sessionId: ID!) {
+  getPaymentPlans(sessionId: $sessionId) {
+    id
+    name
+    description
+    frequency
+    installmentAmount
+    totalAmount
+    terms
+  }
+}

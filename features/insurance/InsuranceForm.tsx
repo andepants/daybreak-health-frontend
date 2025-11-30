@@ -3,7 +3,7 @@
  *
  * Renders a form with carrier dropdown, member ID, group number,
  * subscriber name, and relationship fields. Includes auto-save on blur,
- * validation, and self-pay modal trigger.
+ * validation, self-pay modal trigger, and OCR card upload support.
  */
 "use client";
 
@@ -35,9 +35,12 @@ import {
   INSURANCE_CARRIERS,
   filterCarriers,
   getCarrierById,
+  findCarrierByName,
 } from "@/lib/data/insurance-carriers";
 import { SelfPayModal } from "./SelfPayModal";
 import { useInsurance } from "./useInsurance";
+import { InsuranceCardUpload } from "./InsuranceCardUpload";
+import type { OcrExtractedData, OcrConfidenceData } from "./useInsuranceCardUpload";
 
 /**
  * Props for InsuranceForm component
@@ -114,6 +117,8 @@ export function InsuranceForm({
 }: InsuranceFormProps) {
   const [carrierSearch, setCarrierSearch] = React.useState("");
   const [isSelfPayOpen, setIsSelfPayOpen] = React.useState(false);
+  const [showManualEntry, setShowManualEntry] = React.useState(false);
+  const [ocrCompleted, setOcrCompleted] = React.useState(false);
   const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const {
@@ -154,6 +159,48 @@ export function InsuranceForm({
       // Optional: show toast notification
     },
   });
+
+  /**
+   * Handles OCR data extraction and auto-fills form fields
+   * Maps OCR-extracted data to form fields with carrier matching
+   */
+  const handleOcrComplete = React.useCallback(
+    (data: OcrExtractedData, confidence: OcrConfidenceData) => {
+      // Auto-fill carrier if found
+      if (data.payer_name) {
+        const matchedCarrier = findCarrierByName(data.payer_name);
+        if (matchedCarrier) {
+          setValue("carrier", matchedCarrier.id, { shouldValidate: true });
+        }
+      }
+
+      // Auto-fill member ID
+      if (data.member_id) {
+        setValue("memberId", data.member_id, { shouldValidate: true });
+      }
+
+      // Auto-fill group number
+      if (data.group_number) {
+        setValue("groupNumber", data.group_number, { shouldValidate: true });
+      }
+
+      // Auto-fill subscriber name
+      if (data.subscriber_name) {
+        setValue("subscriberName", data.subscriber_name, { shouldValidate: true });
+      }
+
+      setOcrCompleted(true);
+      setShowManualEntry(true);
+    },
+    [setValue]
+  );
+
+  /**
+   * Shows manual entry form when user skips OCR
+   */
+  const handleSkipOcr = React.useCallback(() => {
+    setShowManualEntry(true);
+  }, []);
 
   // Filter carriers based on search (AC-4.1.1)
   const filteredCarriers = React.useMemo(
@@ -245,12 +292,38 @@ export function InsuranceForm({
 
   return (
     <>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-[640px] mx-auto space-y-6"
-        noValidate
-      >
-        {/* Insurance Carrier Dropdown (AC-4.1.1) */}
+      <div className="w-full max-w-[640px] mx-auto space-y-6">
+        {/* Insurance Card Upload Section */}
+        {!showManualEntry && (
+          <InsuranceCardUpload
+            sessionId={sessionId}
+            onOcrComplete={handleOcrComplete}
+            onSkip={handleSkipOcr}
+          />
+        )}
+
+        {/* OCR Success Banner */}
+        {ocrCompleted && showManualEntry && (
+          <div
+            className="flex items-center gap-2 p-3 rounded-lg text-sm"
+            style={{ backgroundColor: "#D1FAE5", color: "#065F46" }}
+            role="status"
+          >
+            <Check className="w-4 h-4 flex-shrink-0" />
+            <span>
+              We&apos;ve filled in your information from your card. Please review and make any corrections below.
+            </span>
+          </div>
+        )}
+
+        {/* Manual Entry Form - shown after OCR or when skipped */}
+        {showManualEntry && (
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-6"
+            noValidate
+          >
+            {/* Insurance Carrier Dropdown (AC-4.1.1) */}
         <div className="space-y-2">
           <Label htmlFor="carrier" className="flex items-center gap-1">
             Insurance Carrier <span className="text-destructive">*</span>
@@ -531,57 +604,74 @@ export function InsuranceForm({
           )}
         </div>
 
-        {/* Save status indicator */}
-        {saveStatus === "saving" && (
-          <p className="text-xs text-muted-foreground text-center">Saving...</p>
-        )}
-        {saveStatus === "saved" && (
-          <p className="text-xs text-muted-foreground text-center">
-            All changes saved
-          </p>
-        )}
-        {saveStatus === "error" && (
-          <p className="text-xs text-center" style={{ color: ERROR_COLOR }}>
-            Failed to save. Please try again.
-          </p>
-        )}
-
-        {/* Self-pay link (AC-4.1.6) */}
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={() => setIsSelfPayOpen(true)}
-            className="text-sm text-daybreak-teal hover:text-daybreak-teal/80 underline underline-offset-2"
-          >
-            I don&apos;t have insurance
-          </button>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            className="w-full sm:w-auto"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back
-          </Button>
-
-          {/* Continue button (AC-4.1.7) */}
-          <Button
-            type="submit"
-            disabled={!isValid || isSaving}
-            className={cn(
-              "w-full sm:flex-1",
-              "bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
+            {/* Save status indicator */}
+            {saveStatus === "saving" && (
+              <p className="text-xs text-muted-foreground text-center">Saving...</p>
             )}
-          >
-            {isSaving ? "Submitting..." : "Continue"}
-          </Button>
-        </div>
-      </form>
+            {saveStatus === "saved" && (
+              <p className="text-xs text-muted-foreground text-center">
+                All changes saved
+              </p>
+            )}
+            {saveStatus === "error" && (
+              <p className="text-xs text-center" style={{ color: ERROR_COLOR }}>
+                Failed to save. Please try again.
+              </p>
+            )}
+
+            {/* Self-pay link (AC-4.1.6) */}
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setIsSelfPayOpen(true)}
+                className="text-sm text-daybreak-teal hover:text-daybreak-teal/80 underline underline-offset-2"
+              >
+                I don&apos;t have insurance
+              </button>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onBack}
+                className="w-full sm:w-auto"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Back
+              </Button>
+
+              {/* Continue button (AC-4.1.7) */}
+              <Button
+                type="submit"
+                disabled={!isValid || isSaving}
+                className={cn(
+                  "w-full sm:flex-1",
+                  "bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
+                )}
+              >
+                {isSaving ? "Submitting..." : "Continue"}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Back button when in upload mode */}
+        {!showManualEntry && (
+          <div className="flex justify-start pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onBack}
+              className="w-full sm:w-auto"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* Self-pay modal (AC-4.1.6) */}
       <SelfPayModal

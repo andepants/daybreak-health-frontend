@@ -2,8 +2,9 @@
  * Apollo Link Configuration
  *
  * Creates and configures Apollo links for HTTP queries/mutations and
- * WebSocket subscriptions. Includes authorization header middleware
- * and exponential backoff reconnection for WebSocket connections.
+ * WebSocket subscriptions. Includes authorization header middleware,
+ * file upload support via apollo-upload-client, and exponential backoff
+ * reconnection for WebSocket connections.
  *
  * Environment Configuration:
  * - NEXT_PUBLIC_API_TARGET: 'local' | 'aptible' (defaults to 'aptible' in production)
@@ -15,6 +16,7 @@ import { setContext } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createClient, type Client } from "graphql-ws";
+import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 
 /**
  * Determines the GraphQL HTTP endpoint based on environment configuration.
@@ -134,17 +136,23 @@ export function getAuthToken(): string | null {
 
 /**
  * Creates an HTTP link for GraphQL queries and mutations.
+ * Uses createUploadLink from apollo-upload-client to support file uploads.
  * Uses getGraphQLEndpoint() to determine the correct endpoint based on environment.
  *
- * @returns Configured HttpLink instance
+ * @returns Configured upload-enabled ApolloLink instance
  */
-export function createHttpLink(): HttpLink {
+export function createHttpLink(): ApolloLink {
   const uri = getGraphQLEndpoint();
 
-  return new HttpLink({
+  // Use createUploadLink for multipart file upload support
+  // This is backwards compatible with regular HTTP requests
+  return createUploadLink({
     uri,
     credentials: "include",
-  });
+    headers: {
+      "Apollo-Require-Preflight": "true",
+    },
+  }) as unknown as ApolloLink;
 }
 
 /**

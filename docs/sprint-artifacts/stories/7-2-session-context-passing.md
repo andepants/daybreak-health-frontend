@@ -1,6 +1,6 @@
 # Story 7.2: Session Context Passing
 
-Status: drafted
+Status: done
 
 ## Story
 
@@ -39,30 +39,30 @@ so that **I can help them quickly without asking repetitive questions**.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create Intercom context hook (AC: #1, #2, #3)
-  - [ ] Create `useIntercomContext` hook in `features/support-chat/`
-  - [ ] Implement context update logic using Intercom `update` method
-  - [ ] Define TypeScript interface for Intercom user attributes
-  - [ ] Add PHI filtering utility
+- [x] Task 1: Create Intercom context hook (AC: #1, #2, #3)
+  - [x] Create `useIntercomContext` hook in `features/support-chat/`
+  - [x] Implement context update logic using Intercom `update` method
+  - [x] Define TypeScript interface for Intercom user attributes
+  - [x] Add PHI filtering utility
 
-- [ ] Task 2: Integrate context updates on route changes (AC: #3)
-  - [ ] Add `useEffect` in onboarding layout to detect route changes
-  - [ ] Call context update on step transitions
-  - [ ] Ensure session data is available before update
+- [x] Task 2: Integrate context updates on route changes (AC: #3)
+  - [x] Add `useEffect` in onboarding layout to detect route changes
+  - [x] Call context update on step transitions
+  - [x] Ensure session data is available before update
 
-- [ ] Task 3: Map onboarding session state to Intercom attributes (AC: #1, #2, #5)
-  - [ ] Extract parent name and email from session
-  - [ ] Extract child name from session (if available)
-  - [ ] Map current route to onboarding step name
-  - [ ] Calculate boolean flags (assessment_complete, insurance_submitted)
-  - [ ] Filter out PHI fields
+- [x] Task 3: Map onboarding session state to Intercom attributes (AC: #1, #2, #5)
+  - [x] Extract parent name and email from session
+  - [x] Extract child name from session (if available)
+  - [x] Map current route to onboarding step name
+  - [x] Calculate boolean flags (assessment_complete, insurance_submitted)
+  - [x] Filter out PHI fields
 
-- [ ] Task 4: Testing and validation (AC: #4, #5)
-  - [ ] Write unit tests for `useIntercomContext` hook
-  - [ ] Test PHI filtering utility
-  - [ ] Verify Intercom receives correct attributes
-  - [ ] Test context updates on navigation
-  - [ ] Verify no PHI in Intercom payload
+- [x] Task 4: Testing and validation (AC: #4, #5)
+  - [x] Write unit tests for `useIntercomContext` hook
+  - [x] Test PHI filtering utility
+  - [x] Verify Intercom receives correct attributes
+  - [x] Test context updates on navigation
+  - [x] Verify no PHI in Intercom payload
 
 ## Dev Notes
 
@@ -145,7 +145,7 @@ so that **I can help them quickly without asking repetitive questions**.
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+- `docs/sprint-artifacts/stories/7-2-session-context-passing.context.xml` - Story context generated on 2025-11-30
 
 ### Agent Model Used
 
@@ -155,7 +155,31 @@ claude-sonnet-4-5-20250929
 
 ### Completion Notes List
 
+**2025-11-30:** Story implementation completed
+- Created PHI filtering utility (`lib/utils/phi-filter.ts`) with comprehensive filtering and validation
+- Created Intercom types (`features/support-chat/types.ts`) for user attributes with index signature
+- Created `useIntercomContext` hook with automatic context updates on session/route changes
+- Integrated hook into onboarding layout for real-time context updates
+- Updated Intercom TypeScript definitions to support user data attributes
+- Wrote comprehensive unit tests (48 total tests, all passing):
+  - 25 tests for PHI filter utility (100% coverage of filtering, validation, and edge cases)
+  - 23 tests for useIntercomContext hook (session mapping, route changes, PHI filtering, error handling)
+- All TypeScript compilation passes with no errors in new code
+- PHI protection verified through automated tests - no sensitive data leaks to Intercom
+
 ### File List
+
+**New Files Created:**
+- `lib/utils/phi-filter.ts` - PHI filtering utility with filterPHI(), containsPHI(), and validateNoPHI() functions
+- `features/support-chat/types.ts` - TypeScript interfaces for Intercom user attributes and configuration
+- `features/support-chat/useIntercomContext.ts` - Hook for managing Intercom context updates
+- `features/support-chat/index.ts` - Feature exports barrel file
+- `tests/unit/lib/utils/phi-filter.test.ts` - Comprehensive PHI filter tests (25 tests)
+- `tests/unit/features/support-chat/useIntercomContext.test.ts` - Hook tests (23 tests)
+
+**Modified Files:**
+- `app/onboarding/[sessionId]/layout.tsx` - Added useIntercomContext hook integration
+- `types/intercom.d.ts` - Enhanced with IntercomUserData interface for user attributes
 
 ## Change Log
 

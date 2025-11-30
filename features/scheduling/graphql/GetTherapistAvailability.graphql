@@ -1,0 +1,34 @@
+# GetTherapistAvailability Query
+# Fetches available appointment slots for a specific therapist
+# Used by the scheduling calendar to display bookable time slots
+# Requires valid JWT token - user can only access availability when booking for their own session
+
+query GetTherapistAvailability(
+  $therapistId: ID!
+  $startDate: DateTime!
+  $endDate: DateTime!
+  $timezone: String
+) {
+  therapistAvailability(
+    therapistId: $therapistId
+    startDate: $startDate
+    endDate: $endDate
+    timezone: $timezone
+  ) {
+    therapistId
+    therapistName
+    therapistPhotoUrl
+    timezone
+    availableDates {
+      date
+      hasAvailability
+      slots {
+        id
+        startTime
+        endTime
+        isAvailable
+        timezone
+      }
+    }
+  }
+}

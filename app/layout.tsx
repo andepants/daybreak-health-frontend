@@ -7,6 +7,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import { ApolloWrapper } from "@/lib/apollo";
+import { IntercomProvider } from "@/providers";
 import "./globals.css";
 
 /**
@@ -48,7 +49,9 @@ export default function RootLayout({
       <body
         className={`${fraunces.variable} ${inter.variable} font-sans antialiased`}
       >
-        <ApolloWrapper>{children}</ApolloWrapper>
+        <ApolloWrapper>
+          <IntercomProvider>{children}</IntercomProvider>
+        </ApolloWrapper>
       </body>
     </html>
   );

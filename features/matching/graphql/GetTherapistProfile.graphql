@@ -1,0 +1,41 @@
+# GetTherapistProfile Query
+# Fetches detailed therapist profile information for the profile sheet view
+# Extends basic therapist data with education, certifications, approach, and availability slots
+# Requires valid JWT token - user can only access therapist profiles for their session matches
+
+query GetTherapistProfile($therapistId: ID!, $sessionId: ID!) {
+  therapistProfile(therapistId: $therapistId, sessionId: $sessionId) {
+    id
+    name
+    credentials
+    photoUrl
+    bio
+    specialties
+    yearsOfExperience
+
+    # Extended profile fields
+    approach
+    languages
+    education {
+      degree
+      institution
+      year
+    }
+    certifications
+
+    # Match-specific data
+    matchReasons(sessionId: $sessionId) {
+      id
+      text
+      icon
+    }
+
+    # Availability data
+    availabilityStatus
+    availabilityText
+    availableSlots(limit: 3) {
+      id
+      datetime
+    }
+  }
+}

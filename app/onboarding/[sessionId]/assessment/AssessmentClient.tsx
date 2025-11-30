@@ -113,7 +113,7 @@ export function AssessmentClient({ sessionId }: AssessmentClientProps) {
 
   // Otherwise show chat interface
   return (
-    <main className="flex flex-col flex-1 bg-background overflow-hidden min-h-0">
+    <main className="flex flex-col h-screen bg-background overflow-hidden">
       {/* Error banner for non-auth errors */}
       {showError && (
         <div className="bg-amber-50 border-b border-amber-200 px-4 py-3">

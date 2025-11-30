@@ -7,8 +7,6 @@
  * @module lib/utils/calendar-links
  */
 
-import { format } from "date-fns";
-
 /**
  * Calendar event details for generating links
  */
@@ -27,12 +25,19 @@ export interface CalendarEventDetails {
 
 /**
  * Formats a date for calendar formats (YYYYMMDDTHHmmssZ)
+ * Uses UTC methods to prevent timezone conversion issues
  * @param dateString - ISO date string
  * @returns Formatted date string for calendar APIs
  */
 function formatCalendarDate(dateString: string): string {
   const date = new Date(dateString);
-  return format(date, "yyyyMMdd'T'HHmmss'Z'");
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const hours = String(date.getUTCHours()).padStart(2, '0');
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+  return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
 }
 
 /**

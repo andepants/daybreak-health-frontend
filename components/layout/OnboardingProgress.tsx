@@ -31,11 +31,15 @@ type StepId = "assessment" | "info" | "insurance" | "match" | "book";
  * @param currentStep - Currently active step in the onboarding flow
  * @param completedSteps - Array of completed step identifiers
  * @param className - Additional CSS classes for customization
+ * @param onStepClick - Callback when a step is clicked (for navigation)
+ * @param allowAllNavigation - If true, all steps are clickable (for testing)
  */
 interface OnboardingProgressProps {
   currentStep: StepId;
   completedSteps?: StepId[];
   className?: string;
+  onStepClick?: (stepId: StepId) => void;
+  allowAllNavigation?: boolean;
 }
 
 /**
@@ -52,11 +56,14 @@ const STEPS: { id: StepId; label: string; icon: React.ComponentType<{ className?
 /**
  * Renders the progress stepper with 5 steps
  * Active step receives teal styling, completed steps show checkmark
+ * Steps are clickable when onStepClick is provided
  */
 function OnboardingProgress({
   currentStep,
   completedSteps = [],
   className,
+  onStepClick,
+  allowAllNavigation = false,
 }: OnboardingProgressProps) {
   const currentIndex = STEPS.findIndex((s) => s.id === currentStep);
 
@@ -72,43 +79,72 @@ function OnboardingProgress({
           const isPast = index < currentIndex;
           const Icon = step.icon;
 
+          // Step is clickable if: allowAllNavigation OR (has callback AND (completed OR past))
+          const isClickable = onStepClick && (allowAllNavigation || isCompleted || isPast);
+
+          const stepIndicator = (
+            <div
+              className={cn(
+                "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200",
+                "border-2",
+                isCompleted || isPast
+                  ? "bg-daybreak-teal border-daybreak-teal text-white"
+                  : isCurrent
+                  ? "bg-daybreak-teal border-daybreak-teal text-white"
+                  : "bg-background border-border text-muted-foreground"
+              )}
+              aria-current={isCurrent ? "step" : undefined}
+            >
+              {isCompleted ? (
+                <Check className="w-5 h-5" aria-hidden="true" />
+              ) : (
+                <Icon className="w-5 h-5" aria-hidden="true" />
+              )}
+            </div>
+          );
+
+          const stepLabel = (
+            <span
+              className={cn(
+                "text-xs md:text-sm font-medium transition-colors",
+                "hidden md:block",
+                isCurrent || isCompleted || isPast
+                  ? "text-foreground"
+                  : "text-muted-foreground"
+              )}
+            >
+              {step.label}
+            </span>
+          );
+
           return (
             <li
               key={step.id}
               className="flex flex-col items-center gap-1 md:flex-row md:gap-2"
             >
-              {/* Step indicator */}
-              <div
-                className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-full transition-colors",
-                  "border-2",
-                  isCompleted || isPast
-                    ? "bg-daybreak-teal border-daybreak-teal text-white"
-                    : isCurrent
-                    ? "bg-daybreak-teal border-daybreak-teal text-white"
-                    : "bg-background border-border text-muted-foreground"
-                )}
-                aria-current={isCurrent ? "step" : undefined}
-              >
-                {isCompleted ? (
-                  <Check className="w-5 h-5" aria-hidden="true" />
-                ) : (
-                  <Icon className="w-5 h-5" aria-hidden="true" />
-                )}
-              </div>
-
-              {/* Step label - visible on desktop */}
-              <span
-                className={cn(
-                  "text-xs md:text-sm font-medium transition-colors",
-                  "hidden md:block",
-                  isCurrent || isCompleted || isPast
-                    ? "text-foreground"
-                    : "text-muted-foreground"
-                )}
-              >
-                {step.label}
-              </span>
+              {isClickable ? (
+                <button
+                  type="button"
+                  onClick={() => onStepClick(step.id)}
+                  className={cn(
+                    "flex flex-col items-center gap-1 md:flex-row md:gap-2",
+                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-daybreak-teal focus-visible:ring-offset-2",
+                    "rounded-lg cursor-pointer group",
+                    "hover:scale-105 active:scale-95 transition-transform duration-150"
+                  )}
+                  aria-label={`Go to ${step.label} step`}
+                >
+                  <div className="group-hover:shadow-md group-hover:shadow-daybreak-teal/30 rounded-full transition-shadow duration-200">
+                    {stepIndicator}
+                  </div>
+                  {stepLabel}
+                </button>
+              ) : (
+                <>
+                  {stepIndicator}
+                  {stepLabel}
+                </>
+              )}
 
               {/* Screen reader text */}
               <span className="sr-only">

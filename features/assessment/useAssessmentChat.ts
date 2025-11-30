@@ -34,6 +34,7 @@ const SEND_MESSAGE_MUTATION = gql`
         content
         createdAt
       }
+      assessmentComplete
       errors
     }
   }
@@ -56,6 +57,7 @@ interface SendMessageResponse {
       content: string;
       createdAt: string;
     } | null;
+    assessmentComplete: boolean;
     errors: string[];
   } | null;
 }
@@ -318,6 +320,12 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
 
           // Clear suggested replies for now (backend can provide these in the future)
           setSuggestedReplies([]);
+        }
+
+        // Check if assessment is complete (backend signals this)
+        const isAssessmentComplete = data?.sendMessage?.assessmentComplete ?? false;
+        if (isAssessmentComplete) {
+          setIsComplete(true);
         }
 
         // Stay in chat mode (structured questions handled by backend context)

@@ -146,7 +146,7 @@ export function ChatWindow({
   return (
     <div
       className={cn(
-        "flex flex-col flex-1 w-full mx-auto overflow-hidden min-h-0",
+        "flex flex-col flex-1 w-full mx-auto overflow-hidden min-h-0 h-full",
         className
       )}
     >
@@ -168,7 +168,7 @@ export function ChatWindow({
             aria-live="polite"
             aria-label="Chat conversation"
             className={cn(
-              "flex-1 overflow-y-auto px-4 py-4 min-h-0",
+              "flex-1 overflow-y-auto px-4 py-4 min-h-0 h-full",
               "scroll-smooth", // Smooth scrolling
               "overscroll-contain", // Prevent bounce on mobile
               "flex flex-col justify-end" // Push messages toward bottom

@@ -11,7 +11,7 @@
  */
 "use client";
 
-import { use, useCallback } from "react";
+import { use, useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ParentInfoForm,
@@ -71,33 +71,56 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
         ? "clinical"
         : "parent";
 
+  // State to hold loaded session data
+  const [storedData, setStoredData] = useState<{
+    parent?: Partial<ParentInfoInput>;
+    child?: Partial<ChildInfoInput>;
+    clinical?: Partial<ClinicalIntakeInput>;
+    assessmentSummary?: string;
+  }>({});
+
+  // Track whether data has been loaded (for form key to force re-mount)
+  const [dataLoaded, setDataLoaded] = useState(false);
+
   /**
-   * Extract assessment summary for child form pre-population (AC-3.2.9)
-   * Handles null/undefined/empty gracefully
+   * Load stored session data from localStorage on mount
+   * This enables resume functionality and dev toolbar data fill
    */
-  const assessmentSummary = useCallback(() => {
-    // Try to get from localStorage as backup
+  useEffect(() => {
     try {
       const stored = localStorage.getItem(`onboarding_session_${sessionId}`);
       if (stored) {
         const parsed = JSON.parse(stored);
-        // Check for assessment summary in stored data
-        if (parsed?.data?.assessmentSummary) {
-          return parsed.data.assessmentSummary;
-        }
-        // Check for keyConcerns array format
-        if (parsed?.data?.assessment?.keyConcerns) {
-          const concerns = parsed.data.assessment.keyConcerns;
-          if (Array.isArray(concerns) && concerns.length > 0) {
-            return concerns.join("\n");
-          }
+        if (parsed?.data) {
+          setStoredData({
+            parent: parsed.data.parent,
+            child: parsed.data.child,
+            clinical: parsed.data.clinical,
+            assessmentSummary: parsed.data.assessmentSummary,
+          });
         }
       }
     } catch (e) {
-      console.warn("Failed to parse assessment summary from storage:", e);
+      console.warn("Failed to load session data from storage:", e);
+    }
+    // Mark data as loaded to trigger form re-mount with new defaults
+    setDataLoaded(true);
+  }, [sessionId]);
+
+  /**
+   * Extract assessment summary for child form pre-population (AC-3.2.9)
+   * Uses stored data which is loaded via useEffect (client-side only)
+   */
+  const assessmentSummary = useMemo(() => {
+    if (storedData.assessmentSummary) {
+      return storedData.assessmentSummary;
+    }
+    // Check for child's primaryConcerns from stored data
+    if (storedData.child?.primaryConcerns) {
+      return storedData.child.primaryConcerns;
     }
     return "";
-  }, [sessionId]);
+  }, [storedData.assessmentSummary, storedData.child?.primaryConcerns]);
 
   /**
    * Handles parent form submission and navigation to child form
@@ -168,7 +191,9 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
         </div>
 
         <ParentInfoForm
+          key={`parent-${dataLoaded}`}
           sessionId={sessionId}
+          initialData={storedData.parent}
           onContinue={handleParentContinue}
           onBack={handleParentBack}
         />
@@ -190,8 +215,10 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
         </div>
 
         <ChildInfoForm
+          key={`child-${dataLoaded}`}
           sessionId={sessionId}
-          assessmentSummary={assessmentSummary()}
+          initialData={storedData.child}
+          assessmentSummary={assessmentSummary}
           onContinue={handleChildContinue}
           onBack={handleChildBack}
         />
@@ -212,7 +239,9 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
       </div>
 
       <ClinicalIntakeForm
+        key={`clinical-${dataLoaded}`}
         sessionId={sessionId}
+        initialData={storedData.clinical}
         onContinue={handleClinicalContinue}
         onBack={handleClinicalBack}
       />

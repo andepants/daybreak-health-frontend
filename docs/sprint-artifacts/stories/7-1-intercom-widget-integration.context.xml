@@ -1,0 +1,278 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>7.1</storyId>
+    <title>Intercom Widget Integration</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-30</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/stories/7-1-intercom-widget-integration.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>to always see an option to get human help via live chat</iWant>
+    <soThat>I know I'm not alone if I get stuck or need reassurance</soThat>
+    <tasks>
+### Task 1: Install and Configure Intercom SDK (AC: #1, #2, #3)
+- Install Intercom package (@intercom/messenger-js-sdk via pnpm or use script tag approach)
+- Set up environment variables (NEXT_PUBLIC_INTERCOM_APP_ID in .env.example and .env.local)
+- Document installation in dev notes
+
+### Task 2: Create Intercom Provider Component (AC: #1, #2, #3)
+- Create providers/IntercomProvider.tsx
+- Initialize Intercom with app_id from environment variable
+- Configure Daybreak branding colors in settings
+- Set up asynchronous loading (non-blocking)
+- Handle client-side only rendering (Next.js App Router)
+- Set default launcher position (bottom-right)
+- Configure mobile-specific settings
+- Set up pre-populated prompts
+- Configure accessible attributes
+
+### Task 3: Integrate Intercom into App Layout (AC: #1, #3)
+- Modify app/layout.tsx to include IntercomProvider
+- Wrap app with IntercomProvider
+- Ensure provider only renders on client side
+- Position in provider hierarchy (after ApolloWrapper)
+- Verify Intercom loads on all pages (landing, onboarding routes, error pages)
+
+### Task 4: Style and Position Customization (AC: #1)
+- Configure Intercom appearance with Daybreak teal (#2A9D8F) as primary color
+- Ensure contrast meets WCAG AA standards
+- Configure launcher icon style
+- Adjust positioning for mobile (ensure no overlap with bottom navigation)
+- Test on various screen sizes (320px to 1920px)
+- Verify touch target is minimum 44x44px
+
+### Task 5: Accessibility Implementation (AC: #3)
+- Ensure keyboard accessibility (Widget focusable via Tab, Enter/Space opens messenger, Escape closes)
+- Add screen reader support (verify ARIA labels, test with VoiceOver/NVDA)
+- Announce messenger state changes
+
+### Task 6: Testing (All ACs)
+- Unit tests for IntercomProvider (initialization, error handling, client-side only rendering)
+- Integration tests (verify async loading, messenger open/close, no console errors)
+- E2E tests with Playwright (verify widget visibility, click interaction, mobile viewport, keyboard navigation)
+</tasks>
+  </story>
+
+  <acceptanceCriteria>
+### 1. Intercom Launcher Visibility
+Given I am anywhere in the onboarding flow
+When the page loads
+Then I see the Intercom chat widget:
+- Position: fixed bottom-right (standard Intercom placement)
+- Daybreak-branded colors (configured in Intercom)
+- Chat bubble icon with accessible touch target
+- Doesn't overlap with critical UI elements
+- Widget position adjusts for mobile
+
+### 2. Intercom Messenger Functionality
+When I click the chat bubble
+Then:
+- Opens Intercom Messenger
+- Shows "Chat with Daybreak Support" heading
+- Pre-populated with helpful prompts (e.g., "How can we help you today?")
+
+### 3. Widget Availability
+- Widget appears on all onboarding pages
+- Widget loads asynchronously (doesn't block page render)
+- Widget is accessible via keyboard navigation (Tab key)
+</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic 7: Support Interface - Intercom</title>
+        <section>Epic 7: Support Interface</section>
+        <snippet>Provides real-time human support via Intercom throughout the onboarding flow, ensuring parents never feel trapped. FR-014 coverage. Backend Integration via stories 7-1 through 7-3.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Decision Records</title>
+        <section>ADR-005: Human Support in MVP (Not Growth)</section>
+        <snippet>Include human support chat escalation in MVP. Pre-mortem analysis identified "parents feel trapped" as critical risk. Emotional safety requires human option. Reduces AI chat abandonment.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Project Structure - Providers Pattern</title>
+        <section>Project Structure - providers/</section>
+        <snippet>Providers directory contains React Context providers. IntercomProvider should follow same pattern as ApolloWrapper, AuthProvider, ThemeProvider patterns.</snippet>
+      </doc>
+      <doc>
+        <path>docs/prd.md</path>
+        <title>Functional Requirements</title>
+        <section>6.5 Support & Communication</section>
+        <snippet>FR-014: The system shall provide real-time chat support connecting parents with Daybreak staff during onboarding. [Growth] - Moved to MVP per ADR-005.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Security Architecture - PHI Protection</title>
+        <section>PHI Protection Checklist</section>
+        <snippet>No PHI in console.log, URL parameters, browser history, error messages, or Sentry payloads. Session context passing must filter out sensitive data.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>app/layout.tsx</path>
+        <kind>layout</kind>
+        <symbol>RootLayout</symbol>
+        <lines>41-55</lines>
+        <reason>Root layout where IntercomProvider must be integrated. Currently contains ApolloWrapper - IntercomProvider should wrap children after ApolloWrapper.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/apollo/provider.tsx</path>
+        <kind>provider</kind>
+        <symbol>ApolloWrapper</symbol>
+        <lines>1-50</lines>
+        <reason>Example provider pattern to follow. Shows client-side only rendering pattern using 'use client' directive and proper TypeScript typing.</reason>
+      </artifact>
+      <artifact>
+        <path>app/globals.css</path>
+        <kind>styles</kind>
+        <symbol>CSS Variables</symbol>
+        <lines>1-50</lines>
+        <reason>Contains Daybreak color tokens including daybreak-teal (#2A9D8F) that should be used for Intercom branding configuration.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>@intercom/messenger-js-sdk</package>
+        <version>latest</version>
+        <purpose>Official Intercom React SDK (optional - can use script tag instead)</purpose>
+      </node>
+      <node>
+        <package>next</package>
+        <version>16.0.5</version>
+        <purpose>Next.js framework with App Router and Script component for async loading</purpose>
+      </node>
+      <node>
+        <package>react</package>
+        <version>19.2.0</version>
+        <purpose>React for provider component implementation</purpose>
+      </node>
+      <node>
+        <package>typescript</package>
+        <version>^5</version>
+        <purpose>Type safety for Intercom configuration and window.Intercom API</purpose>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+### Development Constraints
+- **Provider Pattern**: Use React Context pattern per Architecture ADR. Initialize in providers/ directory following project structure.
+- **Client-Side Only**: Must use 'use client' directive. Intercom cannot render server-side in Next.js App Router.
+- **Asynchronous Loading**: Intercom script must load asynchronously to avoid blocking page render. Use Next.js Script component with strategy="lazyOnload" or dynamic import.
+- **Security**: App ID is public and safe to expose. Store in NEXT_PUBLIC_INTERCOM_APP_ID environment variable. User identification handled in Story 7.2.
+- **No PHI**: Do not pass sensitive assessment data or clinical information to Intercom. Only pass non-sensitive identifiers (session ID, current step).
+- **Accessibility**: Widget must be keyboard accessible (Tab, Enter/Space, Escape) and screen reader compatible with proper ARIA labels.
+- **Mobile-First**: Widget positioning must adjust for mobile viewports. Touch target minimum 44x44px per WCAG.
+
+### Technical Constraints
+- **Browser Compatibility**: Modern browsers required (Chrome 111+, Safari 16.4+, Firefox 128+) per Tailwind CSS v4 dependencies.
+- **Environment Variables**: Follow NEXT_PUBLIC_* convention for client-side access per Architecture patterns.
+- **Testing Requirements**: Unit tests (Vitest), integration tests, E2E tests (Playwright) per Architecture testing strategy.
+- **Code Style**: Follow CLAUDE.md guidelines - functional/declarative patterns, descriptive block comments, max 500 lines per file.
+
+### Integration Constraints
+- **Backend Dependency**: Consumes backend Epic 7 Story 7-1 (Intercom Widget Integration) for server-side configuration.
+- **Prerequisites**: Epic 1 layout components must be complete (Story 1.3: Core Layout Components).
+- **Session Context**: Story 7.2 will implement user identification and context passing - this story only handles widget visibility.
+</constraints>
+
+  <interfaces>
+### Intercom JavaScript API
+- **Kind**: Third-party JavaScript SDK
+- **Signature**:
+```typescript
+interface IntercomSettings {
+  app_id: string;
+  alignment?: 'left' | 'right';
+  horizontal_padding?: number;
+  vertical_padding?: number;
+  custom_launcher_selector?: string;
+}
+
+interface Window {
+  Intercom?: (method: string, settings?: IntercomSettings) => void;
+  intercomSettings?: IntercomSettings;
+}
+
+// Core methods
+window.Intercom('boot', { app_id: 'YOUR_APP_ID' });
+window.Intercom('show');
+window.Intercom('hide');
+window.Intercom('update', settings);
+window.Intercom('shutdown');
+```
+- **Path**: https://developers.intercom.com/installing-intercom/docs/intercom-javascript
+
+### Environment Configuration
+- **Kind**: Environment variable
+- **Signature**:
+```bash
+# .env.local and .env.example
+NEXT_PUBLIC_INTERCOM_APP_ID=your_intercom_app_id_here
+```
+- **Path**: .env.local, .env.example
+
+### Provider Component Interface
+- **Kind**: React component
+- **Signature**:
+```typescript
+interface IntercomProviderProps {
+  children: React.ReactNode;
+}
+
+export function IntercomProvider({ children }: IntercomProviderProps): JSX.Element;
+```
+- **Path**: providers/IntercomProvider.tsx
+</interfaces>
+
+  <tests>
+    <standards>
+Testing follows Architecture multi-layered approach:
+- **Unit Tests**: Vitest + React Testing Library for component testing
+- **Integration Tests**: MSW for API mocking, test script loading and initialization
+- **E2E Tests**: Playwright for cross-browser testing and user flow simulation
+- **Type Safety**: TypeScript for compile-time validation
+
+All tests must:
+- Mock Intercom SDK to avoid real initialization
+- Test client-side only rendering (should not render on server)
+- Verify async loading doesn't block page render
+- Test error handling for missing app_id
+- Validate accessibility (keyboard navigation, ARIA labels)
+</standards>
+    <locations>
+- tests/unit/providers/IntercomProvider.test.tsx (unit tests)
+- tests/e2e/intercom-widget.spec.ts (E2E tests)
+- providers/IntercomProvider.tsx (co-located test for provider)
+</locations>
+    <ideas>
+### Unit Test Ideas (Vitest)
+- **AC #1, #2, #3**: Test IntercomProvider initialization with valid app_id
+- **AC #3**: Test error handling for missing NEXT_PUBLIC_INTERCOM_APP_ID
+- **AC #3**: Test client-side only rendering (should not render on server)
+- **AC #2**: Test Intercom script loads asynchronously
+- **AC #1**: Mock window.Intercom to verify boot call with correct settings
+
+### Integration Test Ideas
+- **AC #2**: Verify Intercom script loads without blocking page render
+- **AC #2**: Test messenger open/close functionality
+- **AC #1, #2**: Verify no JavaScript errors in console on initialization
+- **AC #1**: Test configuration options applied correctly (alignment, colors)
+
+### E2E Test Ideas (Playwright)
+- **AC #1**: Load onboarding page and verify widget appears in bottom-right
+- **AC #2**: Click widget and verify messenger opens with "Chat with Daybreak Support"
+- **AC #3**: Test keyboard navigation (Tab to widget, Enter to open)
+- **AC #1**: Test on mobile viewport (375px width) - verify positioning
+- **AC #1**: Verify widget doesn't overlap with critical UI elements
+- **AC #3**: Test accessibility with screen reader mode
+</ideas>
+  </tests>
+</story-context>

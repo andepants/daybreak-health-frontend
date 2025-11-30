@@ -62,35 +62,35 @@ development_status:
   3-4-form-based-assessment-fallback: done
   epic-3-retrospective: done
 
-  # Epic 4: Insurance Submission (2 stories)
+  # Epic 4: Insurance Submission (2 stories) - COMPLETE
   epic-4: contexted
   4-1-manual-insurance-entry-form: done
-  4-2-insurance-verification-and-confirmation: ready-for-dev
+  4-2-insurance-verification-and-confirmation: done
   epic-4-retrospective: optional
 
-  # Epic 5: Enhanced Scheduling Module (5 stories)
+  # Epic 5: Enhanced Scheduling Module (5 stories) - COMPLETE
   # Backend alignment: consumes backend stories 5-1 through 5-5
-  epic-5: backlog
-  5-1-therapist-matching-results-display: ready-for-dev
-  5-2-therapist-profile-detail-view: ready-for-dev
-  5-3-availability-calendar-and-time-selection: ready-for-dev
-  5-4-booking-confirmation-and-success: drafted
-  5-5-email-confirmation-and-reminders: drafted
+  epic-5: contexted
+  5-1-therapist-matching-results-display: done
+  5-2-therapist-profile-detail-view: done
+  5-3-availability-calendar-and-time-selection: done
+  5-4-booking-confirmation-and-success: done
+  5-5-email-confirmation-and-reminders: done
   epic-5-retrospective: optional
 
-  # Epic 6: Cost Estimation Tool (4 stories) - NEW
+  # Epic 6: Cost Estimation Tool (4 stories) - IMPLEMENTED (pending backend)
   # Backend alignment: consumes backend stories 6-1 through 6-5
-  epic-6: backlog
-  6-1-cost-estimation-display: ready-for-dev
-  6-2-self-pay-rate-display: ready-for-dev
-  6-3-deductible-and-out-of-pocket-tracking: ready-for-dev
-  6-4-payment-plan-options: ready-for-dev
+  epic-6: contexted
+  6-1-cost-estimation-display: review
+  6-2-self-pay-rate-display: review
+  6-3-deductible-and-out-of-pocket-tracking: review
+  6-4-payment-plan-options: review
   epic-6-retrospective: optional
 
   # Epic 7: Support Interface - Intercom (3 stories)
   # Backend alignment: consumes backend stories 7-1 through 7-3
   epic-7: backlog
-  7-1-intercom-widget-integration: drafted
-  7-2-session-context-passing: drafted
-  7-3-support-availability-and-request-tracking: drafted
+  7-1-intercom-widget-integration: done
+  7-2-session-context-passing: done
+  7-3-support-availability-and-request-tracking: done
   epic-7-retrospective: optional

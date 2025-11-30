@@ -89,12 +89,8 @@ function formatAppointmentDateTime(startTime: string): string {
  *   duration={50}
  * />
  */
-export function AppointmentDetailsCard({
-  therapist,
-  startTime,
-  duration = 50,
-  className,
-}: AppointmentDetailsCardProps) {
+export function AppointmentDetailsCard(props: AppointmentDetailsCardProps) {
+  const { therapist, startTime, duration = 50, className } = props;
   const formattedDateTime = formatAppointmentDateTime(startTime);
 
   return (

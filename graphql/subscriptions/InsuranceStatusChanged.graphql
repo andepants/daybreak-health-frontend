@@ -1,0 +1,27 @@
+# InsuranceStatusChanged Subscription
+# Real-time updates for insurance OCR and eligibility verification status
+# Triggered when OCR processing completes or verification status changes
+
+subscription InsuranceStatusChanged($sessionId: ID!) {
+  insuranceStatusChanged(sessionId: $sessionId) {
+    insurance {
+      id
+      payerName
+      subscriberName
+      memberId
+      groupNumber
+      verificationStatus
+      ocrProcessed
+      ocrExtracted
+      ocrConfidence
+      ocrLowConfidenceFields
+      needsReview
+      ocrError
+      ocrDataAvailable
+    }
+    progress {
+      percentage
+      message
+    }
+  }
+}
