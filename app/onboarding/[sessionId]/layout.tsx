@@ -97,7 +97,7 @@ function OnboardingLayout({ children, params }: OnboardingLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="h-dvh flex flex-col bg-background">
       {/* Header with logo and Save & Exit */}
       <Header onSaveExit={handleSaveExit} />
 
@@ -108,9 +108,9 @@ function OnboardingLayout({ children, params }: OnboardingLayoutProps) {
       />
 
       {/* Main content area with max-width constraint */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col overflow-hidden min-h-0">
         <ErrorBoundary>
-          <div className="flex-1 w-full max-w-[640px] mx-auto px-4 py-6 md:px-6 md:py-8">
+          <div className="flex-1 flex flex-col w-full max-w-4xl mx-auto px-4 min-h-0">
             {children}
           </div>
         </ErrorBoundary>

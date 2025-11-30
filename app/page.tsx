@@ -45,7 +45,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-cream p-4 text-center">
-      <main className="flex max-w-3xl flex-col items-center gap-12 w-full">
+      <main className="flex max-w-[48rem] flex-col items-center gap-12 w-full">
         <div className="space-y-8 flex flex-col items-center w-full">
           <h1 className="text-4xl sm:text-5xl font-serif font-bold text-daybreak-teal mb-4">
             Daybreak Health

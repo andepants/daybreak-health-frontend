@@ -1,0 +1,14 @@
+# RefreshToken Mutation
+# Refreshes access token using a valid refresh token
+# Implements token rotation for security
+
+mutation RefreshToken($refreshToken: String!, $deviceFingerprint: String) {
+  refreshToken(refreshToken: $refreshToken, deviceFingerprint: $deviceFingerprint) {
+    success
+    error
+    token
+    refreshToken
+    tokenType
+    expiresIn
+  }
+}

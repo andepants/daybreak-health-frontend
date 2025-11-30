@@ -1,4 +1,4 @@
-# generated: 2025-11-28
+# generated: 2025-11-30
 # project: daybreak-health-frontend
 # project_key: daybreak-health-frontend
 # tracking_system: file-system
@@ -28,14 +28,14 @@
 # - SM typically drafts next story ONLY after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', dev reviews, then Dev moves to 'done'
 
-generated: 2025-11-28
+generated: 2025-11-30
 project: daybreak-health-frontend
 project_key: daybreak-health-frontend
 tracking_system: file-system
 story_location: docs/sprint-artifacts
 
 development_status:
-  # Epic 1: Foundation & Project Setup (5 stories)
+  # Epic 1: Foundation & Project Setup (5 stories) - COMPLETE
   epic-1: contexted
   1-1-project-initialization-and-core-dependencies: done
   1-2-daybreak-design-system-and-theme-configuration: done
@@ -44,7 +44,7 @@ development_status:
   1-5-graphql-code-generation-setup: done
   epic-1-retrospective: optional
 
-  # Epic 2: AI-Guided Assessment Experience (6 stories)
+  # Epic 2: AI-Guided Assessment Experience (6 stories) - COMPLETE
   epic-2: contexted
   2-1-chat-window-and-message-display: done
   2-2-message-input-and-quick-reply-chips: done
@@ -54,7 +54,7 @@ development_status:
   2-6-session-persistence-and-resume: done
   epic-2-retrospective: optional
 
-  # Epic 3: Parent & Child Information Collection (4 stories)
+  # Epic 3: Parent & Child Information Collection (4 stories) - COMPLETE
   epic-3: contexted
   3-1-parent-information-form: done
   3-2-child-information-form: done
@@ -62,25 +62,35 @@ development_status:
   3-4-form-based-assessment-fallback: done
   epic-3-retrospective: done
 
-  # Epic 4: Insurance Submission (3 stories)
-  epic-4: backlog
-  4-1-manual-insurance-entry-form: drafted
-  4-2-insurance-verification-and-confirmation: drafted
-  4-3-self-pay-option-flow: drafted
+  # Epic 4: Insurance Submission (2 stories)
+  epic-4: contexted
+  4-1-manual-insurance-entry-form: done
+  4-2-insurance-verification-and-confirmation: ready-for-dev
   epic-4-retrospective: optional
 
-  # Epic 5: Therapist Matching & Booking (5 stories)
+  # Epic 5: Enhanced Scheduling Module (5 stories)
+  # Backend alignment: consumes backend stories 5-1 through 5-5
   epic-5: backlog
-  5-1-therapist-matching-results-display: backlog
-  5-2-therapist-profile-detail-view: backlog
-  5-3-appointment-calendar-and-time-selection: backlog
-  5-4-booking-confirmation-and-success: backlog
-  5-5-email-confirmation-and-reminders: backlog
+  5-1-therapist-matching-results-display: ready-for-dev
+  5-2-therapist-profile-detail-view: ready-for-dev
+  5-3-availability-calendar-and-time-selection: ready-for-dev
+  5-4-booking-confirmation-and-success: drafted
+  5-5-email-confirmation-and-reminders: drafted
   epic-5-retrospective: optional
 
-  # Epic 6: Human Support Integration (3 stories)
+  # Epic 6: Cost Estimation Tool (4 stories) - NEW
+  # Backend alignment: consumes backend stories 6-1 through 6-5
   epic-6: backlog
-  6-1-floating-support-button: backlog
-  6-2-support-chat-widget: backlog
-  6-3-support-availability-and-fallback: backlog
+  6-1-cost-estimation-display: ready-for-dev
+  6-2-self-pay-rate-display: ready-for-dev
+  6-3-deductible-and-out-of-pocket-tracking: ready-for-dev
+  6-4-payment-plan-options: ready-for-dev
   epic-6-retrospective: optional
+
+  # Epic 7: Support Interface - Intercom (3 stories)
+  # Backend alignment: consumes backend stories 7-1 through 7-3
+  epic-7: backlog
+  7-1-intercom-widget-integration: drafted
+  7-2-session-context-passing: drafted
+  7-3-support-availability-and-request-tracking: drafted
+  epic-7-retrospective: optional

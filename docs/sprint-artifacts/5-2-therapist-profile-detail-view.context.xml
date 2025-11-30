@@ -1,0 +1,787 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context>
+  <metadata>
+    <story-id>5-2-therapist-profile-detail-view</story-id>
+    <story-title>Therapist Profile Detail View</story-title>
+    <epic>Epic 5: Therapist Matching &amp; Booking</epic>
+    <status>ready-for-dev</status>
+    <prerequisites>
+      <prerequisite>Story 5.1 (Therapist Matching Results Display) - provides TherapistCard component that triggers this sheet</prerequisite>
+      <prerequisite>Epic 1 complete - shadcn/ui setup and design system</prerequisite>
+      <prerequisite>Apollo Client configured (Story 1.4) for GraphQL queries</prerequisite>
+    </prerequisites>
+    <estimated-complexity>medium</estimated-complexity>
+  </metadata>
+
+  <story-requirements>
+    <user-story>
+      <role>parent</role>
+      <action>to learn more about a therapist before booking</action>
+      <benefit>I feel confident they're the right fit for my child</benefit>
+    </user-story>
+
+    <acceptance-criteria>
+      <criterion id="AC-1">
+        <description>Profile Sheet displays when "View Profile" clicked on therapist card</description>
+        <details>
+          - Use shadcn/ui Sheet component
+          - Slides from right on desktop (side="right")
+          - Slides from bottom on mobile (side="bottom")
+          - Responsive switch using Tailwind breakpoints
+        </details>
+      </criterion>
+
+      <criterion id="AC-2">
+        <description>Profile content displays therapist information</description>
+        <details>
+          - Larger photo (120x120, rounded-full)
+          - Full name and all credentials
+          - Bio/personal statement (2-3 paragraphs)
+          - Specialties with descriptions
+          - Approach to therapy (e.g., "CBT-focused, warm and collaborative")
+          - Languages spoken
+          - Education and certifications
+        </details>
+      </criterion>
+
+      <criterion id="AC-3">
+        <description>Match Section shows personalized rationale</description>
+        <details>
+          - "Why [therapist] for [child name]" heading
+          - 3 specific match reasons with icons
+          - Connection to assessment responses
+          - Light teal background (#F0FDFA) to stand out visually
+        </details>
+      </criterion>
+
+      <criterion id="AC-4">
+        <description>Availability Section shows upcoming slots</description>
+        <details>
+          - Next 3 available slots shown
+          - Formatted date/time in user's timezone
+          - "View full calendar" button navigates to scheduling page
+        </details>
+      </criterion>
+
+      <criterion id="AC-5">
+        <description>Actions are clear and accessible</description>
+        <details>
+          - "Book with [therapist]" button (full width, sticky at bottom)
+          - Close button (X in corner) with proper z-index
+          - Button navigates to scheduling page with therapist pre-selected
+        </details>
+      </criterion>
+
+      <criterion id="AC-6">
+        <description>Mobile interactions are intuitive</description>
+        <details>
+          - Sheet can be dismissed by swipe down on mobile
+          - Touch targets meet WCAG 2.1 AA (minimum 44x44px)
+          - Full-screen on mobile breakpoint
+        </details>
+      </criterion>
+    </acceptance-criteria>
+
+    <tasks>
+      <task id="1" name="Create Profile Sheet Component">
+        <subtask>Set up shadcn/ui Sheet component with responsive side positioning</subtask>
+        <subtask>Implement therapist photo display (120x120, rounded)</subtask>
+        <subtask>Implement name, credentials, and bio display sections</subtask>
+        <subtask>Add specialties display with descriptions</subtask>
+        <subtask>Add approach to therapy section</subtask>
+        <subtask>Add languages spoken display</subtask>
+        <subtask>Add education and certifications section</subtask>
+        <subtask>Add close button (X in corner) with proper z-index</subtask>
+        <subtask>Make sheet full-screen on mobile breakpoint</subtask>
+      </task>
+
+      <task id="2" name="Implement Match Reasoning Section">
+        <subtask>Create match rationale display with personalized heading using child name</subtask>
+        <subtask>Display 3 specific match reasons with icons</subtask>
+        <subtask>Connect match reasons to assessment data from session</subtask>
+        <subtask>Style match section with light teal background (#F0FDFA)</subtask>
+      </task>
+
+      <task id="3" name="Implement Availability Preview">
+        <subtask>Fetch and display next 3 available appointment slots</subtask>
+        <subtask>Format slots with date/time in user's timezone</subtask>
+        <subtask>Add "View full calendar" button that navigates to scheduling page</subtask>
+      </task>
+
+      <task id="4" name="Implement Booking CTA and Mobile Interactions">
+        <subtask>Add "Book with [therapist]" button (full width, sticky at bottom)</subtask>
+        <subtask>Implement swipe-down to dismiss on mobile</subtask>
+        <subtask>Wire booking button to navigate to scheduling page with therapist pre-selected</subtask>
+        <subtask>Ensure proper touch targets (44x44px minimum)</subtask>
+      </task>
+
+      <task id="5" name="GraphQL Integration">
+        <subtask>Create or extend getTherapist query for full profile data</subtask>
+        <subtask>Implement useQuery hook to fetch therapist profile</subtask>
+        <subtask>Add loading skeleton state for profile sheet</subtask>
+        <subtask>Handle error states gracefully with retry option</subtask>
+        <subtask>Run GraphQL codegen to generate TypeScript types</subtask>
+      </task>
+
+      <task id="6" name="Accessibility and Testing">
+        <subtask>Add proper ARIA labels and roles to sheet components</subtask>
+        <subtask>Test keyboard navigation (Tab, Escape to close)</subtask>
+        <subtask>Test screen reader announcements with VoiceOver</subtask>
+        <subtask>Test responsive behavior on mobile, tablet, and desktop</subtask>
+        <subtask>Write unit tests for TherapistProfileSheet component</subtask>
+        <subtask>Test swipe gestures on mobile devices</subtask>
+      </task>
+    </tasks>
+  </story-requirements>
+
+  <documentation-artifacts>
+    <architecture-excerpts>
+      <excerpt source="docs/architecture.md" section="Project Structure">
+        <content>
+Features should be organized in features/[feature]/ directory:
+- Feature components co-located with feature logic
+- GraphQL operations in features/[feature]/*.graphql
+- Custom hooks in features/[feature]/use*.ts
+
+For this story:
+features/matching/
+├── TherapistCard.tsx (existing, Story 5.1)
+├── TherapistProfileSheet.tsx (NEW - this story)
+├── MatchRationale.tsx (component for match reasons display)
+├── useMatching.ts (existing hook, may need extension)
+└── matching.graphql (add getTherapist query)
+        </content>
+      </excerpt>
+
+      <excerpt source="docs/architecture.md" section="Implementation Patterns">
+        <content>
+Naming Conventions:
+- Components: PascalCase (e.g., TherapistProfileSheet.tsx)
+- Hooks: camelCase with 'use' prefix (e.g., useTherapistProfile.ts)
+- GraphQL files: kebab-case (e.g., get-therapist.graphql)
+- GraphQL operations: PascalCase (e.g., GetTherapist)
+
+Communication Patterns:
+- Query caching: Apollo Client normalized cache
+- Loading states: Suspense + Skeleton components
+- Error boundaries: React Error Boundary at route level
+- Toast notifications: sonner via shadcn/ui toast
+        </content>
+      </excerpt>
+
+      <excerpt source="docs/architecture.md" section="Performance Considerations">
+        <content>
+Optimization Strategies:
+- Code splitting: Dynamic imports for heavy features
+- Image optimization: next/image with proper sizing
+- Prefetching: Preload next likely route
+
+Example:
+&lt;Image
+  src="/images/therapist.jpg"
+  alt="Therapist photo"
+  width={120}
+  height={120}
+  className="rounded-full"
+/&gt;
+        </content>
+      </excerpt>
+    </architecture-excerpts>
+
+    <ux-design-excerpts>
+      <excerpt source="docs/ux-design-specification.md" section="Design Tokens">
+        <content>
+Color System:
+- Primary: Daybreak Teal (#2A9D8F) - Primary actions, headings, links
+- Background: Cream (#FEF7ED) - Page backgrounds
+- Deep Text: (#1A3C34) - Body text, headings
+- Chat Interface: Light teal (#F0FDFA) for AI message backgrounds
+
+Typography:
+- Headline Font: Fraunces (Variable Serif) - For page titles, section headers
+- Body Font: Inter (Sans-serif) - For body text, UI elements
+- Card Title: 1.125rem (18px), weight 600, Inter
+- Body: 1rem (16px), weight 400, Inter
+
+Spacing System (8px grid):
+- md: 16px - Standard padding
+- lg: 24px - Section spacing
+- xl: 32px - Major sections
+
+Border Radius:
+- md: 12px - Buttons, tags
+- lg: 16px - Cards, modals
+- xl: 24px - Large cards, chat bubbles
+- full: 9999px - Pills, avatars, circular buttons
+        </content>
+      </excerpt>
+
+      <excerpt source="docs/ux-design-specification.md" section="Responsive Design">
+        <content>
+Breakpoints:
+- Mobile: &lt; 640px - Single column, bottom nav
+- Tablet: 640-1024px - Single column, larger touch targets
+- Desktop: &gt; 1024px - Centered content
+
+Modals Adaptation:
+- Mobile: Full screen (sheet from bottom)
+- Desktop: Centered dialog (sheet from right)
+
+Touch Targets:
+- Minimum 44x44px for WCAG 2.1 Level AA compliance
+        </content>
+      </excerpt>
+
+      <excerpt source="docs/ux-design-specification.md" section="Accessibility Requirements">
+        <content>
+WCAG 2.1 Level AA Requirements:
+- Color contrast: 4.5:1 for body text, 3:1 for large text
+- Keyboard navigation: All interactive elements focusable
+- Focus indicators: Visible focus ring (2px teal outline)
+- Screen reader: ARIA labels on all interactive elements
+- Touch targets: Minimum 44x44px
+        </content>
+      </excerpt>
+    </ux-design-excerpts>
+
+    <graphql-schema-excerpt>
+      <content>
+Note: The current API schema (docs/sprint-artifacts/api_schema.graphql) does not yet include
+therapist matching types. This story will require creating new GraphQL types and operations.
+
+Expected GraphQL Query Pattern (to be implemented):
+
+query GetTherapist($id: ID!, $sessionId: ID!) {
+  getTherapist(id: $id) {
+    id
+    firstName
+    lastName
+    credentials
+    photo
+    bio
+    specialties {
+      name
+      description
+    }
+    approach
+    languages
+    education {
+      degree
+      institution
+      year
+    }
+    certifications
+    matchReasons(sessionId: $sessionId) {
+      reason
+      icon
+      assessmentConnection
+    }
+    availableSlots(limit: 3) {
+      dateTime
+      timezone
+    }
+  }
+}
+
+This query should be created in: graphql/queries/GetTherapist.graphql
+      </content>
+    </graphql-schema-excerpt>
+  </documentation-artifacts>
+
+  <code-artifacts>
+    <existing-pattern name="Component Structure Pattern" file="features/assessment/ChatBubble.tsx">
+      <description>Standard component structure with TypeScript, React memo, and accessibility</description>
+      <example>
+/**
+ * Component description
+ *
+ * Details about what it does, visual specs, accessibility notes
+ */
+"use client";
+
+import * as React from "react";
+// External imports
+// Internal imports
+// Types
+
+/**
+ * Props interface with JSDoc
+ */
+export interface ComponentProps {
+  // props with descriptions
+}
+
+/**
+ * Component implementation with detailed JSDoc
+ */
+export const Component = React.memo(function Component({
+  // props
+}: ComponentProps) {
+  // Component logic
+  return (
+    &lt;div
+      className={cn("base-classes", conditionalClasses)}
+      role="semantic-role"
+      aria-label="descriptive label"
+    &gt;
+      {/* Content */}
+    &lt;/div&gt;
+  );
+});
+
+Component.displayName = "Component";
+      </example>
+    </existing-pattern>
+
+    <existing-pattern name="Form Component Pattern" file="features/demographics/ParentInfoForm.tsx">
+      <description>Pattern for forms with validation, auto-save, accessibility</description>
+      <key-points>
+        - React Hook Form with Zod validation
+        - useAutoSave hook for persistence
+        - Validation on blur (mode: "onBlur")
+        - Green checkmark for valid fields
+        - Error messages below fields with proper ARIA
+        - Disabled submit until form valid
+      </key-points>
+    </existing-pattern>
+
+    <existing-pattern name="GraphQL Hook Pattern" file="features/assessment/useAssessmentChat.ts">
+      <description>Custom hook pattern for data fetching and state management</description>
+      <key-points>
+        - TypeScript interfaces for all data structures
+        - JSDoc comments on all functions
+        - Error handling with try/catch
+        - Optimistic updates where appropriate
+        - useCallback for memoization
+        - Auto-save integration
+      </key-points>
+    </existing-pattern>
+
+    <existing-pattern name="GraphQL Query Pattern" file="graphql/queries/GetOnboardingSession.graphql">
+      <description>GraphQL query file structure</description>
+      <example>
+# Comment describing the query
+# Authentication/authorization notes
+
+query QueryName($param: Type!) {
+  queryField(param: $param) {
+    id
+    field1
+    field2
+    nestedObject {
+      nestedField
+    }
+  }
+}
+      </example>
+    </existing-pattern>
+
+    <existing-component name="ChatWindow" file="features/assessment/ChatWindow.tsx">
+      <usage>Reference for layout patterns, responsive design, accessibility</usage>
+      <key-features>
+        - Mobile-first responsive design
+        - Auto-scroll to newest content
+        - ARIA roles (role="log", aria-live="polite")
+        - Proper focus management
+        - Sticky input area at bottom
+      </key-features>
+    </existing-component>
+
+    <existing-component name="ParentInfoForm" file="features/demographics/ParentInfoForm.tsx">
+      <usage>Reference for form patterns, validation, error display</usage>
+      <key-features>
+        - Single-column layout, max-width 640px
+        - Labels above inputs with required indicator
+        - Error messages in ERROR_COLOR below fields
+        - Success checkmarks for valid fields
+        - Auto-save on blur
+        - Proper ARIA attributes
+      </key-features>
+    </existing-component>
+
+    <shadcn-components>
+      <component name="Sheet">
+        <installation>pnpm dlx shadcn@latest add sheet</installation>
+        <usage>
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+
+// Desktop: side from right
+&lt;Sheet&gt;
+  &lt;SheetTrigger&gt;View Profile&lt;/SheetTrigger&gt;
+  &lt;SheetContent side="right" className="sm:max-w-md"&gt;
+    &lt;SheetHeader&gt;
+      &lt;SheetTitle&gt;Therapist Name&lt;/SheetTitle&gt;
+      &lt;SheetDescription&gt;Credentials&lt;/SheetDescription&gt;
+    &lt;/SheetHeader&gt;
+    {/* Content */}
+  &lt;/SheetContent&gt;
+&lt;/Sheet&gt;
+
+// Mobile: Use conditional side prop
+const side = isMobile ? "bottom" : "right";
+        </usage>
+      </component>
+
+      <component name="Avatar">
+        <location>components/ui/avatar.tsx (already installed)</location>
+        <usage>
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+&lt;Avatar className="h-[120px] w-[120px]"&gt;
+  &lt;AvatarImage src={therapist.photo} alt={therapist.name} /&gt;
+  &lt;AvatarFallback&gt;{initials}&lt;/AvatarFallback&gt;
+&lt;/Avatar&gt;
+        </usage>
+      </component>
+
+      <component name="Button">
+        <location>components/ui/button.tsx (already installed)</location>
+        <usage>
+import { Button } from "@/components/ui/button";
+
+&lt;Button
+  className="bg-daybreak-teal hover:bg-daybreak-teal/90 text-white w-full"
+  onClick={handleBooking}
+&gt;
+  Book with {therapist.firstName}
+&lt;/Button&gt;
+        </usage>
+      </component>
+
+      <component name="Skeleton">
+        <note>Need to check if installed, may need to add</note>
+        <installation>pnpm dlx shadcn@latest add skeleton</installation>
+        <usage>
+import { Skeleton } from "@/components/ui/skeleton";
+
+&lt;Skeleton className="h-[120px] w-[120px] rounded-full" /&gt;
+&lt;Skeleton className="h-4 w-full" /&gt;
+        </usage>
+      </component>
+    </shadcn-components>
+  </code-artifacts>
+
+  <dependencies>
+    <frontend-dependencies>
+      <dependency name="shadcn/ui Sheet" status="needs-installation">
+        <command>pnpm dlx shadcn@latest add sheet</command>
+      </dependency>
+      <dependency name="shadcn/ui Skeleton" status="check-if-installed">
+        <command>pnpm dlx shadcn@latest add skeleton</command>
+      </dependency>
+      <dependency name="next/image" status="already-available">
+        <description>For optimized therapist photos</description>
+      </dependency>
+      <dependency name="lucide-react" status="already-available">
+        <description>For icons in match reasons and UI elements</description>
+      </dependency>
+    </frontend-dependencies>
+
+    <backend-dependencies>
+      <dependency name="Therapist GraphQL Types" status="needs-creation">
+        <description>Backend needs to implement Therapist type and getTherapist query</description>
+        <note>May need to coordinate with backend team or create mock data for development</note>
+      </dependency>
+      <dependency name="Match Reasoning Logic" status="needs-creation">
+        <description>Backend needs to provide matchReasons based on assessment data</description>
+      </dependency>
+      <dependency name="Availability Slots" status="needs-creation">
+        <description>Backend needs to provide therapist availability data</description>
+      </dependency>
+    </backend-dependencies>
+
+    <story-dependencies>
+      <dependency name="Story 5.1" status="drafted">
+        <description>Therapist Matching Results Display provides TherapistCard that triggers this sheet</description>
+        <note>Can develop in parallel with shared interface contract</note>
+      </dependency>
+    </story-dependencies>
+  </dependencies>
+
+  <development-constraints>
+    <constraint type="technical">
+      <title>No PHI in URLs or Browser History</title>
+      <description>Therapist profile data should not include PHI in URL parameters. Use therapist ID only.</description>
+    </constraint>
+
+    <constraint type="technical">
+      <title>Mobile-First Development</title>
+      <description>Develop mobile layout first, then enhance for desktop. Sheet should be full-screen on mobile.</description>
+    </constraint>
+
+    <constraint type="technical">
+      <title>GraphQL Schema Alignment</title>
+      <description>Backend GraphQL schema may not be ready. Develop with mock data first, prepare for real integration.</description>
+    </constraint>
+
+    <constraint type="performance">
+      <title>Image Optimization</title>
+      <description>Use next/image for therapist photos with proper width/height attributes (120x120)</description>
+    </constraint>
+
+    <constraint type="accessibility">
+      <title>WCAG 2.1 AA Compliance</title>
+      <description>
+        - All interactive elements must be keyboard accessible
+        - Touch targets minimum 44x44px
+        - Proper ARIA labels for screen readers
+        - Focus visible on all interactive elements
+      </description>
+    </constraint>
+
+    <constraint type="architecture">
+      <title>File Size Limit</title>
+      <description>Keep component files under 500 lines. Split into smaller components if needed.</description>
+    </constraint>
+
+    <constraint type="code-style">
+      <title>Code Style Requirements</title>
+      <description>
+        - Use functional components, not classes
+        - Add JSDoc comments to all functions
+        - Use TypeScript for all files
+        - Follow existing naming conventions (PascalCase for components)
+        - Use cn() utility for conditional class names
+      </description>
+    </constraint>
+  </development-constraints>
+
+  <interface-signatures>
+    <component name="TherapistProfileSheet">
+      <interface>
+export interface TherapistProfileSheetProps {
+  therapistId: string;
+  sessionId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) =&gt; void;
+  onBooking?: (therapistId: string) =&gt; void;
+  childName?: string; // For personalized "Why [therapist] for [child]" heading
+}
+      </interface>
+    </component>
+
+    <component name="MatchRationale">
+      <interface>
+export interface MatchReason {
+  reason: string;
+  icon: string; // Lucide icon name
+  assessmentConnection: string;
+}
+
+export interface MatchRationaleProps {
+  therapistName: string;
+  childName: string;
+  matchReasons: MatchReason[];
+}
+      </interface>
+    </component>
+
+    <graphql-query name="GetTherapist">
+      <interface>
+query GetTherapist($id: ID!, $sessionId: ID!) {
+  getTherapist(id: $id) {
+    id
+    firstName
+    lastName
+    credentials
+    photo
+    bio
+    specialties {
+      name
+      description
+    }
+    approach
+    languages
+    education {
+      degree
+      institution
+      year
+    }
+    certifications
+    matchReasons(sessionId: $sessionId) {
+      reason
+      icon
+      assessmentConnection
+    }
+    availableSlots(limit: 3) {
+      dateTime
+      timezone
+    }
+  }
+}
+      </interface>
+    </graphql-query>
+
+    <hook name="useTherapistProfile">
+      <interface>
+export interface UseTherapistProfileReturn {
+  therapist: Therapist | null;
+  loading: boolean;
+  error: Error | null;
+  refetch: () =&gt; void;
+}
+
+export function useTherapistProfile(
+  therapistId: string,
+  sessionId: string
+): UseTherapistProfileReturn;
+      </interface>
+    </hook>
+  </interface-signatures>
+
+  <test-strategy>
+    <unit-tests framework="Vitest + React Testing Library">
+      <test>
+        <description>TherapistProfileSheet opens and closes correctly</description>
+        <approach>Test open prop controls sheet visibility</approach>
+      </test>
+      <test>
+        <description>Profile data displays correctly</description>
+        <approach>Mock GraphQL response, verify all fields render</approach>
+      </test>
+      <test>
+        <description>Loading state shows skeleton</description>
+        <approach>Mock loading state, verify Skeleton components render</approach>
+      </test>
+      <test>
+        <description>Error state shows retry option</description>
+        <approach>Mock GraphQL error, verify error message and retry button</approach>
+      </test>
+      <test>
+        <description>Booking button triggers callback</description>
+        <approach>Test onBooking callback fired with correct therapist ID</approach>
+      </test>
+      <test>
+        <description>Match reasons display with child name</description>
+        <approach>Verify personalized heading uses childName prop</approach>
+      </test>
+      <test>
+        <description>Keyboard navigation works</description>
+        <approach>Test Tab key, Escape to close, focus management</approach>
+      </test>
+    </unit-tests>
+
+    <accessibility-tests>
+      <test>
+        <description>ARIA labels are present</description>
+        <tool>axe-core via jest-axe</tool>
+      </test>
+      <test>
+        <description>Screen reader can navigate all sections</description>
+        <tool>Manual testing with VoiceOver (Mac)</tool>
+      </test>
+      <test>
+        <description>Focus trap within sheet</description>
+        <tool>Manual keyboard testing</tool>
+      </test>
+      <test>
+        <description>Touch targets meet 44x44px</description>
+        <tool>Manual inspection with browser dev tools</tool>
+      </test>
+    </accessibility-tests>
+
+    <responsive-tests>
+      <test>
+        <description>Sheet slides from right on desktop</description>
+        <viewport>1280px width</viewport>
+      </test>
+      <test>
+        <description>Sheet slides from bottom on mobile</description>
+        <viewport>375px width (iPhone)</viewport>
+      </test>
+      <test>
+        <description>Sheet is full-screen on mobile</description>
+        <viewport>375px width</viewport>
+      </test>
+      <test>
+        <description>Swipe down dismisses on mobile</description>
+        <tool>Manual testing on mobile device</tool>
+      </test>
+    </responsive-tests>
+
+    <integration-tests framework="Playwright (optional)">
+      <test>
+        <description>End-to-end flow from therapist card to profile sheet to booking</description>
+        <approach>Click "View Profile", verify sheet opens, click "Book", verify navigation</approach>
+      </test>
+    </integration-tests>
+  </test-strategy>
+
+  <implementation-notes>
+    <note priority="high">
+      <title>shadcn/ui Sheet Installation Required</title>
+      <description>First step: Install Sheet component before starting development</description>
+    </note>
+
+    <note priority="high">
+      <title>Backend GraphQL Schema Coordination</title>
+      <description>
+        The backend may not have Therapist types yet. Coordinate with backend team or
+        develop with mock data first. Create the GraphQL query file as documentation
+        of what the backend should provide.
+      </description>
+    </note>
+
+    <note priority="medium">
+      <title>Responsive Sheet Side Switching</title>
+      <description>
+        Use Tailwind responsive classes or window.matchMedia to switch between
+        side="right" (desktop) and side="bottom" (mobile). Sheet component may
+        not support responsive side prop directly, may need conditional rendering.
+      </description>
+    </note>
+
+    <note priority="medium">
+      <title>Match Reasons Icon Mapping</title>
+      <description>
+        Backend will return icon names as strings (e.g., "Heart", "Brain", "Sparkles").
+        Create a mapping from string to Lucide React icon component.
+      </description>
+    </note>
+
+    <note priority="low">
+      <title>Timezone Handling</title>
+      <description>
+        Use Intl.DateTimeFormat for formatting appointment slots in user's timezone.
+        Backend should provide timezone info with each slot.
+      </description>
+    </note>
+
+    <note priority="low">
+      <title>Performance: Lazy Loading</title>
+      <description>
+        Consider lazy loading the profile sheet content with dynamic import if
+        bundle size becomes an issue. Use React.lazy() with Suspense.
+      </description>
+    </note>
+  </implementation-notes>
+
+  <definition-of-done>
+    <item>All acceptance criteria met and verified</item>
+    <item>All tasks and subtasks completed</item>
+    <item>TherapistProfileSheet component created in features/matching/</item>
+    <item>MatchRationale component created (if separated)</item>
+    <item>GraphQL query created in graphql/queries/GetTherapist.graphql</item>
+    <item>GraphQL codegen run to generate TypeScript types</item>
+    <item>Unit tests written and passing (minimum 80% coverage)</item>
+    <item>Accessibility tests pass (axe-core, keyboard navigation)</item>
+    <item>Responsive design tested on mobile, tablet, desktop</item>
+    <item>Sheet component installed from shadcn/ui</item>
+    <item>Loading states implemented with Skeleton components</item>
+    <item>Error states handled with retry option</item>
+    <item>Code follows project style guidelines (JSDoc, TypeScript, &lt;500 lines)</item>
+    <item>No console errors or warnings</item>
+    <item>No PHI in logs, URLs, or browser history</item>
+    <item>Touch targets meet 44x44px minimum</item>
+    <item>WCAG 2.1 AA compliance verified</item>
+    <item>Story file updated to status: review</item>
+    <item>File list populated in story Dev Agent Record section</item>
+  </definition-of-done>
+</story-context>

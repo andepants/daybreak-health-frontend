@@ -1,0 +1,358 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>6.4</storyId>
+    <title>Payment Plan Options</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-30</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/stories/6-4-payment-plan-options.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent concerned about affordability</asA>
+    <iWant>to see available payment plan options</iWant>
+    <soThat>I can spread costs over time if needed</soThat>
+    <tasks>
+      - Task 1: Create Payment Plan Modal Component (AC: #1, #2)
+      - Task 2: GraphQL Integration for Payment Plans (AC: #1, #3)
+      - Task 3: Accessibility and UX Polish (AC: #2, #3)
+      - Task 4: Financial Assistance Link Integration (AC: #2)
+      - Task 5: Testing (All ACs)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC1: Payment Plans Modal Display
+    - Modal titled "Flexible Payment Options"
+    - Available plans listed (e.g., "Pay per session", "Monthly billing", "Package prepay")
+    - Each plan displays: payment frequency, amount per payment, savings/discounts, terms and conditions link
+
+    AC2: Plan Selection Actions
+    - "Select this plan" button for each option
+    - "Pay as you go" default option clearly indicated
+    - "Talk to us about financial assistance" link available
+
+    AC3: Functional Requirements
+    - Selecting a plan updates session with payment preference
+    - Modal is accessible (keyboard navigation, screen reader compatible)
+    - "Continue to booking" proceeds with selected plan
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Component Library (lines 66, 146)</section>
+        <snippet>shadcn/ui components based on Radix UI primitives. Use Dialog component for modal foundation with proper accessibility built-in.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Project Structure (lines 114-236)</section>
+        <snippet>Feature-based organization: features/cost/ for payment-related components. GraphQL operations co-located in features/[feature]/graphql/.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Apollo Client (lines 64, 262)</section>
+        <snippet>Apollo Client 4.x for GraphQL with optimistic updates for improved UX on plan selection.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Accessibility (lines 72, 113-115)</section>
+        <snippet>WCAG AA compliance required. Keyboard navigation must work without mouse. Screen reader support with proper ARIA attributes.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/api_schema.graphql</path>
+        <title>GraphQL API Schema</title>
+        <section>Core Types and Mutations</section>
+        <snippet>OnboardingSession type with progressData for storing payment preferences. updateSessionProgress mutation for saving selections.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/stories/6-4-payment-plan-options.md</path>
+        <title>Story 6.4 Dev Notes</title>
+        <section>Backend Dependencies (lines 173-195)</section>
+        <snippet>Expected PaymentPlan type with id, name, frequency, amountPerPayment, discount, termsUrl. Backend API: getPaymentPlans and savePaymentPlan.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>components/ui/dialog.tsx</path>
+        <kind>component</kind>
+        <symbol>Dialog</symbol>
+        <lines>1-3982</lines>
+        <reason>shadcn/ui Dialog component to use as modal foundation for payment plan options display</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/badge.tsx</path>
+        <kind>component</kind>
+        <symbol>Badge</symbol>
+        <lines>1-1688</lines>
+        <reason>Badge component for displaying savings/discounts on payment plans</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <lines>1-2142</lines>
+        <reason>Button component for "Select this plan" and "Continue to booking" actions</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/card.tsx</path>
+        <kind>component</kind>
+        <symbol>Card, CardContent, CardFooter, CardHeader</symbol>
+        <lines>1-1987</lines>
+        <reason>Card components for structuring individual payment plan displays</reason>
+      </artifact>
+      <artifact>
+        <path>features/matching/TherapistCard.tsx</path>
+        <kind>component</kind>
+        <symbol>TherapistCard</symbol>
+        <lines>1-239</lines>
+        <reason>Reference implementation for card layout, badge usage, and button patterns similar to payment plan cards</reason>
+      </artifact>
+      <artifact>
+        <path>features/insurance/useInsurance.ts</path>
+        <kind>hook</kind>
+        <symbol>useInsurance</symbol>
+        <lines>1-243</lines>
+        <reason>Pattern for custom hooks managing form state, mutations, loading/error states - reference for usePaymentPlans hook</reason>
+      </artifact>
+      <artifact>
+        <path>features/insurance/SelfPayModal.tsx</path>
+        <kind>component</kind>
+        <symbol>SelfPayModal</symbol>
+        <lines>1-4112</lines>
+        <reason>Reference modal implementation for dialog structure, accessibility patterns, and pricing display</reason>
+      </artifact>
+      <artifact>
+        <path>lib/validations/insurance.ts</path>
+        <kind>validation</kind>
+        <symbol>insuranceSchema</symbol>
+        <lines>1-end</lines>
+        <reason>Pattern for Zod validation schemas if payment plan selection needs validation</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <node>
+        <package name="@radix-ui/react-dialog" version="^1.1.15">Dialog primitives for modal</package>
+        <package name="@radix-ui/react-label" version="^2.1.8">Label components for accessibility</package>
+        <package name="@apollo/client" version="4.0.9">GraphQL client for queries/mutations</package>
+        <package name="react-hook-form" version="^7.67.0">Form state management if needed</package>
+        <package name="zod" version="^3.25.76">Schema validation (Zod 3.x for stability)</package>
+        <package name="lucide-react" version="^0.555.0">Icons for payment plan UI</package>
+        <package name="class-variance-authority" version="^0.7.1">Component variant styling</package>
+      </node>
+      <devDependencies>
+        <package name="@testing-library/react" version="^16.3.0">Component testing</package>
+        <package name="@testing-library/user-event" version="^14.6.1">User interaction testing</package>
+        <package name="vitest" version="^4.0.14">Unit test runner</package>
+        <package name="@playwright/test" version="^1.57.0">E2E testing</package>
+      </devDependencies>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Use shadcn/ui Dialog component as modal foundation (Architecture requirement)
+    - Follow feature-based folder structure: features/cost/ (Architecture pattern)
+    - Co-locate GraphQL operations with components: features/cost/graphql/ (Architecture pattern)
+    - Apollo Client with optimistic updates for plan selection (State management requirement)
+    - WCAG AA compliance: keyboard navigation, screen reader support, ARIA attributes (Accessibility mandate)
+    - Minimum 44x44px touch targets (Mobile-first design requirement)
+    - No PHI in console.log, URLs, or error messages (Security requirement)
+    - Mobile-first responsive design with bottom sheet pattern on mobile (UX requirement)
+    - Payment calculations from backend only - never client-side (Security constraint)
+    - Use Daybreak design tokens: daybreak-teal, cream, deep-text (Design system constraint)
+    - Zod 3.x for validation schemas (Technical constraint per ADR-004)
+    - TypeScript strict mode with proper type safety (Code quality requirement)
+    - Maximum 500 lines per file for AI compatibility (Code organization constraint)
+    - All functions must have JSDoc/TSDoc comments (Documentation requirement)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>PaymentPlan GraphQL Type</name>
+      <kind>GraphQL Type</kind>
+      <signature>
+type PaymentPlan {
+  id: ID!
+  name: String!
+  description: String
+  frequency: PaymentFrequency!
+  amountPerPayment: Float!
+  discount: Float
+  termsUrl: String
+}
+
+enum PaymentFrequency {
+  PER_SESSION
+  MONTHLY
+  PACKAGE
+}
+      </signature>
+      <path>Backend Epic 6 Story 6-5</path>
+    </interface>
+
+    <interface>
+      <name>getPaymentPlans Query</name>
+      <kind>GraphQL Query</kind>
+      <signature>
+query GetPaymentPlans($sessionId: ID!) {
+  getPaymentPlans(sessionId: $sessionId) {
+    id
+    name
+    description
+    frequency
+    amountPerPayment
+    discount
+    termsUrl
+  }
+}
+      </signature>
+      <path>features/cost/graphql/GetPaymentPlans.graphql</path>
+    </interface>
+
+    <interface>
+      <name>savePaymentPlan Mutation</name>
+      <kind>GraphQL Mutation</kind>
+      <signature>
+mutation SavePaymentPlan($sessionId: ID!, $planId: ID!) {
+  savePaymentPlan(sessionId: $sessionId, planId: $planId) {
+    id
+    progressData
+  }
+}
+      </signature>
+      <path>features/cost/graphql/SavePaymentPlan.graphql</path>
+    </interface>
+
+    <interface>
+      <name>updateSessionProgress Mutation</name>
+      <kind>GraphQL Mutation</kind>
+      <signature>
+mutation UpdateSessionProgress($sessionId: ID!, $progress: JSON!) {
+  updateSessionProgress(sessionId: $sessionId, progress: $progress) {
+    session {
+      id
+      progressData
+    }
+  }
+}
+      </signature>
+      <path>docs/sprint-artifacts/api_schema.graphql lines 346-349</path>
+    </interface>
+
+    <interface>
+      <name>Dialog Component API</name>
+      <kind>React Component</kind>
+      <signature>
+&lt;Dialog open={isOpen} onOpenChange={setIsOpen}&gt;
+  &lt;DialogTrigger&gt;Open&lt;/DialogTrigger&gt;
+  &lt;DialogContent&gt;
+    &lt;DialogHeader&gt;
+      &lt;DialogTitle&gt;Title&lt;/DialogTitle&gt;
+      &lt;DialogDescription&gt;Description&lt;/DialogDescription&gt;
+    &lt;/DialogHeader&gt;
+    {children}
+  &lt;/DialogContent&gt;
+&lt;/Dialog&gt;
+      </signature>
+      <path>components/ui/dialog.tsx</path>
+    </interface>
+
+    <interface>
+      <name>usePaymentPlans Hook Return Type</name>
+      <kind>TypeScript Interface</kind>
+      <signature>
+interface UsePaymentPlansReturn {
+  plans: PaymentPlan[] | null;
+  selectedPlan: string | null;
+  isLoading: boolean;
+  isSaving: boolean;
+  error: Error | null;
+  selectPlan: (planId: string) => void;
+  savePlanSelection: () => Promise&lt;void&gt;;
+  clearError: () => void;
+}
+      </signature>
+      <path>features/cost/hooks/usePaymentPlans.ts (to be created)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit Testing (Vitest + React Testing Library):
+      - Test all components in isolation with mocked dependencies
+      - Mock GraphQL queries/mutations using vi.mock
+      - Test loading, error, and success states comprehensively
+      - Verify accessibility features (ARIA attributes, keyboard navigation)
+      - Test user interactions with @testing-library/user-event
+      - Minimum 80% code coverage for features/cost/ directory
+
+      Integration Testing:
+      - Test Apollo Client cache behavior with payment plan data
+      - Test GraphQL query/mutation integration
+      - Mock backend API responses using MSW
+      - Test error handling for network failures
+
+      E2E Testing (Playwright):
+      - Test complete flow: open modal, select plan, verify persistence
+      - Test across viewports (mobile bottom sheet, desktop centered dialog)
+      - Verify visual appearance matches designs
+      - Test keyboard-only navigation flow
+      - Test screen reader compatibility
+
+      Reference existing patterns from features/insurance/InsuranceForm.test.tsx
+    </standards>
+
+    <locations>
+      features/cost/__tests__/PaymentPlanModal.test.tsx
+      features/cost/__tests__/hooks/usePaymentPlans.test.ts
+      tests/integration/payment-plans.test.ts
+      tests/e2e/payment-plan-flow.spec.ts
+    </locations>
+
+    <ideas>
+      <idea ac="AC1">
+        - Test modal renders with "Flexible Payment Options" title
+        - Test all payment plans display with correct data (name, frequency, amount)
+        - Test savings/discounts display as badges when present
+        - Test terms and conditions links are present and accessible
+        - Test loading state shows skeleton loaders for plan cards
+      </idea>
+
+      <idea ac="AC2">
+        - Test "Select this plan" button appears for each plan option
+        - Test default "Pay as you go" option is visually indicated
+        - Test "Talk to us about financial assistance" link opens support
+        - Test only one plan can be selected at a time
+        - Test selected plan is highlighted visually
+      </idea>
+
+      <idea ac="AC3">
+        - Test selecting plan calls savePaymentPlan mutation with correct planId
+        - Test Apollo cache updates optimistically on plan selection
+        - Test keyboard navigation (Tab, Enter, Escape) works correctly
+        - Test screen reader announces plan selection changes
+        - Test "Continue to booking" button is enabled after plan selection
+        - Test "Continue to booking" navigates to correct route with plan data
+        - Test modal closes on Escape key press
+      </idea>
+
+      <idea ac="All">
+        - Test error handling when getPaymentPlans query fails
+        - Test retry mechanism for failed plan selection save
+        - Test modal accessibility with axe-core automated testing
+        - Test mobile responsive layout (full-screen bottom sheet)
+        - Test desktop layout (centered dialog with max-width)
+        - Test focus trap keeps focus within modal when open
+        - Test focus returns to trigger element when modal closes
+      </idea>
+    </ideas>
+  </tests>
+</story-context>

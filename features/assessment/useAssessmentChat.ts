@@ -8,17 +8,96 @@
 "use client";
 
 import * as React from "react";
+import { gql } from "@apollo/client";
+import { useMutation } from "@apollo/client/react";
 import type { Message } from "./ChatBubble";
 import type { QuickReplyOption } from "./types";
 import type { StructuredQuestion } from "./AssessmentCard";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { useOnboardingSession } from "@/hooks/useOnboardingSession";
-import {
-  useCompleteAssessmentMutation,
-  useConfirmAssessmentSummaryMutation,
-  useResetAssessmentMutation,
-  type AssessmentSummary,
-} from "@/types/graphql";
+
+/**
+ * GraphQL mutation for sending messages to AI backend
+ */
+const SEND_MESSAGE_MUTATION = gql`
+  mutation SendMessage($sessionId: ID!, $content: String!) {
+    sendMessage(sessionId: $sessionId, content: $content) {
+      userMessage {
+        id
+        role
+        content
+        createdAt
+      }
+      assistantMessage {
+        id
+        role
+        content
+        createdAt
+      }
+      errors
+    }
+  }
+`;
+
+/**
+ * Type for SendMessage mutation response
+ */
+interface SendMessageResponse {
+  sendMessage: {
+    userMessage: {
+      id: string;
+      role: string;
+      content: string;
+      createdAt: string;
+    } | null;
+    assistantMessage: {
+      id: string;
+      role: string;
+      content: string;
+      createdAt: string;
+    } | null;
+    errors: string[];
+  } | null;
+}
+
+/**
+ * Assessment summary data structure
+ * TODO: Replace with GraphQL generated type when backend is ready
+ */
+export interface AssessmentSummary {
+  keyConcerns: string[];
+  childName: string;
+  recommendedFocus: string[];
+  generatedAt: string;
+}
+
+/**
+ * Stub mutation hooks for assessment flow
+ * TODO: Replace with actual GraphQL mutations when backend is ready
+ */
+function useCompleteAssessmentMutation() {
+  const mutate = async (_options: { variables: { sessionId: string } }): Promise<{ data: { completeAssessment?: { summary?: AssessmentSummary } } | null }> => {
+    // Stub - returns empty data, fallback is handled in hook
+    return { data: null };
+  };
+  return [mutate] as const;
+}
+
+function useConfirmAssessmentSummaryMutation() {
+  const mutate = async (_options: { variables: { sessionId: string; confirmed: boolean } }) => {
+    // Stub - just resolves successfully
+    return { data: { confirmAssessmentSummary: { success: true } } };
+  };
+  return [mutate] as const;
+}
+
+function useResetAssessmentMutation() {
+  const mutate = async (_options: { variables: { sessionId: string } }) => {
+    // Stub - just resolves successfully
+    return { data: { resetAssessment: { success: true } } };
+  };
+  return [mutate] as const;
+}
 
 /**
  * Progress tracking for structured question sections
@@ -142,6 +221,9 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
   const [confirmAssessmentSummary] = useConfirmAssessmentSummaryMutation();
   const [resetAssessment] = useResetAssessmentMutation();
 
+  // GraphQL mutation for sending messages to AI backend
+  const [sendMessageMutation] = useMutation<SendMessageResponse>(SEND_MESSAGE_MUTATION);
+
   // Session restoration integration
   const { session, isReturningUser } = useOnboardingSession(sessionId);
 
@@ -201,87 +283,46 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
         // Set AI responding state
         setIsAiResponding(true);
 
-        // TODO: Replace with actual GraphQL mutation when backend is ready
-        // const { data } = await submitAssessmentMessage({
-        //   variables: {
-        //     input: {
-        //       sessionId,
-        //       content,
-        //       isQuickReply,
-        //     },
-        //   },
-        // });
-
-        // Clear any existing AI response timer
-        if (aiResponseTimerRef.current) {
-          clearTimeout(aiResponseTimerRef.current);
-        }
-
-        // Simulate AI response delay (500-1500ms)
-        const delay = 500 + Math.random() * 1000;
-        await new Promise((resolve) => {
-          aiResponseTimerRef.current = setTimeout(resolve, delay);
+        // Call the real backend mutation
+        const { data } = await sendMessageMutation({
+          variables: {
+            sessionId,
+            content,
+          },
         });
 
-        // Mock AI response with structured question simulation
-        const mockResponse: SubmitAssessmentMessageResponse = {
-          message: userMessage,
-          aiResponse: {
-            id: generateMessageId(),
-            sender: "AI",
-            content: `Thank you for sharing that. Can you tell me more about how long this has been going on?`,
-            timestamp: new Date().toISOString(),
-            suggestedReplies: ["A few weeks", "A few months", "More than 6 months", "I'm not sure"],
-          },
-          nextQuestion: "duration_context",
-          isComplete: false,
-          crisisDetected: false,
-        };
+        // Check for errors from backend
+        const errors = data?.sendMessage?.errors;
+        if (errors && errors.length > 0) {
+          throw new Error(errors.join(", "));
+        }
 
-        // Process AI response (nextQuestion available in mockResponse for future branching logic)
-        const { aiResponse, isComplete: responseComplete, crisisDetected: crisis } = mockResponse;
+        const assistantMessage = data?.sendMessage?.assistantMessage;
 
-        // Check if response contains structured question
-        if (aiResponse.structuredQuestion) {
-          // Switch to structured mode
-          setAssessmentMode("structured");
-          setStructuredQuestion(aiResponse.structuredQuestion);
+        if (assistantMessage) {
+          // Map backend role to frontend sender format
+          const senderMap: Record<string, "USER" | "AI"> = {
+            user: "USER",
+            assistant: "AI",
+          };
 
-          // Set structured progress if available
-          // Mock progress for now
-          setStructuredProgress({ current: 1, total: 5 });
-        } else {
-          // Stay in chat mode
-          setAssessmentMode("chat");
-          setStructuredQuestion(null);
-
-          // Add AI message
+          // Add AI message from backend response
           const aiMessage: Message = {
-            id: aiResponse.id,
-            sender: aiResponse.sender,
-            content: aiResponse.content,
-            timestamp: aiResponse.timestamp,
-            suggestedReplies: aiResponse.suggestedReplies,
+            id: assistantMessage.id,
+            sender: senderMap[assistantMessage.role] || "AI",
+            content: assistantMessage.content,
+            timestamp: assistantMessage.createdAt,
           };
 
           setMessages((prev) => [...prev, aiMessage]);
 
-          // Update suggested replies if provided
-          if (aiResponse.suggestedReplies) {
-            setSuggestedReplies(
-              aiResponse.suggestedReplies.map((label) => ({
-                label,
-                value: label.toLowerCase().replace(/\s+/g, "-"),
-              }))
-            );
-          }
+          // Clear suggested replies for now (backend can provide these in the future)
+          setSuggestedReplies([]);
         }
 
-        // Update completeness state
-        setIsComplete(responseComplete ?? false);
-
-        // Update crisis detection state
-        setCrisisDetected(crisis ?? false);
+        // Stay in chat mode (structured questions handled by backend context)
+        setAssessmentMode("chat");
+        setStructuredQuestion(null);
 
         // Auto-save after state update completes
         setMessages((prev) => {
@@ -298,7 +339,7 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
         console.error("Error sending message:", err);
       }
     },
-    [sessionId, autoSave]
+    [sessionId, autoSave, sendMessageMutation]
   );
 
   /**

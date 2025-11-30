@@ -1,0 +1,367 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>1</storyId>
+    <title>Manual Insurance Entry Form</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/4-1-manual-insurance-entry-form.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a parent</asA>
+    <iWant>to enter my insurance information through a user-friendly form</iWant>
+    <soThat>I can verify my coverage for my child's therapy sessions</soThat>
+    <tasks>
+      - Task 1: Create insurance carrier dropdown component (AC: 4.1.1)
+        - Create INSURANCE_CARRIERS data file with top 20+ carriers
+        - Implement searchable Select component with carrier options
+        - Add format hints per carrier (member ID examples)
+        - Write unit tests for carrier search filtering
+
+      - Task 2: Build insurance form with validation (AC: 4.1.2, 4.1.3, 4.1.5)
+        - Create InsuranceForm.tsx component in features/insurance/
+        - Implement insuranceSchema Zod validation in lib/validations/insurance.ts
+        - Add member ID validation (5-30 alphanumeric with hyphens)
+        - Add optional group number validation (max 30 alphanumeric with hyphens)
+        - Implement blur validation with error display below fields
+        - Write unit tests for all validation rules
+
+      - Task 3: Implement subscriber relationship logic (AC: 4.1.4)
+        - Add relationship dropdown (Self, Spouse, Child, Other)
+        - Add subscriber name field
+        - Auto-populate subscriber name when "Self" selected
+        - Write integration test for auto-population
+
+      - Task 4: Add self-pay modal trigger (AC: 4.1.6)
+        - Add "I don't have insurance" link below form
+        - Wire click handler to open SelfPayModal
+        - Write unit test for link click behavior
+
+      - Task 5: Implement form state and continue button (AC: 4.1.7)
+        - Track form validity state with React Hook Form
+        - Disable Continue button until form is valid
+        - Write integration test for button state transitions
+
+      - Task 6: Implement auto-save on blur (AC: 4.1.8)
+        - Integrate useAutoSave hook with form
+        - Debounce saves by 500ms after blur
+        - Write unit test for debounced save calls
+
+      - Task 7: Create GraphQL operations
+        - Create insurance.graphql with SubmitInsuranceInfo mutation
+        - Generate TypeScript types with GraphQL codegen
+        - Create useInsurance.ts hook with mutation and state
+
+      - Task 8: Create insurance route page
+        - Create app/onboarding/[sessionId]/insurance/page.tsx
+        - Integrate InsuranceForm component
+        - Add progress indicator update (step 3 of 5)
+        - Add navigation to matching on success
+
+      - Task 9: Integration testing
+        - Write integration tests for full form flow
+        - Test validation error display and clearing
+        - Test auto-save triggering and persistence
+        - Test form submission and success flow
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC-4.1.1: Form displays with searchable carrier dropdown
+      - Testable Assertion: Dropdown contains 20+ carriers with search filtering
+
+    AC-4.1.2: Member ID field validates 5-30 alphanumeric characters
+      - Testable Assertion: Error shown for &lt; 5 or &gt; 30 chars, or invalid chars
+
+    AC-4.1.3: Group number is optional but validates format if provided
+      - Testable Assertion: Form submits with empty group number, validates if entered
+
+    AC-4.1.4: Subscriber name defaults to parent name when relationship is "Self"
+      - Testable Assertion: Selecting "Self" populates subscriber name from session
+
+    AC-4.1.5: Form validates on blur with specific error messages
+      - Testable Assertion: Error appears below field on blur, clears on valid input
+
+    AC-4.1.6: "I don't have insurance" link opens self-pay modal
+      - Testable Assertion: Click triggers modal with self-pay information
+
+    AC-4.1.7: Continue button disabled until form valid
+      - Testable Assertion: Button state matches form validity
+
+    AC-4.1.8: Auto-save triggers on field blur
+      - Testable Assertion: Network request fires 500ms after blur
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-4.md</path>
+        <title>Epic Technical Specification: Insurance Submission</title>
+        <section>Overview</section>
+        <snippet>Epic 4 delivers insurance submission functionality for Parent Onboarding AI. Manual entry is primary reliable path for MVP, with OCR-based card scanning deferred to Growth phase.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-4.md</path>
+        <title>Epic Technical Specification: Insurance Submission</title>
+        <section>Data Models and Contracts</section>
+        <snippet>InsuranceFormState includes carrier, memberId, groupNumber, subscriberName, and relationshipToSubscriber. Zod schema validates member ID 5-30 chars alphanumeric+hyphens, group number optional max 30 chars.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-4.md</path>
+        <title>Epic Technical Specification: Insurance Submission</title>
+        <section>Security</section>
+        <snippet>PHI Protection: Insurance data (member ID, group number) is PHI. Never log to console, never in URLs/query params, use phiGuard utility, mask member ID in confirmation (show last 4 only). autoComplete="off" on member ID field.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>PHI Protection Checklist</section>
+        <snippet>No PHI in console.log, URLs, browser history. Use replace not push for sensitive routes. Session tokens use httpOnly cookies. Form autofill disabled for sensitive fields (autoComplete="off").</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>Component Library - Custom Components</section>
+        <snippet>Form patterns: Labels above input always visible, required asterisk (*) after label, validation on blur + on submit, error display inline below field in red text, help text below input in muted color.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>Visual Foundation - Color System</section>
+        <snippet>Daybreak Teal #2A9D8F for primary actions, Error #E85D5D for validation errors, Success #10B981 for confirmations. Error messages in red below fields per UX patterns.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>features/demographics/ParentInfoForm.tsx</path>
+        <kind>component</kind>
+        <symbol>ParentInfoForm</symbol>
+        <lines>1-489</lines>
+        <reason>Reference implementation for form component structure, React Hook Form integration, Zod validation, blur validation pattern, auto-save integration, error display, accessibility patterns</reason>
+      </artifact>
+      <artifact>
+        <path>lib/validations/demographics.ts</path>
+        <kind>validation</kind>
+        <symbol>parentInfoSchema</symbol>
+        <lines>61-87</lines>
+        <reason>Reference pattern for Zod schema structure, error messages, field validation rules. Insurance schema should follow similar pattern with specific rules for member ID and group number</reason>
+      </artifact>
+      <artifact>
+        <path>hooks/useAutoSave.ts</path>
+        <kind>hook</kind>
+        <symbol>useAutoSave</symbol>
+        <lines>63-169</lines>
+        <reason>Auto-save hook that integrates with insurance form for AC-4.1.8. Provides save(), saveStatus, error, and retry. Must be called on field blur with debounced behavior</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/select.tsx</path>
+        <kind>component</kind>
+        <symbol>Select</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Select component for searchable carrier dropdown (AC-4.1.1). Provides SelectTrigger, SelectContent, SelectItem, SelectValue</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/input.tsx</path>
+        <kind>component</kind>
+        <symbol>Input</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Input component for member ID, group number, subscriber name fields. Supports validation states, aria attributes</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/dialog.tsx</path>
+        <kind>component</kind>
+        <symbol>Dialog</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Dialog component for self-pay modal (AC-4.1.6). Use Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription</reason>
+      </artifact>
+      <artifact>
+        <path>lib/utils/formatters.ts</path>
+        <kind>utility</kind>
+        <symbol>formatPhoneNumber, toE164</symbol>
+        <lines>all</lines>
+        <reason>Reference for formatting patterns if needed for insurance data display (e.g., masking member ID in confirmation view)</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>react-hook-form</package>
+        <version>^7.67.0</version>
+        <purpose>Form state management</purpose>
+      </node>
+      <node>
+        <package>@hookform/resolvers</package>
+        <version>^5.2.2</version>
+        <purpose>Zod integration with React Hook Form</purpose>
+      </node>
+      <node>
+        <package>zod</package>
+        <version>^3.25.76</version>
+        <purpose>Schema validation for insurance form</purpose>
+      </node>
+      <node>
+        <package>@apollo/client</package>
+        <version>4.0.9</version>
+        <purpose>GraphQL mutations and cache for insurance submission</purpose>
+      </node>
+      <node>
+        <package>@radix-ui/react-select</package>
+        <version>^2.2.6</version>
+        <purpose>Carrier dropdown with search</purpose>
+      </node>
+      <node>
+        <package>@radix-ui/react-dialog</package>
+        <version>^1.1.15</version>
+        <purpose>Self-pay modal</purpose>
+      </node>
+      <node>
+        <package>lucide-react</package>
+        <version>^0.555.0</version>
+        <purpose>Icons (Check for valid fields, ChevronLeft for back button)</purpose>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    1. PHI Protection: Insurance member ID and group number are PHI - never log to console, never in URLs, use phiGuard utility for debugging, mask member ID in UI (show last 4 only)
+
+    2. Form Validation: Validate on blur, not on keystroke (onBlur mode in React Hook Form). Show errors inline below fields in Daybreak error red (#E85D5D)
+
+    3. Auto-save Pattern: Use existing useAutoSave hook, trigger on field blur with 500ms debounce. Save even partial/invalid data for session recovery
+
+    4. Component Structure: Place in features/insurance/ directory. Follow existing patterns from features/demographics/ParentInfoForm.tsx
+
+    5. Accessibility: WCAG 2.1 AA compliance required. aria-invalid on error fields, aria-describedby linking errors, aria-required on required fields, minimum 44x44px touch targets
+
+    6. Mobile-First: Design mobile-native first, single-column layout, max-width 640px, responsive button layout (stack on mobile, row on desktop)
+
+    7. Error Handling: Specific error messages per field, inline display below field, clear on valid input, support retry for network failures
+
+    8. Form Security: autoComplete="off" on member ID field to prevent browser autofill of sensitive PHI
+
+    9. Testing Standards: Unit tests with Vitest + RTL for Zod schemas and form components, integration tests for full flow including auto-save and submission
+
+    10. GraphQL Integration: Use GraphQL Codegen for type-safe mutations, follow existing mutation patterns from demographics features
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>insuranceSchema</name>
+      <kind>Zod validation schema</kind>
+      <signature>
+        z.object({
+          carrier: z.string().min(1, 'Please select an insurance carrier'),
+          memberId: z.string()
+            .min(5, 'Member ID must be at least 5 characters')
+            .max(30, 'Member ID must be 30 characters or less')
+            .regex(/^[A-Za-z0-9-]+$/, 'Member ID can only contain letters, numbers, and hyphens'),
+          groupNumber: z.string()
+            .max(30, 'Group number must be 30 characters or less')
+            .regex(/^[A-Za-z0-9-]*$/, 'Group number can only contain letters, numbers, and hyphens')
+            .optional()
+            .or(z.literal('')),
+          subscriberName: z.string()
+            .min(2, 'Subscriber name must be at least 2 characters')
+            .max(100, 'Subscriber name must be 100 characters or less'),
+          relationshipToSubscriber: z.enum(['Self', 'Spouse', 'Child', 'Other']),
+        })
+      </signature>
+      <path>lib/validations/insurance.ts</path>
+    </interface>
+    <interface>
+      <name>SubmitInsuranceInfo</name>
+      <kind>GraphQL mutation</kind>
+      <signature>
+        mutation SubmitInsuranceInfo($input: SubmitInsuranceInfoInput!) {
+          submitInsuranceInfo(input: $input) {
+            id
+            status
+            insuranceInfo {
+              id
+              provider
+              planName
+              memberId
+              groupId
+            }
+          }
+        }
+      </signature>
+      <path>features/insurance/insurance.graphql</path>
+    </interface>
+    <interface>
+      <name>useInsurance</name>
+      <kind>React hook</kind>
+      <signature>
+        interface UseInsuranceReturn {
+          insuranceInfo: InsuranceInformation | null;
+          isLoading: boolean;
+          isSaving: boolean;
+          error: Error | null;
+          submitInsurance: (data: InsuranceFormData) => Promise&lt;void&gt;;
+          setSelfPay: () => void;
+          clearError: () => void;
+        }
+      </signature>
+      <path>features/insurance/useInsurance.ts</path>
+    </interface>
+    <interface>
+      <name>INSURANCE_CARRIERS</name>
+      <kind>Static data array</kind>
+      <signature>
+        export const INSURANCE_CARRIERS = [
+          { id: 'aetna', name: 'Aetna', idFormat: 'W followed by 9 digits' },
+          { id: 'anthem', name: 'Anthem Blue Cross', idFormat: '3 letters + 9 digits' },
+          // ... 20+ carriers total
+          { id: 'other', name: 'Other', idFormat: 'Check your insurance card' },
+        ]
+      </signature>
+      <path>lib/data/insurance-carriers.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit tests with Vitest + React Testing Library for:
+      - Zod schema validation rules (member ID length, format, group number optional)
+      - Form component rendering and field interactions
+      - Error message display and clearing
+      - Auto-save hook integration and debouncing
+
+      Integration tests for:
+      - Full form submission flow with valid/invalid data
+      - Relationship selection triggering subscriber name auto-population
+      - Auto-save triggering on blur events
+      - Continue button disabled/enabled state based on form validity
+      - Self-pay modal opening and closing
+
+      Follow existing test patterns from:
+      - tests/unit/lib/validations/demographics.test.ts
+      - tests/unit/components/demographics/ParentInfoForm.test.tsx
+      - tests/unit/hooks/useAutoSave.test.ts
+    </standards>
+    <locations>
+      - tests/unit/lib/validations/insurance.test.ts
+      - tests/unit/features/insurance/InsuranceForm.test.tsx
+      - tests/unit/features/insurance/useInsurance.test.ts
+      - tests/integration/insurance-form-flow.test.tsx
+    </locations>
+    <ideas>
+      Test Idea for AC-4.1.1: Render carrier dropdown, verify 20+ options, test search filtering by typing carrier name, verify filtered results
+
+      Test Idea for AC-4.1.2: Test member ID validation - submit with 4 chars (error), 5 chars (valid), 30 chars (valid), 31 chars (error), special characters (error), alphanumeric+hyphens (valid)
+
+      Test Idea for AC-4.1.3: Test group number optional - submit without group number (valid), submit with valid group number (valid), submit with 31 chars (error)
+
+      Test Idea for AC-4.1.4: Mock parent name from session context, select "Self" from relationship dropdown, verify subscriber name auto-populates with parent's full name
+
+      Test Idea for AC-4.1.5: Focus and blur from field with invalid data, verify error appears below field, enter valid data, verify error clears
+
+      Test Idea for AC-4.1.6: Click "I don't have insurance" link, verify Dialog component opens, verify modal contains self-pay content
+
+      Test Idea for AC-4.1.7: Check continue button disabled initially, fill all fields with valid data, verify button becomes enabled, clear a field, verify button disabled again
+
+      Test Idea for AC-4.1.8: Mock useAutoSave hook, trigger blur event on field, verify save() called, verify 500ms debounce using fake timers
+    </ideas>
+  </tests>
+</story-context>

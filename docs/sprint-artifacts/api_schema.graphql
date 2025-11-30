@@ -1,36 +1,50 @@
 """
 # GraphQL API Schema: Parent Onboarding AI
-# Version: 1.0
+# Version: 2.0
 # This schema defines the contract between the Next.js frontend and the Ruby on Rails backend.
+# Updated to match actual backend implementation.
 """
+
+# ------------------------------------------------------------------
+# SCALARS
+# ------------------------------------------------------------------
+
+scalar DateTime
+scalar JSON
 
 # ------------------------------------------------------------------
 # ENUMS
 # ------------------------------------------------------------------
 
-enum OnboardingStatus {
-  ASSESSMENT_STARTED
-  ASSESSMENT_COMPLETED
-  DEMOGRAPHICS_COMPLETED
+"""Session status enum matching backend OnboardingSession.status"""
+enum SessionStatus {
+  STARTED
+  IN_PROGRESS
   INSURANCE_PENDING
-  INSURANCE_COMPLETED
-  SCHEDULING_PENDING
-  SCHEDULING_COMPLETED
-  ONBOARDING_COMPLETE
+  ASSESSMENT_COMPLETE
+  SUBMITTED
+  ABANDONED
+  EXPIRED
 }
 
-enum UserRole {
-  PARENT
-  SUPPORT_STAFF
-  ADMIN
-}
-
-enum MessageSender {
+"""Message sender role"""
+enum MessageRole {
   USER
-  AI
-  SUPPORT
+  ASSISTANT
+  SYSTEM
 }
 
+"""Insurance verification status"""
+enum VerificationStatus {
+  PENDING
+  IN_PROGRESS
+  VERIFIED
+  FAILED
+  MANUAL_REVIEW
+  SELF_PAY
+}
+
+"""Parent/guardian relationship to child"""
 enum RelationshipType {
   PARENT
   GUARDIAN
@@ -38,200 +52,244 @@ enum RelationshipType {
   OTHER
 }
 
+"""Therapist availability status"""
+enum AvailabilityStatus {
+  AVAILABLE_THIS_WEEK
+  AVAILABLE_NEXT_WEEK
+  LIMITED_AVAILABILITY
+  WAITLIST
+}
+
 # ------------------------------------------------------------------
 # CORE TYPES
 # ------------------------------------------------------------------
 
-type User {
+"""Parent/guardian information"""
+type Parent {
   id: ID!
   email: String!
-  firstName: String
-  lastName: String
-  role: UserRole!
-  createdAt: String!
-  children: [Child!]
-}
-
-type ParentInfo {
+  phone: String!
   firstName: String!
   lastName: String!
-  email: String!
-  phone: String! # E.164 format: +1XXXXXXXXXX
-  relationshipToChild: RelationshipType!
+  relationship: String!
+  isGuardian: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
-type Demographics {
-  parent: ParentInfo
-  child: ChildInfo
-  isComplete: Boolean!
-}
-
-type ChildInfo {
-  firstName: String
-  lastName: String
-  dateOfBirth: String
-  pronouns: String
-  concerns: [String!]
-}
-
+"""Child information"""
 type Child {
   id: ID!
   firstName: String!
+  lastName: String!
   dateOfBirth: String!
-  pronouns: String
-  concerns: [String!]
-  createdAt: String!
+  gender: String!
+  schoolName: String
+  grade: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
-type OnboardingSession {
-  id: ID!
-  status: OnboardingStatus!
-  parent: User!
-  child: Child!
-  assessment: Assessment
-  insuranceInfo: InsuranceInformation
-  appointment: Appointment
-  createdAt: String!
-  updatedAt: String!
-}
-
+"""Assessment responses and scoring"""
 type Assessment {
   id: ID!
-  conversationHistory: [ChatMessage!]!
-  summary: AssessmentSummary
-  isFitForDaybreak: Boolean
-  suggestedNextSteps: String
-  isComplete: Boolean
+  responses: JSON!
+  riskFlags: [String!]!
+  summary: String
+  consentGiven: Boolean!
+  score: Int
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
-type AssessmentSummary {
-  keyConcerns: [String!]!
-  childName: String!
-  recommendedFocus: [String!]
-  generatedAt: String!
+"""Insurance information"""
+type Insurance {
+  id: ID!
+  payerName: String!
+  subscriberName: String!
+  memberId: String!
+  policyNumber: String
+  groupNumber: String
+  verificationStatus: VerificationStatus!
+  verificationResult: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
-type AssessmentSummaryPayload {
-  summary: AssessmentSummary!
+"""Chat message in assessment conversation"""
+type Message {
+  id: ID!
+  role: MessageRole!
+  content: String!
+  metadata: JSON
+  createdAt: DateTime!
 }
 
-type ConfirmSummaryPayload {
-  session: OnboardingSession!
+"""Match reason explaining why a therapist was recommended"""
+type MatchReason {
+  """Reason identifier (e.g., 'specialty_match', 'availability', 'experience')"""
+  id: String!
+  """Human-readable reason text"""
+  text: String!
+  """Optional icon identifier for UI display"""
+  icon: String
 }
 
-type ResetAssessmentPayload {
-  session: OnboardingSession!
+"""Therapist information for matching display"""
+type Therapist {
+  id: ID!
+  """Full name of the therapist"""
+  name: String!
+  """Professional credentials (e.g., 'LMFT', 'PhD', 'LCSW')"""
+  credentials: String!
+  """Professional photo URL"""
+  photoUrl: String
+  """Specialty areas (e.g., 'Anxiety', 'Teen Issues', 'ADHD')"""
+  specialties: [String!]!
+  """Availability status"""
+  availabilityStatus: AvailabilityStatus!
+  """Human-readable availability text (e.g., 'Available this week')"""
+  availabilityText: String!
+  """Years of experience"""
+  yearsOfExperience: Int
+  """Brief bio or description"""
+  bio: String
+  """Match quality score (0-100, higher is better)"""
+  matchScore: Int!
+  """Reasons why this therapist was matched"""
+  matchReasons: [MatchReason!]!
+  """Whether this is the best match (top recommendation)"""
+  isBestMatch: Boolean!
 }
 
-# Payload for createSession mutation - returns new session with auth tokens
-type CreateSessionPayload {
-  session: SessionInfo!
-  token: String!
-  refreshToken: String
+"""Therapist matching results"""
+type TherapistMatchResults {
+  """List of matched therapists (2-3 typically)"""
+  therapists: [Therapist!]!
+  """Total number of therapists matched"""
+  totalCount: Int!
+  """General explanation of matching criteria"""
+  matchingCriteria: String!
 }
 
-# Minimal session info returned from createSession (before full onboarding data exists)
+"""Progress indicators for onboarding session"""
+type Progress {
+  """Progress percentage (0-100) based on completed required fields"""
+  percentage: Int!
+  """Current phase in the onboarding flow"""
+  currentPhase: String!
+  """Array of completed phase names"""
+  completedPhases: [String!]!
+  """Next phase in the sequence (null if at end)"""
+  nextPhase: String
+  """Estimated minutes to complete remaining phases (adaptive)"""
+  estimatedMinutesRemaining: Int!
+}
+
+"""
+Onboarding session - the main entity tracking a parent's intake process.
+ID is returned in CUID format with sess_ prefix (e.g., sess_abc123...).
+"""
+type OnboardingSession {
+  id: ID!
+  status: SessionStatus!
+  """Raw session progress data"""
+  progressData: JSON!
+  """Calculated progress indicators"""
+  progress: Progress!
+  referralSource: String
+  expiresAt: DateTime!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  # Associated data
+  parent: Parent
+  child: Child
+  assessment: Assessment
+  insurance: Insurance
+  messages: [Message!]
+}
+
+"""Minimal session info returned from createSession (before full onboarding data exists)"""
 type SessionInfo {
   id: ID!
   status: String!
 }
 
-type ChatMessage {
-  id: ID!
-  sender: MessageSender!
-  content: String!
-  timestamp: String!
+# ------------------------------------------------------------------
+# PAYLOAD TYPES
+# ------------------------------------------------------------------
+
+"""Response from createSession mutation"""
+type CreateSessionPayload {
+  session: OnboardingSession!
+  token: String!
+  refreshToken: String
 }
 
-type InsuranceInformation {
-  id: ID!
-  provider: String!
-  planName: String
-  memberId: String!
-  groupId: String
-  imageFileUrl: String # URL to the uploaded insurance card image (P1)
+"""Response from session recovery query"""
+type SessionRecoveryPayload {
+  session: OnboardingSession!
+  token: String!
+  refreshToken: String!
 }
 
-type Appointment {
-  id: ID!
-  therapistName: String!
-  startTime: String!
-  endTime: String!
-  confirmationId: String!
+"""Response from abandonSession mutation"""
+type SessionAbandonmentPayload {
+  session: OnboardingSession!
+  success: Boolean!
 }
 
-type CostEstimate {
-  copayPerSession: Float
-  deductibleRemaining: Float
-  notes: String
+"""Response from requestSessionRecovery mutation"""
+type RequestRecoveryPayload {
+  success: Boolean!
+  message: String!
+}
+
+"""Response from updateSessionProgress mutation"""
+type UpdateSessionProgressPayload {
+  session: OnboardingSession!
+}
+
+"""Response from refreshToken mutation"""
+type RefreshTokenPayload {
+  success: Boolean!
+  error: String
+  token: String
+  refreshToken: String
+  tokenType: String
+  expiresIn: Int
+}
+
+"""Response from sendMessage mutation"""
+type SendMessagePayload {
+  userMessage: Message!
+  assistantMessage: Message!
+  errors: [String!]
+}
+
+"""Response from submitInsuranceInfo mutation"""
+type SubmitInsuranceInfoPayload {
+  session: OnboardingSession!
+}
+
+"""Response from setSelfPay mutation"""
+type SetSelfPayPayload {
+  session: OnboardingSession!
 }
 
 # ------------------------------------------------------------------
 # INPUT TYPES
 # ------------------------------------------------------------------
 
-input StartOnboardingInput {
-  parentEmail: String!
-  childFirstName: String!
-  childDateOfBirth: String!
-}
-
-input SubmitAssessmentMessageInput {
-  onboardingSessionId: ID!
-  messageContent: String!
-}
-
-input UpdateDemographicsInput {
-  onboardingSessionId: ID!
-  parentFirstName: String
-  parentLastName: String
-  childPronouns: String
-  childConcerns: [String!]
-}
-
+"""Input for submitting insurance information"""
 input SubmitInsuranceInfoInput {
-  onboardingSessionId: ID!
-  provider: String!
-  planName: String
-  memberId: String!
-  groupId: String
-}
-
-input SubmitInsuranceImageInput {
-  onboardingSessionId: ID!
-  # The file will be handled via a multipart request, this is a placeholder
-  # The mutation will return the extracted info.
-}
-
-input ScheduleAppointmentInput {
-  onboardingSessionId: ID!
-  therapistId: ID!
-  timeSlotId: ID!
-}
-
-input ParentInfoInput {
-  firstName: String!
-  lastName: String!
-  email: String!
-  phone: String! # E.164 format: +1XXXXXXXXXX
-  relationshipToChild: RelationshipType!
-}
-
-type UpdateParentInfoPayload {
-  id: ID!
-  status: OnboardingStatus!
-  demographics: Demographics
-  updatedAt: String!
-}
-
-input SendSessionReminderInput {
   sessionId: ID!
-  email: String!
-}
-
-type SendSessionReminderPayload {
-  success: Boolean!
-  message: String
+  payerName: String!
+  subscriberName: String!
+  memberId: String!
+  groupNumber: String
+  relationshipToSubscriber: String!
 }
 
 # ------------------------------------------------------------------
@@ -239,17 +297,31 @@ type SendSessionReminderPayload {
 # ------------------------------------------------------------------
 
 type Query {
-  # Get the current state of an onboarding session
-  getOnboardingSession(id: ID!): OnboardingSession
+  """
+  Get session by ID.
+  Requires valid JWT token. User can only access their own session.
+  """
+  session(id: ID!): OnboardingSession
 
-  # Get the current authenticated user
-  me: User
+  """
+  Recover session using magic link token.
+  No authentication required (token is the credential).
+  Returns session with new JWT tokens.
+  """
+  sessionByRecoveryToken(recoveryToken: String!): SessionRecoveryPayload
 
-  # Get available appointment slots for a given therapist/timeframe
-  getAvailableSlots(therapistId: ID, startDate: String, endDate: String): [Appointment!]
+  """
+  Get matched therapists for a session.
+  Requires valid JWT token. Returns 2-3 best-matched therapists
+  based on assessment results, child needs, and availability.
+  """
+  matchedTherapists(sessionId: ID!): TherapistMatchResults
 
-  # Get a cost estimate based on insurance (P1)
-  getCostEstimate(onboardingSessionId: ID!): CostEstimate
+  """Relay-style node lookup"""
+  node(id: ID!): Node
+
+  """Relay-style batch node lookup"""
+  nodes(ids: [ID!]!): [Node]!
 }
 
 # ------------------------------------------------------------------
@@ -257,52 +329,83 @@ type Query {
 # ------------------------------------------------------------------
 
 type Mutation {
-  # P0: Create a new onboarding session and return auth token
-  # Called when user clicks "Start Onboarding" - returns session ID and JWT
-  createSession: CreateSessionPayload
+  """
+  Create a new anonymous onboarding session.
+  Returns session with JWT token and optional refresh token.
+  """
+  createSession(
+    referralSource: String
+    deviceFingerprint: String
+  ): CreateSessionPayload
 
-  # P0: Start the onboarding process and create the initial records
-  startOnboarding(input: StartOnboardingInput!): OnboardingSession
+  """
+  Update session progress with deep merge.
+  Extends session expiration by 1 hour.
+  Auto-transitions from STARTED to IN_PROGRESS on first update.
+  """
+  updateSessionProgress(
+    sessionId: ID!
+    progress: JSON!
+  ): UpdateSessionProgressPayload
 
-  # P0: Send a message to the AI assessment chatbot and get a response
-  submitAssessmentMessage(input: SubmitAssessmentMessageInput!): Assessment
+  """
+  Request session recovery via email magic link.
+  Requires parent email to be collected first.
+  """
+  requestSessionRecovery(sessionId: ID!): RequestRecoveryPayload
 
-  # P0: Complete assessment and generate summary (Story 2.5)
-  completeAssessment(sessionId: ID!): AssessmentSummaryPayload
+  """
+  Abandon an onboarding session explicitly.
+  Session data is retained per data retention policy.
+  Idempotent: abandoning already abandoned session succeeds.
+  """
+  abandonSession(sessionId: ID!): SessionAbandonmentPayload
 
-  # P0: Confirm assessment summary and enable navigation (Story 2.5)
-  confirmAssessmentSummary(sessionId: ID!, confirmed: Boolean!): ConfirmSummaryPayload
+  """
+  Refresh access token using a valid refresh token.
+  Implements token rotation for security.
+  """
+  refreshToken(
+    refreshToken: String!
+    deviceFingerprint: String
+  ): RefreshTokenPayload
 
-  # P0: Reset assessment to start over (Story 2.5)
-  resetAssessment(sessionId: ID!): ResetAssessmentPayload
+  """
+  Send a message in the AI-guided assessment chat.
+  Returns both the user message and AI assistant response.
+  """
+  sendMessage(
+    sessionId: ID!
+    content: String!
+  ): SendMessagePayload
 
-  # P0: Send email reminder to return to session (Story 2.6)
-  sendSessionReminder(input: SendSessionReminderInput!): SendSessionReminderPayload
+  """
+  Submit insurance information for verification.
+  Links insurance to the current onboarding session.
+  """
+  submitInsuranceInfo(input: SubmitInsuranceInfoInput!): SubmitInsuranceInfoPayload
 
-  # P0: Update parent and child demographic information
-  updateDemographics(input: UpdateDemographicsInput!): OnboardingSession
-
-  # P0: Update parent info specifically (Story 3.1)
-  updateParentInfo(sessionId: ID!, input: ParentInfoInput!): UpdateParentInfoPayload
-
-  # P0: Manually submit insurance information
-  submitInsuranceInfo(input: SubmitInsuranceInfoInput!): OnboardingSession
-
-  # P0: Select a therapist and time to book an appointment
-  scheduleAppointment(input: ScheduleAppointmentInput!): Appointment
-
-  # P1: Upload an insurance card image for OCR processing
-  submitInsuranceImage(onboardingSessionId: ID!): InsuranceInformation
-
-  # P1: Send a message in the real-time support chat
-  sendSupportChatMessage(onboardingSessionId: ID!, content: String!): ChatMessage
+  """
+  Mark session as self-pay (no insurance).
+  Skips insurance verification step.
+  """
+  setSelfPay(sessionId: ID!): SetSelfPayPayload
 }
 
 # ------------------------------------------------------------------
-# SUBSCRIPTIONS (for P1 Real-time Chat)
+# SUBSCRIPTIONS
 # ------------------------------------------------------------------
 
 type Subscription {
-  # Subscribe to new messages in a support chat session
-  supportChatMessages(onboardingSessionId: ID!): ChatMessage
+  """Subscribe to updates for a specific session"""
+  sessionUpdated(sessionId: ID!): OnboardingSession
+}
+
+# ------------------------------------------------------------------
+# INTERFACES (Relay)
+# ------------------------------------------------------------------
+
+"""Relay Node interface for global object identification"""
+interface Node {
+  id: ID!
 }

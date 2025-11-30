@@ -1,56 +1,62 @@
-# GetOnboardingSession Query
+# GetSession Query
 # Fetches the current state of an onboarding session by ID
+# Requires valid JWT token - user can only access their own session
 
-query GetOnboardingSession($sessionId: ID!) {
-  getOnboardingSession(id: $sessionId) {
+query GetSession($id: ID!) {
+  session(id: $id) {
     id
     status
+    progress {
+      percentage
+      currentPhase
+      completedPhases
+      nextPhase
+      estimatedMinutesRemaining
+    }
+    referralSource
+    expiresAt
     createdAt
     updatedAt
     parent {
       id
       email
+      phone
       firstName
       lastName
+      relationship
+      isGuardian
     }
     child {
       id
       firstName
+      lastName
       dateOfBirth
-      pronouns
-      concerns
+      gender
+      schoolName
+      grade
     }
     assessment {
       id
-      summary {
-        keyConcerns
-        childName
-        recommendedFocus
-        generatedAt
-      }
-      isFitForDaybreak
-      suggestedNextSteps
-      isComplete
-      conversationHistory {
-        id
-        sender
-        content
-        timestamp
-      }
+      responses
+      riskFlags
+      summary
+      consentGiven
+      score
     }
-    insuranceInfo {
+    insurance {
       id
-      provider
-      planName
+      payerName
+      subscriberName
       memberId
-      groupId
+      policyNumber
+      groupNumber
+      verificationStatus
     }
-    appointment {
+    messages {
       id
-      therapistName
-      startTime
-      endTime
-      confirmationId
+      role
+      content
+      createdAt
     }
   }
 }

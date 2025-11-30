@@ -1,0 +1,646 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context>
+  <metadata>
+    <story-id>5-5-email-confirmation-and-reminders</story-id>
+    <story-title>Email Confirmation and Reminders</story-title>
+    <epic-id>epic-5</epic-id>
+    <epic-title>Therapist Matching &amp; Booking</epic-title>
+    <created-date>2025-11-29</created-date>
+    <status>ready-for-dev</status>
+  </metadata>
+
+  <story-overview>
+    <user-story>
+      As a parent, I want to receive email confirmation of my appointment, so that I have a record and won't forget.
+    </user-story>
+
+    <description>
+      This story implements the frontend display and handling of email confirmation status
+      after successful appointment booking. The actual email sending is a backend responsibility -
+      this story focuses on showing confirmation messaging to the user and handling edge cases
+      when email delivery fails or is pending.
+    </description>
+
+    <scope>
+      <in-scope>
+        - Display email confirmation message on booking success screen
+        - Show user's email address from session data
+        - Handle email failure states with appropriate messaging
+        - Update GraphQL types for email confirmation status
+        - Add error handling for email service failures
+      </in-scope>
+
+      <out-of-scope>
+        - Email template design (backend responsibility)
+        - Email sending infrastructure (backend responsibility)
+        - .ics calendar file generation (backend responsibility)
+        - Email delivery tracking and analytics
+        - Retry mechanism for failed emails (unless backend provides API)
+      </out-of-scope>
+    </scope>
+  </story-overview>
+
+  <acceptance-criteria>
+    <criterion id="AC-1" priority="must">
+      <title>Confirmation Email Trigger</title>
+      <given>I have successfully booked an appointment</given>
+      <when>the booking is confirmed</when>
+      <then>
+        - The backend sends an email confirmation within 1 minute
+        - Email contains: subject line with therapist name, Daybreak branding, appointment details
+        - Email includes: .ics calendar attachment, join link, reschedule/cancel links
+        - Email contains support contact information
+        - Email does not contain excessive PHI
+      </then>
+      <notes>
+        Backend responsibility - frontend only displays confirmation that email was sent.
+        Frontend receives email status from bookAppointment mutation response.
+      </notes>
+    </criterion>
+
+    <criterion id="AC-2" priority="must">
+      <title>Email Responsiveness</title>
+      <given>the confirmation email is sent</given>
+      <when>I open it on any device</when>
+      <then>the email is mobile-friendly and responsive</then>
+      <notes>Backend responsibility - email template design is out of scope for frontend</notes>
+    </criterion>
+
+    <criterion id="AC-3" priority="must">
+      <title>PHI Protection</title>
+      <given>the email contains appointment information</given>
+      <when>I review the email content</when>
+      <then>the email does not contain excessive PHI (Protected Health Information)</then>
+      <notes>
+        Backend responsibility. Frontend must not log email addresses or appointment details.
+        Use phi-guard.ts utility if logging email-related operations.
+      </notes>
+    </criterion>
+
+    <criterion id="AC-4" priority="must">
+      <title>Frontend Confirmation Display</title>
+      <given>the booking mutation succeeds</given>
+      <when>I view the confirmation screen</when>
+      <then>I see "Confirmation email sent to [email]" message</then>
+      <implementation>
+        - Message appears in Confirmation component
+        - Email address displayed from session data
+        - Subtle email icon indicator
+        - Message styled with Daybreak theme
+        - Proper ARIA labels for accessibility
+      </implementation>
+    </criterion>
+
+    <criterion id="AC-5" priority="must">
+      <title>Email Failure Handling</title>
+      <given>the backend email service fails</given>
+      <when>I complete booking</when>
+      <then>I see "Email pending" with support contact information</then>
+      <implementation>
+        - Display failure message without alarming user
+        - Show support contact for assistance
+        - Booking confirmation still shows success
+        - Email failure does not block booking flow
+      </implementation>
+    </criterion>
+  </acceptance-criteria>
+
+  <documentation-artifacts>
+    <artifact type="epic" path="docs/epics.md">
+      <title>Epic 5: Therapist Matching &amp; Booking</title>
+      <relevant-sections>
+        <section>
+          <heading>Story 5.5: Email Confirmation and Reminders</heading>
+          <excerpt>
+            As a parent, I want to receive email confirmation of my appointment,
+            so that I have a record and won't forget.
+
+            Acceptance Criteria:
+            1. Confirmation Email Trigger - Within 1 minute receive email with appointment details
+            2. Email Responsiveness - Mobile-friendly email
+            3. PHI Protection - No excessive PHI in email
+            4. Frontend Confirmation Display - "Email sent" message on confirmation screen
+            5. Email Failure Handling - "Email pending" with support contact if fails
+
+            Note: Email sending is a backend responsibility. This story covers the trigger
+            from frontend and displaying 'Email sent' confirmation.
+          </excerpt>
+        </section>
+      </relevant-sections>
+    </artifact>
+
+    <artifact type="architecture" path="docs/architecture.md">
+      <title>Architecture Decision Document</title>
+      <relevant-sections>
+        <section>
+          <heading>PHI Protection Requirements</heading>
+          <excerpt>
+            Pre-mortem Risk Mitigations:
+            - PHI leaks: Frontend PHI audit checklist (MVP)
+            - No console.log of PHI, no URL params
+            - Use phi-guard.ts utility if logging email-related operations
+
+            Security Architecture - PHI Protection Checklist:
+            - No PHI in console.log, console.error, or any logging
+            - No PHI in URL parameters or fragments
+            - No PHI in browser history
+            - No PHI in error messages shown to users
+            - Email address display is acceptable as contact information
+          </excerpt>
+        </section>
+
+        <section>
+          <heading>Error Handling Patterns</heading>
+          <excerpt>
+            Error Handling:
+            - GraphQL errors: Check for specific codes
+            - Network errors: Show toast with retry
+            - Form validation: Inline errors below fields
+
+            Lifecycle Patterns:
+            - Success: Toast notification (4s auto-dismiss)
+            - Error: Inline error message + retry option
+          </excerpt>
+        </section>
+      </relevant-sections>
+    </artifact>
+
+    <artifact type="ux-design" path="docs/ux-design-specification.md">
+      <title>UX Design Specification</title>
+      <relevant-sections>
+        <section>
+          <heading>Confirmation Patterns</heading>
+          <excerpt>
+            Confirmation Patterns:
+            - Standard submit: Inline success feedback
+
+            Feedback Patterns:
+            - Success: Toast (bottom) + inline, 4 seconds duration
+            - Error: Inline below field, persistent until fixed
+
+            Color System:
+            - Success: #10B981
+            - Error: #E85D5D
+            - Daybreak Teal: #2A9D8F (primary actions)
+          </excerpt>
+        </section>
+      </relevant-sections>
+    </artifact>
+  </documentation-artifacts>
+
+  <code-artifacts>
+    <artifact type="component" path="features/assessment/ChatWindow.tsx">
+      <title>ChatWindow Component Pattern</title>
+      <purpose>Reference for error handling and accessibility patterns</purpose>
+      <relevant-patterns>
+        - Proper TypeScript typing with interfaces
+        - Accessibility features (role, aria-live, aria-label)
+        - Error state management
+        - Component documentation with JSDoc
+        - Prop validation and defaults
+      </relevant-patterns>
+      <key-excerpts>
+        <excerpt>
+          /**
+           * Props for ChatWindow component
+           * @param messages - Array of message objects to display
+           * @param onRetry - Optional callback for retrying last message when AI times out
+           */
+          export interface ChatWindowProps {
+            messages: Message[];
+            onRetry?: () => void;
+          }
+        </excerpt>
+      </key-excerpts>
+    </artifact>
+
+    <artifact type="hook" path="features/assessment/useAssessmentChat.ts">
+      <title>useAssessmentChat Hook Pattern</title>
+      <purpose>Reference for state management and error handling</purpose>
+      <relevant-patterns>
+        - React hooks for state management
+        - Error state management with Error type
+        - Mutation handling with try/catch
+        - Session storage integration
+        - Auto-save patterns
+      </relevant-patterns>
+      <key-excerpts>
+        <excerpt>
+          const [error, setError] = React.useState&lt;Error | null&gt;(null);
+
+          try {
+            setError(null);
+            // ... mutation logic
+          } catch (err) {
+            setError(err instanceof Error ? err : new Error("Failed to send message"));
+            console.error("Error sending message:", err);
+          }
+        </excerpt>
+      </key-excerpts>
+    </artifact>
+
+    <artifact type="component" path="features/demographics/ParentInfoForm.tsx">
+      <title>ParentInfoForm Component Pattern</title>
+      <purpose>Reference for form validation, auto-save, and error display</purpose>
+      <relevant-patterns>
+        - React Hook Form with Zod validation
+        - Auto-save integration with useAutoSave hook
+        - Error message display with proper ARIA
+        - Success/error color constants from design tokens
+        - Save status indicator
+      </relevant-patterns>
+      <key-excerpts>
+        <excerpt>
+          const ERROR_COLOR = "#E85D5D";
+          const SUCCESS_COLOR = "#10B981";
+
+          const { save, saveStatus } = useAutoSave({
+            sessionId,
+            onSaveSuccess: () => {},
+          });
+
+          {saveStatus === "saved" &amp;&amp; (
+            &lt;p className="text-xs text-muted-foreground text-center"&gt;
+              All changes saved
+            &lt;/p&gt;
+          )}
+          {saveStatus === "error" &amp;&amp; (
+            &lt;p className="text-xs text-center" style={{ color: ERROR_COLOR }}&gt;
+              Failed to save. Please try again.
+            &lt;/p&gt;
+          )}
+        </excerpt>
+      </key-excerpts>
+    </artifact>
+
+    <artifact type="schema" path="docs/sprint-artifacts/api_schema.graphql">
+      <title>GraphQL Schema</title>
+      <purpose>Understanding session and mutation response types</purpose>
+      <relevant-patterns>
+        - OnboardingSession type structure
+        - Parent type with email field
+        - Payload type patterns
+        - Status enum patterns
+      </relevant-patterns>
+      <key-excerpts>
+        <excerpt>
+          type Parent {
+            id: ID!
+            email: String!
+            phone: String!
+            firstName: String!
+            lastName: String!
+          }
+
+          type OnboardingSession {
+            id: ID!
+            status: SessionStatus!
+            parent: Parent
+          }
+        </excerpt>
+      </key-excerpts>
+    </artifact>
+  </code-artifacts>
+
+  <dependencies>
+    <frontend-dependencies>
+      <dependency type="component">
+        <name>features/scheduling/Confirmation.tsx</name>
+        <status>to-be-modified</status>
+        <description>Booking confirmation component where email status will be displayed</description>
+      </dependency>
+
+      <dependency type="hook">
+        <name>features/scheduling/useScheduling.ts</name>
+        <status>to-be-modified</status>
+        <description>Scheduling hook that handles booking mutation - needs to extract email status</description>
+      </dependency>
+
+      <dependency type="mutation">
+        <name>features/scheduling/scheduling.graphql</name>
+        <status>to-be-modified</status>
+        <description>GraphQL mutation file for bookAppointment - needs email status in response</description>
+      </dependency>
+
+      <dependency type="types">
+        <name>types/graphql.ts</name>
+        <status>to-be-generated</status>
+        <description>Auto-generated types after GraphQL schema update - will include email status</description>
+      </dependency>
+
+      <dependency type="utility">
+        <name>lib/utils/phi-guard.ts</name>
+        <status>existing</status>
+        <description>PHI protection utility for safe logging</description>
+      </dependency>
+
+      <dependency type="hook">
+        <name>hooks/useOnboardingSession.ts</name>
+        <status>existing</status>
+        <description>Session hook that provides parent email from session data</description>
+      </dependency>
+    </frontend-dependencies>
+
+    <backend-dependencies>
+      <dependency type="mutation">
+        <name>bookAppointment</name>
+        <status>to-be-updated</status>
+        <description>Backend mutation must return email confirmation status in response</description>
+        <expected-fields>
+          - emailSent: Boolean
+          - emailStatus: String (e.g., "sent", "pending", "failed")
+          - emailError: String (optional error message)
+        </expected-fields>
+      </dependency>
+
+      <dependency type="email-service">
+        <name>Email Delivery Service</name>
+        <status>backend-responsibility</status>
+        <description>Backend service for sending confirmation emails (SendGrid, Postmark, etc.)</description>
+      </dependency>
+    </backend-dependencies>
+  </dependencies>
+
+  <development-constraints>
+    <constraint type="architecture">
+      <name>PHI Protection</name>
+      <description>
+        No PHI in frontend state, logs, or URLs. Email address display is acceptable
+        as contact information already collected. Use phi-guard.ts for any logging.
+      </description>
+    </constraint>
+
+    <constraint type="architecture">
+      <name>Backend Responsibility Boundary</name>
+      <description>
+        Email sending, template rendering, .ics file generation, and delivery tracking
+        are all backend responsibilities. Frontend only displays status and handles UI states.
+      </description>
+    </constraint>
+
+    <constraint type="ux">
+      <name>Non-Blocking Failure</name>
+      <description>
+        Email failure must not block booking confirmation. User should always see
+        booking success even if email fails. Provide clear path to support.
+      </description>
+    </constraint>
+
+    <constraint type="styling">
+      <name>Daybreak Theme Colors</name>
+      <description>
+        - Success message: #10B981 (success green)
+        - Error message: #E85D5D (error red)
+        - Icons: Daybreak teal (#2A9D8F) or neutral
+        - Maintain warm, supportive tone even in error states
+      </description>
+    </constraint>
+
+    <constraint type="accessibility">
+      <name>WCAG 2.1 Level AA</name>
+      <description>
+        - Email confirmation message must have appropriate ARIA labels
+        - Success/failure states announced to screen readers
+        - Support contact link keyboard accessible
+        - Color contrast ratios maintained (4.5:1 for text)
+      </description>
+    </constraint>
+  </development-constraints>
+
+  <interface-signatures>
+    <interface name="BookAppointmentResponse">
+      <description>Expected GraphQL mutation response type (to be confirmed with backend)</description>
+      <signature>
+        type BookAppointmentPayload {
+          appointment: Appointment!
+          emailSent: Boolean!
+          emailStatus: String
+          emailError: String
+        }
+      </signature>
+    </interface>
+
+    <interface name="EmailConfirmationMessageProps">
+      <description>Props for email confirmation message component (if extracted)</description>
+      <signature>
+        interface EmailConfirmationMessageProps {
+          email: string;
+          emailStatus: "sent" | "pending" | "failed";
+          emailError?: string;
+          onContactSupport?: () =&gt; void;
+        }
+      </signature>
+    </interface>
+
+    <interface name="useScheduling Hook Return">
+      <description>Updated return type for scheduling hook</description>
+      <signature>
+        interface UseSchedulingReturn {
+          // ... existing fields
+          bookAppointment: (therapistId: string, dateTime: string) =&gt; Promise&lt;void&gt;;
+          emailStatus: "sent" | "pending" | "failed" | null;
+          emailError: string | null;
+        }
+      </signature>
+    </interface>
+  </interface-signatures>
+
+  <test-strategy>
+    <unit-tests framework="vitest">
+      <test-case>
+        <name>Email confirmation message renders with email address</name>
+        <description>Verify message displays correct email from session</description>
+        <mock-data>
+          - Session with parent.email = "parent@example.com"
+          - emailStatus = "sent"
+        </mock-data>
+        <assertions>
+          - Message contains "Confirmation email sent to parent@example.com"
+          - Email icon is visible
+        </assertions>
+      </test-case>
+
+      <test-case>
+        <name>Email pending state displays support contact</name>
+        <description>Verify pending/failure message shows support info</description>
+        <mock-data>
+          - emailStatus = "pending" or "failed"
+        </mock-data>
+        <assertions>
+          - Message contains "Email pending" or similar
+          - Support contact information visible
+          - Booking confirmation still shows success
+        </assertions>
+      </test-case>
+
+      <test-case>
+        <name>Booking success shown even with email failure</name>
+        <description>Ensure email failure doesn't block booking confirmation</description>
+        <mock-data>
+          - Successful booking mutation response
+          - emailStatus = "failed"
+        </mock-data>
+        <assertions>
+          - Booking success message displays
+          - Appointment details shown
+          - Email failure shown as secondary message
+        </assertions>
+      </test-case>
+
+      <test-case>
+        <name>No PHI in console logs</name>
+        <description>Verify PHI protection in error logging</description>
+        <mock-data>
+          - Email operation with error
+        </mock-data>
+        <assertions>
+          - No email addresses in console.log
+          - No appointment details in logs
+          - Only safe identifiers logged (sessionId, status)
+        </assertions>
+      </test-case>
+    </unit-tests>
+
+    <integration-tests framework="playwright">
+      <test-case>
+        <name>Complete booking flow shows email confirmation</name>
+        <description>E2E test from booking to email confirmation message</description>
+        <steps>
+          1. Complete assessment and demographics
+          2. Select therapist and time slot
+          3. Confirm booking
+          4. Verify email confirmation message appears
+        </steps>
+        <assertions>
+          - "Confirmation email sent to [email]" visible
+          - No blocking errors
+          - User can proceed
+        </assertions>
+      </test-case>
+
+      <test-case>
+        <name>Booking succeeds with email service failure</name>
+        <description>Verify graceful degradation when email fails</description>
+        <mock-backend>
+          - bookAppointment returns emailStatus: "failed"
+        </mock-backend>
+        <assertions>
+          - Booking confirmation shows success
+          - Email failure message non-alarming
+          - Support contact visible
+        </assertions>
+      </test-case>
+    </integration-tests>
+
+    <accessibility-tests>
+      <test-case>
+        <name>Email confirmation announced to screen reader</name>
+        <tool>VoiceOver / NVDA</tool>
+        <assertions>
+          - Success state announced appropriately
+          - Email address read correctly
+          - Support contact accessible via keyboard
+        </assertions>
+      </test-case>
+
+      <test-case>
+        <name>Color contrast compliance</name>
+        <tool>Lighthouse / axe DevTools</tool>
+        <assertions>
+          - Success message meets 4.5:1 contrast
+          - Error message meets 4.5:1 contrast
+          - No contrast failures
+        </assertions>
+      </test-case>
+    </accessibility-tests>
+  </test-strategy>
+
+  <implementation-notes>
+    <note priority="high">
+      <title>Backend Coordination Required</title>
+      <content>
+        Before implementation, confirm with backend team:
+        1. bookAppointment mutation response includes emailSent/emailStatus fields
+        2. Email service integration is complete or stubbed
+        3. .ics calendar file generation is handled server-side
+        4. Email template includes all required elements (join link, reschedule, etc.)
+      </content>
+    </note>
+
+    <note priority="high">
+      <title>GraphQL Schema Update</title>
+      <content>
+        After backend updates schema, run `pnpm codegen` to regenerate types.
+        Verify BookAppointmentPayload includes email status fields.
+        Update features/scheduling/scheduling.graphql to request these fields.
+      </content>
+    </note>
+
+    <note priority="medium">
+      <title>Component Structure Decision</title>
+      <content>
+        Decide whether to:
+        1. Add email confirmation message directly to Confirmation.tsx component, OR
+        2. Extract to separate reusable EmailConfirmationMessage.tsx component
+
+        Recommendation: Start with inline in Confirmation.tsx. Extract only if reused elsewhere.
+      </content>
+    </note>
+
+    <note priority="medium">
+      <title>Email Status State Management</title>
+      <content>
+        Email status should be:
+        1. Extracted from bookAppointment mutation response
+        2. Stored in local component state (not global state)
+        3. Not persisted to session (ephemeral confirmation state)
+        4. Cleared when navigating away from confirmation screen
+      </content>
+    </note>
+
+    <note priority="low">
+      <title>Retry Mechanism Consideration</title>
+      <content>
+        If backend provides email retry API endpoint:
+        - Add "Resend email" button on failure state
+        - Implement retry with loading state
+        - Show success/failure toast after retry
+
+        Otherwise, direct user to support contact.
+      </content>
+    </note>
+
+    <note priority="low">
+      <title>Analytics Tracking</title>
+      <content>
+        Consider tracking (without PHI):
+        - Email sent successfully count
+        - Email failed count
+        - Email pending count
+        - Support contact clicks from email failure
+
+        Use Vercel Analytics or similar (no PHI, anonymized).
+      </content>
+    </note>
+  </implementation-notes>
+
+  <definition-of-done>
+    <checklist>
+      <item>Email confirmation message displays on booking success with user's email</item>
+      <item>Email failure state shows supportive message with support contact</item>
+      <item>Booking confirmation always shows success, even if email fails</item>
+      <item>GraphQL mutation updated to include email status in response</item>
+      <item>TypeScript types generated and used correctly</item>
+      <item>No PHI in console logs or error messages</item>
+      <item>Component has proper JSDoc documentation</item>
+      <item>Accessibility: ARIA labels, screen reader testing passed</item>
+      <item>Unit tests: email status display logic tested</item>
+      <item>Unit tests: success/failure states tested with mocks</item>
+      <item>E2E test: complete booking flow with email confirmation verified</item>
+      <item>Color contrast meets WCAG AA (4.5:1)</item>
+      <item>Mobile responsive design verified</item>
+      <item>Backend coordination documented in dev notes</item>
+      <item>Story file updated with completion notes and file list</item>
+    </checklist>
+  </definition-of-done>
+</story-context>

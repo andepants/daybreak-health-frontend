@@ -1,0 +1,19 @@
+# SessionUpdated Subscription
+# Subscribe to real-time updates for a specific session
+# Useful for multi-tab sync and progress updates
+
+subscription SessionUpdated($sessionId: ID!) {
+  sessionUpdated(sessionId: $sessionId) {
+    id
+    status
+    progress {
+      percentage
+      currentPhase
+      completedPhases
+      nextPhase
+      estimatedMinutesRemaining
+    }
+    expiresAt
+    updatedAt
+  }
+}

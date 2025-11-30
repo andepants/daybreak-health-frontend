@@ -1,0 +1,14 @@
+# AbandonSession Mutation
+# Abandons an onboarding session explicitly
+# Session data is retained per data retention policy
+# Idempotent: abandoning already abandoned session succeeds
+
+mutation AbandonSession($sessionId: ID!) {
+  abandonSession(sessionId: $sessionId) {
+    session {
+      id
+      status
+    }
+    success
+  }
+}

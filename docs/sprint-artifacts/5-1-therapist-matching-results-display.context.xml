@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context>
+  <metadata>
+    <story-id>5-1-therapist-matching-results-display</story-id>
+    <story-title>Therapist Matching Results Display</story-title>
+    <epic>Epic 5: Therapist Matching &amp; Booking</epic>
+    <generated-date>2025-11-29</generated-date>
+    <workflow>story-context</workflow>
+  </metadata>
+
+  <story-overview>
+    <user-story>
+      As a parent, I want to see therapists matched for my child with clear explanations,
+      so that I understand why they're recommended and can choose confidently.
+    </user-story>
+    <value-proposition>
+      Parents gain confidence in selecting a therapist by understanding the matching rationale,
+      reducing decision paralysis and building trust in the recommendation algorithm.
+    </value-proposition>
+    <functional-requirements>
+      <fr-ref id="FR-011">System shall suggest therapists based on assessment results, child's needs, and availability</fr-ref>
+    </functional-requirements>
+  </story-overview>
+
+  <acceptance-criteria>
+    <criterion id="AC-1">
+      <title>Loading State</title>
+      <description>
+        GIVEN I complete insurance submission
+        WHEN navigating to /onboarding/[sessionId]/matching
+        THEN I see "Finding the best matches for [child name]..." with animated progress indicator
+        AND loading state typically takes 1-3 seconds
+      </description>
+    </criterion>
+    <criterion id="AC-2">
+      <title>Results Display</title>
+      <description>
+        GIVEN matching is complete
+        WHEN results are displayed
+        THEN I see 2-3 matched therapists shown as cards
+        AND cards are ordered by match quality (best first)
+        AND "Best Match" badge appears on top recommendation
+      </description>
+    </criterion>
+    <criterion id="AC-3">
+      <title>Therapist Card Component</title>
+      <description>
+        GIVEN each therapist card (features/matching/TherapistCard.tsx)
+        WHEN viewing the card
+        THEN it displays:
+        - Professional photo (80x80, rounded)
+        - Name and credentials (e.g., "Dr. Sarah Chen, LMFT")
+        - Specialty tags (e.g., "Anxiety", "Teen Issues")
+        - Match reasons (e.g., "Specializes in concerns like yours")
+        - Availability preview ("Available this week")
+        - "Book Now" button (primary)
+        - "View Profile" link (secondary)
+      </description>
+    </criterion>
+    <criterion id="AC-4">
+      <title>Match Transparency</title>
+      <description>
+        GIVEN each card
+        WHEN reviewing match information
+        THEN I see 2-3 specific match reasons explaining why this therapist was selected
+        AND "Why these therapists?" expandable section explains matching criteria
+        AND transparency meets pre-mortem requirement for showing reasoning
+      </description>
+    </criterion>
+    <criterion id="AC-5">
+      <title>Alternative Options</title>
+      <description>
+        GIVEN I am viewing matched therapists
+        WHEN none feel right
+        THEN I see "None of these feel right?" link
+        AND clicking offers to see more therapists or contact support
+      </description>
+    </criterion>
+    <criterion id="AC-6">
+      <title>Responsive Design</title>
+      <description>
+        GIVEN any device size
+        WHEN viewing the matching results page
+        THEN therapist cards display optimally:
+        - Mobile: stacked single column, full width
+        - Desktop: centered, max-width 640px
+        AND all touch targets are minimum 44x44px (WCAG)
+      </description>
+    </criterion>
+    <criterion id="AC-7">
+      <title>Performance</title>
+      <description>
+        GIVEN therapist photos are displayed
+        WHEN page loads
+        THEN images are optimized via next/image
+        AND page meets performance budget (&lt;1.5s LCP)
+      </description>
+    </criterion>
+  </acceptance-criteria>
+
+  <documentation-artifacts>
+    <architecture-reference>
+      <source>docs/architecture.md</source>
+      <excerpt section="Project Structure">
+        <![CDATA[
+app/onboarding/[sessionId]/matching/
+  └── page.tsx          # Therapist results (FR-011)
+
+features/matching/
+  ├── TherapistCard.tsx         # Matched therapist display
+  ├── MatchRationale.tsx        # "Matched because..." display
+  ├── useMatching.ts            # Matching query
+  └── matching.graphql
+        ]]>
+      </excerpt>
+      <excerpt section="Performance Budgets">
+        <![CDATA[
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| LCP | <1.5s | Core Web Vitals |
+| Bundle size (initial) | <150KB gzipped | Bundle analyzer |
+
+# Image optimization: next/image with proper sizing
+<Image
+  src="/images/therapist.jpg"
+  alt="Therapist photo"
+  width={80}
+  height={80}
+  className="rounded-full"
+/>
+        ]]>
+      </excerpt>
+      <excerpt section="Pre-mortem Risk Mitigations">
+        <![CDATA[
+| Risk | Preventive Measure | Priority | Implementation |
+|------|-------------------|----------|----------------|
+| Black box matching | Show "matched because..." with 3 reasons | MVP | Matching rationale in API response |
+        ]]>
+      </excerpt>
+    </architecture-reference>
+
+    <ux-design-reference>
+      <source>docs/ux-design-specification.md</source>
+      <excerpt section="3. Visual Foundation - Color System">
+        <![CDATA[
+| Color | Hex | Usage |
+|-------|-----|-------|
+| Daybreak Teal | #2A9D8F | Primary actions, headings, links |
+| Warm Orange | #E9A23B | Secondary CTAs, accents, warmth |
+| Deep Text | #1A3C34 | Body text, headings |
+
+# Semantic Colors
+| Purpose | Hex | Usage |
+|---------|-----|-------|
+| Success | #10B981 | Confirmation, completion states |
+        ]]>
+      </excerpt>
+      <excerpt section="3.2 Typography System">
+        <![CDATA[
+**Headline Font:** Fraunces (Variable Serif)
+**Body Font:** Inter (Sans-serif)
+
+| Element | Size | Weight | Font |
+|---------|------|--------|------|
+| Card Title | 1.125rem (18px) | 600 | Inter |
+| Body | 1rem (16px) | 400 | Inter |
+| Small | 0.875rem (14px) | 400 | Inter |
+        ]]>
+      </excerpt>
+      <excerpt section="3.4 Border Radius">
+        <![CDATA[
+| Token | Value | Usage |
+|-------|-------|-------|
+| lg | 16px | Cards, modals |
+| full | 9999px | Pills, avatars, circular buttons |
+        ]]>
+      </excerpt>
+      <excerpt section="6.2 Custom Components - Therapist Match Card">
+        <![CDATA[
+**Purpose:** Display matched therapist with booking CTA
+
+**Anatomy:**
+- Photo/avatar
+- Name, credentials
+- Specialty tags
+- Match reason badge
+- Availability preview
+- Action buttons (Book Now, View Profile)
+
+**Variants:**
+- Best Match (highlighted border)
+- Standard Match
+        ]]>
+      </excerpt>
+      <excerpt section="7.1 Consistency Rules - Button Hierarchy">
+        <![CDATA[
+| Level | Style | Usage |
+|-------|-------|-------|
+| Primary | Solid teal, pill shape | Main actions (Continue, Book Now) |
+| Tertiary | Outline teal | Secondary actions (Learn More) |
+        ]]>
+      </excerpt>
+    </ux-design-reference>
+
+    <epic-context>
+      <source>docs/epics.md</source>
+      <excerpt section="Epic 5: Therapist Matching &amp; Booking">
+        <![CDATA[
+**Goal:** Show matched therapists with transparent reasoning and enable appointment booking with confirmation.
+
+**User Value:** Parents can understand why therapists were matched, choose with confidence, and book immediately with clear next steps.
+
+**FRs Covered:** FR-011, FR-012, FR-013, FR-015
+        ]]>
+      </excerpt>
+    </epic-context>
+  </documentation-artifacts>
+
+  <code-artifacts>
+    <existing-pattern name="Component Structure Pattern">
+      <source>features/assessment/ChatBubble.tsx</source>
+      <purpose>Reference for component documentation and structure</purpose>
+      <excerpt>
+        <![CDATA[
+/**
+ * ChatBubble component for displaying messages
+ *
+ * Renders individual message bubbles with sender-specific styling.
+ * Supports AI, user, and system message variants with proper accessibility.
+ * Optimized for mobile-first experience with responsive layout.
+ */
+"use client";
+
+import * as React from "react";
+import { cn } from "@/lib/utils";
+
+export interface ChatBubbleProps {
+  message: Message;
+  variant?: "ai" | "user" | "system";
+  className?: string;
+}
+
+export const ChatBubble = React.memo(function ChatBubble({
+  message,
+  variant = "ai",
+  className,
+}: ChatBubbleProps) {
+  // Component implementation
+});
+
+ChatBubble.displayName = "ChatBubble";
+        ]]>
+      </excerpt>
+      <key-patterns>
+        - Use "use client" directive for interactive components
+        - Export interfaces for props
+        - Use React.memo for performance
+        - Set displayName for debugging
+        - Comprehensive JSDoc block comments
+        - cn() utility for conditional classes
+      </key-patterns>
+    </existing-pattern>
+
+    <existing-pattern name="Quick Reply Chips Pattern">
+      <source>features/assessment/QuickReplyChips.tsx</source>
+      <purpose>Reference for chip/tag UI pattern (similar to specialty tags)</purpose>
+      <excerpt>
+        <![CDATA[
+// Pill-shaped buttons with rounded-full (9999px)
+// Teal outline (#2A9D8F) in default state
+// Minimum 44x44px touch targets (WCAG 2.1 Level AAA)
+// Horizontal scrollable with snap points
+
+<Button
+  variant="outline"
+  className={cn(
+    "rounded-full px-6 min-h-[44px]",
+    "border-2 border-daybreak-teal text-daybreak-teal",
+    "hover:bg-daybreak-teal/10",
+    "transition-all duration-200"
+  )}
+>
+  {option.label}
+</Button>
+        ]]>
+      </excerpt>
+      <key-patterns>
+        - Use shadcn/ui Button with variant="outline"
+        - rounded-full for pill shape
+        - min-h-[44px] for accessibility
+        - Daybreak teal colors for brand consistency
+      </key-patterns>
+    </existing-pattern>
+
+    <existing-pattern name="Form Component Pattern">
+      <source>features/demographics/ParentInfoForm.tsx</source>
+      <purpose>Reference for layout, validation, and accessibility patterns</purpose>
+      <excerpt>
+        <![CDATA[
+/**
+ * Visual specs:
+ * - Single-column layout, max-width 640px
+ * - Labels above inputs with required asterisk indicator
+ * - Error messages in red (#E85D5D) below fields
+ * - Green checkmark for valid fields
+ * - Primary teal Continue button
+ * - Mobile-first responsive design
+ */
+
+<form className="w-full max-w-[640px] mx-auto space-y-6">
+  <div className="space-y-2">
+    <Label htmlFor="field" className="flex items-center gap-1">
+      Field Label <span className="text-destructive">*</span>
+    </Label>
+    <Input
+      id="field"
+      aria-required="true"
+      aria-invalid={!!errors.field}
+      aria-describedby={errors.field ? "field-error" : undefined}
+    />
+    {errors.field && (
+      <p id="field-error" className="text-sm" style={{ color: ERROR_COLOR }} role="alert">
+        {errors.field.message}
+      </p>
+    )}
+  </div>
+</form>
+        ]]>
+      </excerpt>
+      <key-patterns>
+        - max-width 640px for centered content
+        - space-y-6 for section spacing
+        - space-y-2 for field internal spacing
+        - Proper aria attributes for accessibility
+        - Error messages with role="alert"
+        - Daybreak color tokens
+      </key-patterns>
+    </existing-pattern>
+
+    <existing-pattern name="GraphQL Query Pattern">
+      <source>graphql/queries/GetOnboardingSession.graphql</source>
+      <purpose>Reference for GraphQL query structure</purpose>
+      <excerpt>
+        <![CDATA[
+# GetSession Query
+# Fetches the current state of an onboarding session by ID
+# Requires valid JWT token - user can only access their own session
+
+query GetSession($id: ID!) {
+  session(id: $id) {
+    id
+    status
+    progress
+    parent {
+      id
+      firstName
+      lastName
+    }
+    child {
+      id
+      firstName
+    }
+  }
+}
+        ]]>
+      </excerpt>
+      <key-patterns>
+        - Comment describing purpose and auth requirements
+        - Operation name matches filename
+        - Query variables typed with GraphQL schema types
+        - Request only needed fields (no over-fetching)
+      </key-patterns>
+    </existing-pattern>
+
+    <existing-pattern name="Next.js Image Optimization">
+      <source>docs/architecture.md - Performance Considerations</source>
+      <purpose>Pattern for optimizing therapist photos</purpose>
+      <excerpt>
+        <![CDATA[
+// Image optimization: next/image with proper sizing
+<Image
+  src="/images/therapist.jpg"
+  alt="Therapist photo"
+  width={80}
+  height={80}
+  className="rounded-full"
+/>
+        ]]>
+      </excerpt>
+      <key-patterns>
+        - Import Image from next/image
+        - Specify exact width/height for optimization
+        - Descriptive alt text for accessibility
+        - Use className for styling (rounded-full for circular)
+      </key-patterns>
+    </existing-pattern>
+  </code-artifacts>
+
+  <dependencies>
+    <internal-dependencies>
+      <dependency type="route">app/onboarding/[sessionId]/insurance/page.tsx</dependency>
+      <dependency type="route">app/onboarding/[sessionId]/schedule/page.tsx</dependency>
+      <dependency type="layout">app/onboarding/[sessionId]/layout.tsx</dependency>
+      <dependency type="component">components/ui/button.tsx</dependency>
+      <dependency type="component">components/ui/card.tsx</dependency>
+      <dependency type="component">components/ui/badge.tsx</dependency>
+      <dependency type="component">components/ui/skeleton.tsx</dependency>
+      <dependency type="component">components/ui/accordion.tsx</dependency>
+      <dependency type="utility">lib/utils.ts (cn function)</dependency>
+    </internal-dependencies>
+    <external-dependencies>
+      <dependency>next/image - Image optimization</dependency>
+      <dependency>lucide-react - Icons for UI</dependency>
+      <dependency>@apollo/client - GraphQL queries</dependency>
+    </external-dependencies>
+    <graphql-dependencies>
+      <operation name="MatchTherapists" type="query">
+        Query therapist matching results for session
+      </operation>
+    </graphql-dependencies>
+  </dependencies>
+
+  <development-constraints>
+    <constraint type="technical">
+      <title>GraphQL Backend Not Yet Implemented</title>
+      <description>
+        Matching API endpoint does not exist yet. Implementation should use mock data
+        or stub query hooks until backend is ready. Follow pattern from useAssessmentChat.ts
+        for creating stub mutation hooks.
+      </description>
+      <workaround>
+        Create stub query hook that returns mock therapist data. Structure data to match
+        expected GraphQL schema. Add TODO comments for backend integration.
+      </workaround>
+    </constraint>
+    <constraint type="design">
+      <title>Mobile-First Required</title>
+      <description>
+        All components must be designed mobile-first per Architecture fundamental truth.
+        Test at 320px mobile width before desktop.
+      </description>
+    </constraint>
+    <constraint type="performance">
+      <title>Performance Budget</title>
+      <description>
+        Page must meet LCP &lt; 1.5s target. Images must use next/image optimization.
+      </description>
+    </constraint>
+    <constraint type="accessibility">
+      <title>WCAG 2.1 Level AA Compliance</title>
+      <description>
+        - Touch targets minimum 44x44px
+        - Color contrast 4.5:1 for text
+        - Keyboard navigable
+        - Screen reader compatible with ARIA labels
+      </description>
+    </constraint>
+    <constraint type="security">
+      <title>PHI Protection</title>
+      <description>
+        No PHI in console.log. Therapist data is NOT PHI, but child name should be
+        handled carefully in logging.
+      </description>
+    </constraint>
+  </development-constraints>
+
+  <interface-signatures>
+    <component name="TherapistCard">
+      <file>features/matching/TherapistCard.tsx</file>
+      <props>
+        <![CDATA[
+interface TherapistCardProps {
+  therapist: {
+    id: string;
+    name: string;
+    credentials: string;
+    photo: string;
+    specialties: string[];
+    matchReasons: string[];
+    availability: string;
+  };
+  isBestMatch?: boolean;
+  onBookNow: (therapistId: string) => void;
+  onViewProfile: (therapistId: string) => void;
+  className?: string;
+}
+        ]]>
+      </props>
+    </component>
+
+    <component name="MatchRationale">
+      <file>features/matching/MatchRationale.tsx</file>
+      <props>
+        <![CDATA[
+interface MatchRationaleProps {
+  reasons: string[];
+  expandableContent?: string;
+  className?: string;
+}
+        ]]>
+      </props>
+    </component>
+
+    <hook name="useMatching">
+      <file>features/matching/useMatching.ts</file>
+      <signature>
+        <![CDATA[
+interface UseMatchingReturn {
+  therapists: TherapistMatch[];
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
+}
+
+function useMatching(sessionId: string): UseMatchingReturn
+        ]]>
+      </signature>
+    </hook>
+
+    <page-component name="MatchingPage">
+      <file>app/onboarding/[sessionId]/matching/page.tsx</file>
+      <signature>
+        <![CDATA[
+interface MatchingPageProps {
+  params: {
+    sessionId: string;
+  };
+}
+
+export default function MatchingPage({ params }: MatchingPageProps)
+        ]]>
+      </signature>
+    </page-component>
+
+    <graphql-operation name="MatchTherapists">
+      <file>features/matching/matching.graphql</file>
+      <schema>
+        <![CDATA[
+# TODO: This is the expected structure - update when backend implements
+query MatchTherapists($sessionId: ID!) {
+  matchTherapists(sessionId: $sessionId) {
+    id
+    name
+    credentials
+    photo
+    specialties
+    matchReasons
+    availability
+    matchScore
+  }
+}
+        ]]>
+      </schema>
+    </graphql-operation>
+  </interface-signatures>
+
+  <test-strategy>
+    <unit-tests framework="Vitest + React Testing Library">
+      <test-case>
+        <name>TherapistCard renders all required elements</name>
+        <file>features/matching/__tests__/TherapistCard.test.tsx</file>
+        <assertions>
+          - Photo displays with correct alt text
+          - Name and credentials render
+          - All specialty tags appear
+          - Match reasons display
+          - Book Now button is present
+          - View Profile link is present
+        </assertions>
+      </test-case>
+      <test-case>
+        <name>Best Match badge appears only on top card</name>
+        <assertions>
+          - Badge visible when isBestMatch=true
+          - Badge hidden when isBestMatch=false
+        </assertions>
+      </test-case>
+      <test-case>
+        <name>MatchRationale expandable section works</name>
+        <assertions>
+          - Section is collapsed by default
+          - Clicking expands content
+          - Clicking again collapses
+        </assertions>
+      </test-case>
+      <test-case>
+        <name>Navigation handlers called correctly</name>
+        <assertions>
+          - onBookNow called with therapistId on button click
+          - onViewProfile called with therapistId on link click
+        </assertions>
+      </test-case>
+    </unit-tests>
+    <accessibility-tests>
+      <test>Keyboard navigation through cards and buttons</test>
+      <test>WCAG AA color contrast for all text elements</test>
+      <test>Touch targets meet 44x44px minimum</test>
+      <test>Screen reader announcements for card count</test>
+      <test>ARIA labels on interactive elements</test>
+    </accessibility-tests>
+    <responsive-tests>
+      <test>Cards stack properly at 320px mobile width</test>
+      <test>Cards center at desktop width with max-width 640px</test>
+      <test>Images scale appropriately</test>
+      <test>All content readable at all breakpoints</test>
+    </responsive-tests>
+    <integration-tests>
+      <test>Loading state displays before results</test>
+      <test>Results transition smoothly from loading</test>
+      <test>Error state when matching fails</test>
+      <test>Empty state when no therapists matched</test>
+    </integration-tests>
+  </test-strategy>
+
+  <implementation-notes>
+    <note priority="high">
+      <title>First Epic 5 Story</title>
+      <content>
+        This is the first story in Epic 5. No previous Epic 5 patterns exist to reference.
+        Establish patterns for:
+        - Therapist data structure
+        - Card-based result displays
+        - Match transparency UI
+        These patterns will be used by subsequent Epic 5 stories (5.2-5.5).
+      </content>
+    </note>
+    <note priority="high">
+      <title>Mock Data Strategy</title>
+      <content>
+        Backend matching endpoint does not exist. Create realistic mock data with 2-3 therapists:
+        - Include diverse specialties (Anxiety, Depression, Teen Issues, Family Therapy)
+        - Vary credentials (LMFT, PsyD, PhD, LCSW)
+        - Different availability patterns
+        - Distinct match reasons for each therapist
+        Mock data should be easy to replace when backend is ready.
+      </content>
+    </note>
+    <note priority="medium">
+      <title>Shadcn/ui Components to Install</title>
+      <content>
+        Before implementation, ensure these shadcn/ui components are installed:
+        - Badge (for specialty tags and "Best Match")
+        - Accordion (for "Why these therapists?" expandable)
+        - Skeleton (for loading states)
+        Run: pnpm dlx shadcn@latest add badge accordion skeleton
+      </content>
+    </note>
+    <note priority="medium">
+      <title>Image Placeholder</title>
+      <content>
+        Use placeholder images for therapist photos during development.
+        Recommended: https://i.pravatar.cc/80 for 80x80 random avatars
+        Or create static placeholder in public/images/therapist-placeholder.jpg
+      </content>
+    </note>
+    <note priority="low">
+      <title>Animation Guidance</title>
+      <content>
+        Loading indicator should be warm and reassuring, not clinical.
+        Consider: Gentle fade-in animation for cards when results appear.
+        Use Tailwind animate-fade-in or custom animation matching ChatWindow patterns.
+      </content>
+    </note>
+  </implementation-notes>
+
+  <file-checklist>
+    <files-to-create>
+      <file>app/onboarding/[sessionId]/matching/page.tsx</file>
+      <file>features/matching/TherapistCard.tsx</file>
+      <file>features/matching/MatchRationale.tsx</file>
+      <file>features/matching/useMatching.ts</file>
+      <file>features/matching/matching.graphql</file>
+      <file>features/matching/types.ts</file>
+      <file>features/matching/index.ts</file>
+      <file>features/matching/__tests__/TherapistCard.test.tsx</file>
+      <file>features/matching/__tests__/MatchRationale.test.tsx</file>
+    </files-to-create>
+    <files-to-modify>
+      <file reason="Add navigation from insurance completion">
+        app/onboarding/[sessionId]/insurance/page.tsx
+      </file>
+    </files-to-modify>
+  </file-checklist>
+
+  <cross-references>
+    <story-reference id="5-2">Therapist Profile Detail View - Will use TherapistCard data structure</story-reference>
+    <story-reference id="5-3">Appointment Calendar and Time Selection - Receives therapistId from Book Now</story-reference>
+    <story-reference id="4-1">Manual Insurance Entry Form - Previous step in flow</story-reference>
+    <story-reference id="2-1">Chat Window - Reference for loading skeleton pattern</story-reference>
+    <story-reference id="3-1">Parent Info Form - Reference for responsive layout and accessibility</story-reference>
+  </cross-references>
+</story-context>

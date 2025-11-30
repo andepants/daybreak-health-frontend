@@ -1,0 +1,22 @@
+# SendMessage mutation for AI-guided assessment chat
+#
+# Sends a user message to the backend and receives an AI response.
+# Used by useAssessmentChat hook for conversational intake flow.
+
+mutation SendMessage($sessionId: ID!, $content: String!) {
+  sendMessage(sessionId: $sessionId, content: $content) {
+    userMessage {
+      id
+      role
+      content
+      createdAt
+    }
+    assistantMessage {
+      id
+      role
+      content
+      createdAt
+    }
+    errors
+  }
+}

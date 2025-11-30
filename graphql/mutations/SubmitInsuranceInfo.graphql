@@ -1,0 +1,20 @@
+# SubmitInsuranceInfo Mutation
+# Submits insurance information for verification
+# Links insurance to the current onboarding session
+
+mutation SubmitInsuranceInfo($input: SubmitInsuranceInfoInput!) {
+  submitInsuranceInfo(input: $input) {
+    session {
+      id
+      status
+      insurance {
+        id
+        payerName
+        subscriberName
+        memberId
+        groupNumber
+        verificationStatus
+      }
+    }
+  }
+}

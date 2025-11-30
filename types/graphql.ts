@@ -16,170 +16,177 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /**
+   * # GraphQL API Schema: Parent Onboarding AI
+   * # Version: 2.0
+   * # This schema defines the contract between the Next.js frontend and the Ruby on Rails backend.
+   * # Updated to match actual backend implementation.
+   */
+  DateTime: { input: string; output: string; }
+  JSON: { input: Record<string, unknown>; output: Record<string, unknown>; }
 };
 
-export type Appointment = {
-  __typename?: 'Appointment';
-  confirmationId: Scalars['String']['output'];
-  endTime: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
-  startTime: Scalars['String']['output'];
-  therapistName: Scalars['String']['output'];
-};
-
+/** Assessment responses and scoring */
 export type Assessment = {
   __typename?: 'Assessment';
-  conversationHistory: Array<ChatMessage>;
+  consentGiven: Scalars['Boolean']['output'];
+  createdAt: Scalars['DateTime']['output'];
   id: Scalars['ID']['output'];
-  isComplete: Maybe<Scalars['Boolean']['output']>;
-  isFitForDaybreak: Maybe<Scalars['Boolean']['output']>;
-  suggestedNextSteps: Maybe<Scalars['String']['output']>;
-  summary: Maybe<AssessmentSummary>;
+  responses: Scalars['JSON']['output'];
+  riskFlags: Array<Scalars['String']['output']>;
+  score: Maybe<Scalars['Int']['output']>;
+  summary: Maybe<Scalars['String']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
 };
 
-export type AssessmentSummary = {
-  __typename?: 'AssessmentSummary';
-  childName: Scalars['String']['output'];
-  generatedAt: Scalars['String']['output'];
-  keyConcerns: Array<Scalars['String']['output']>;
-  recommendedFocus: Maybe<Array<Scalars['String']['output']>>;
-};
+/** Therapist availability status */
+export type AvailabilityStatus =
+  | 'AVAILABLE_NEXT_WEEK'
+  | 'AVAILABLE_THIS_WEEK'
+  | 'LIMITED_AVAILABILITY'
+  | 'WAITLIST';
 
-export type AssessmentSummaryPayload = {
-  __typename?: 'AssessmentSummaryPayload';
-  summary: AssessmentSummary;
-};
-
-export type ChatMessage = {
-  __typename?: 'ChatMessage';
-  content: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
-  sender: MessageSender;
-  timestamp: Scalars['String']['output'];
-};
-
+/** Child information */
 export type Child = {
   __typename?: 'Child';
-  concerns: Maybe<Array<Scalars['String']['output']>>;
-  createdAt: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
   dateOfBirth: Scalars['String']['output'];
   firstName: Scalars['String']['output'];
+  gender: Scalars['String']['output'];
+  grade: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
-  pronouns: Maybe<Scalars['String']['output']>;
+  lastName: Scalars['String']['output'];
+  schoolName: Maybe<Scalars['String']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
 };
 
-export type ChildInfo = {
-  __typename?: 'ChildInfo';
-  concerns: Maybe<Array<Scalars['String']['output']>>;
-  dateOfBirth: Maybe<Scalars['String']['output']>;
-  firstName: Maybe<Scalars['String']['output']>;
-  lastName: Maybe<Scalars['String']['output']>;
-  pronouns: Maybe<Scalars['String']['output']>;
-};
-
-export type ConfirmSummaryPayload = {
-  __typename?: 'ConfirmSummaryPayload';
-  session: OnboardingSession;
-};
-
-export type CostEstimate = {
-  __typename?: 'CostEstimate';
-  copayPerSession: Maybe<Scalars['Float']['output']>;
-  deductibleRemaining: Maybe<Scalars['Float']['output']>;
-  notes: Maybe<Scalars['String']['output']>;
-};
-
+/** Response from createSession mutation */
 export type CreateSessionPayload = {
   __typename?: 'CreateSessionPayload';
   refreshToken: Maybe<Scalars['String']['output']>;
-  session: SessionInfo;
+  session: OnboardingSession;
   token: Scalars['String']['output'];
 };
 
-export type Demographics = {
-  __typename?: 'Demographics';
-  child: Maybe<ChildInfo>;
-  isComplete: Scalars['Boolean']['output'];
-  parent: Maybe<ParentInfo>;
-};
-
-export type InsuranceInformation = {
-  __typename?: 'InsuranceInformation';
-  groupId: Maybe<Scalars['String']['output']>;
+/** Insurance information */
+export type Insurance = {
+  __typename?: 'Insurance';
+  createdAt: Scalars['DateTime']['output'];
+  groupNumber: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
-  imageFileUrl: Maybe<Scalars['String']['output']>;
   memberId: Scalars['String']['output'];
-  planName: Maybe<Scalars['String']['output']>;
-  provider: Scalars['String']['output'];
+  payerName: Scalars['String']['output'];
+  policyNumber: Maybe<Scalars['String']['output']>;
+  subscriberName: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  verificationResult: Maybe<Scalars['JSON']['output']>;
+  verificationStatus: VerificationStatus;
 };
 
-export type MessageSender =
-  | 'AI'
-  | 'SUPPORT'
+/** Match reason explaining why a therapist was recommended */
+export type MatchReason = {
+  __typename?: 'MatchReason';
+  /** Optional icon identifier for UI display */
+  icon: Maybe<Scalars['String']['output']>;
+  /** Reason identifier (e.g., 'specialty_match', 'availability', 'experience') */
+  id: Scalars['String']['output'];
+  /** Human-readable reason text */
+  text: Scalars['String']['output'];
+};
+
+/** Chat message in assessment conversation */
+export type Message = {
+  __typename?: 'Message';
+  content: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  metadata: Maybe<Scalars['JSON']['output']>;
+  role: MessageRole;
+};
+
+/** Message sender role */
+export type MessageRole =
+  | 'ASSISTANT'
+  | 'SYSTEM'
   | 'USER';
 
 export type Mutation = {
   __typename?: 'Mutation';
-  completeAssessment: Maybe<AssessmentSummaryPayload>;
-  confirmAssessmentSummary: Maybe<ConfirmSummaryPayload>;
+  /**
+   * Abandon an onboarding session explicitly.
+   * Session data is retained per data retention policy.
+   * Idempotent: abandoning already abandoned session succeeds.
+   */
+  abandonSession: Maybe<SessionAbandonmentPayload>;
+  /**
+   * Create a new anonymous onboarding session.
+   * Returns session with JWT token and optional refresh token.
+   */
   createSession: Maybe<CreateSessionPayload>;
-  resetAssessment: Maybe<ResetAssessmentPayload>;
-  scheduleAppointment: Maybe<Appointment>;
-  sendSessionReminder: Maybe<SendSessionReminderPayload>;
-  sendSupportChatMessage: Maybe<ChatMessage>;
-  startOnboarding: Maybe<OnboardingSession>;
-  submitAssessmentMessage: Maybe<Assessment>;
-  submitInsuranceImage: Maybe<InsuranceInformation>;
-  submitInsuranceInfo: Maybe<OnboardingSession>;
-  updateDemographics: Maybe<OnboardingSession>;
-  updateParentInfo: Maybe<UpdateParentInfoPayload>;
+  /**
+   * Refresh access token using a valid refresh token.
+   * Implements token rotation for security.
+   */
+  refreshToken: Maybe<RefreshTokenPayload>;
+  /**
+   * Request session recovery via email magic link.
+   * Requires parent email to be collected first.
+   */
+  requestSessionRecovery: Maybe<RequestRecoveryPayload>;
+  /**
+   * Send a message in the AI-guided assessment chat.
+   * Returns both the user message and AI assistant response.
+   */
+  sendMessage: Maybe<SendMessagePayload>;
+  /**
+   * Mark session as self-pay (no insurance).
+   * Skips insurance verification step.
+   */
+  setSelfPay: Maybe<SetSelfPayPayload>;
+  /**
+   * Submit insurance information for verification.
+   * Links insurance to the current onboarding session.
+   */
+  submitInsuranceInfo: Maybe<SubmitInsuranceInfoPayload>;
+  /**
+   * Update session progress with deep merge.
+   * Extends session expiration by 1 hour.
+   * Auto-transitions from STARTED to IN_PROGRESS on first update.
+   */
+  updateSessionProgress: Maybe<UpdateSessionProgressPayload>;
 };
 
 
-export type MutationCompleteAssessmentArgs = {
+export type MutationAbandonSessionArgs = {
   sessionId: Scalars['ID']['input'];
 };
 
 
-export type MutationConfirmAssessmentSummaryArgs = {
-  confirmed: Scalars['Boolean']['input'];
+export type MutationCreateSessionArgs = {
+  deviceFingerprint?: InputMaybe<Scalars['String']['input']>;
+  referralSource?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationRefreshTokenArgs = {
+  deviceFingerprint?: InputMaybe<Scalars['String']['input']>;
+  refreshToken: Scalars['String']['input'];
+};
+
+
+export type MutationRequestSessionRecoveryArgs = {
   sessionId: Scalars['ID']['input'];
 };
 
 
-export type MutationResetAssessmentArgs = {
-  sessionId: Scalars['ID']['input'];
-};
-
-
-export type MutationScheduleAppointmentArgs = {
-  input: ScheduleAppointmentInput;
-};
-
-
-export type MutationSendSessionReminderArgs = {
-  input: SendSessionReminderInput;
-};
-
-
-export type MutationSendSupportChatMessageArgs = {
+export type MutationSendMessageArgs = {
   content: Scalars['String']['input'];
-  onboardingSessionId: Scalars['ID']['input'];
+  sessionId: Scalars['ID']['input'];
 };
 
 
-export type MutationStartOnboardingArgs = {
-  input: StartOnboardingInput;
-};
-
-
-export type MutationSubmitAssessmentMessageArgs = {
-  input: SubmitAssessmentMessageInput;
-};
-
-
-export type MutationSubmitInsuranceImageArgs = {
-  onboardingSessionId: Scalars['ID']['input'];
+export type MutationSetSelfPayArgs = {
+  sessionId: Scalars['ID']['input'];
 };
 
 
@@ -188,337 +195,429 @@ export type MutationSubmitInsuranceInfoArgs = {
 };
 
 
-export type MutationUpdateDemographicsArgs = {
-  input: UpdateDemographicsInput;
-};
-
-
-export type MutationUpdateParentInfoArgs = {
-  input: ParentInfoInput;
+export type MutationUpdateSessionProgressArgs = {
+  progress: Scalars['JSON']['input'];
   sessionId: Scalars['ID']['input'];
 };
 
-export type OnboardingSession = {
-  __typename?: 'OnboardingSession';
-  appointment: Maybe<Appointment>;
-  assessment: Maybe<Assessment>;
-  child: Child;
-  createdAt: Scalars['String']['output'];
+/** Relay Node interface for global object identification */
+export type Node = {
   id: Scalars['ID']['output'];
-  insuranceInfo: Maybe<InsuranceInformation>;
-  parent: User;
-  status: OnboardingStatus;
-  updatedAt: Scalars['String']['output'];
 };
 
 /**
- * # GraphQL API Schema: Parent Onboarding AI
- * # Version: 1.0
- * # This schema defines the contract between the Next.js frontend and the Ruby on Rails backend.
+ * Onboarding session - the main entity tracking a parent's intake process.
+ * ID is returned in CUID format with sess_ prefix (e.g., sess_abc123...).
  */
-export type OnboardingStatus =
-  | 'ASSESSMENT_COMPLETED'
-  | 'ASSESSMENT_STARTED'
-  | 'DEMOGRAPHICS_COMPLETED'
-  | 'INSURANCE_COMPLETED'
-  | 'INSURANCE_PENDING'
-  | 'ONBOARDING_COMPLETE'
-  | 'SCHEDULING_COMPLETED'
-  | 'SCHEDULING_PENDING';
-
-export type ParentInfo = {
-  __typename?: 'ParentInfo';
-  email: Scalars['String']['output'];
-  firstName: Scalars['String']['output'];
-  lastName: Scalars['String']['output'];
-  phone: Scalars['String']['output'];
-  relationshipToChild: RelationshipType;
+export type OnboardingSession = {
+  __typename?: 'OnboardingSession';
+  assessment: Maybe<Assessment>;
+  child: Maybe<Child>;
+  createdAt: Scalars['DateTime']['output'];
+  expiresAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  insurance: Maybe<Insurance>;
+  messages: Maybe<Array<Message>>;
+  parent: Maybe<Parent>;
+  /** Calculated progress indicators */
+  progress: Progress;
+  /** Raw session progress data */
+  progressData: Scalars['JSON']['output'];
+  referralSource: Maybe<Scalars['String']['output']>;
+  status: SessionStatus;
+  updatedAt: Scalars['DateTime']['output'];
 };
 
-export type ParentInfoInput = {
-  email: Scalars['String']['input'];
-  firstName: Scalars['String']['input'];
-  lastName: Scalars['String']['input'];
-  phone: Scalars['String']['input'];
-  relationshipToChild: RelationshipType;
+/** Parent/guardian information */
+export type Parent = {
+  __typename?: 'Parent';
+  createdAt: Scalars['DateTime']['output'];
+  email: Scalars['String']['output'];
+  firstName: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  isGuardian: Scalars['Boolean']['output'];
+  lastName: Scalars['String']['output'];
+  phone: Scalars['String']['output'];
+  relationship: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+/** Progress indicators for onboarding session */
+export type Progress = {
+  __typename?: 'Progress';
+  /** Array of completed phase names */
+  completedPhases: Array<Scalars['String']['output']>;
+  /** Current phase in the onboarding flow */
+  currentPhase: Scalars['String']['output'];
+  /** Estimated minutes to complete remaining phases (adaptive) */
+  estimatedMinutesRemaining: Scalars['Int']['output'];
+  /** Next phase in the sequence (null if at end) */
+  nextPhase: Maybe<Scalars['String']['output']>;
+  /** Progress percentage (0-100) based on completed required fields */
+  percentage: Scalars['Int']['output'];
 };
 
 export type Query = {
   __typename?: 'Query';
-  getAvailableSlots: Maybe<Array<Appointment>>;
-  getCostEstimate: Maybe<CostEstimate>;
-  getOnboardingSession: Maybe<OnboardingSession>;
-  me: Maybe<User>;
+  /**
+   * Get matched therapists for a session.
+   * Requires valid JWT token. Returns 2-3 best-matched therapists
+   * based on assessment results, child needs, and availability.
+   */
+  matchedTherapists: Maybe<TherapistMatchResults>;
+  /** Relay-style node lookup */
+  node: Maybe<Node>;
+  /** Relay-style batch node lookup */
+  nodes: Array<Maybe<Node>>;
+  /**
+   * Get session by ID.
+   * Requires valid JWT token. User can only access their own session.
+   */
+  session: Maybe<OnboardingSession>;
+  /**
+   * Recover session using magic link token.
+   * No authentication required (token is the credential).
+   * Returns session with new JWT tokens.
+   */
+  sessionByRecoveryToken: Maybe<SessionRecoveryPayload>;
 };
 
 
-export type QueryGetAvailableSlotsArgs = {
-  endDate?: InputMaybe<Scalars['String']['input']>;
-  startDate?: InputMaybe<Scalars['String']['input']>;
-  therapistId?: InputMaybe<Scalars['ID']['input']>;
+export type QueryMatchedTherapistsArgs = {
+  sessionId: Scalars['ID']['input'];
 };
 
 
-export type QueryGetCostEstimateArgs = {
-  onboardingSessionId: Scalars['ID']['input'];
-};
-
-
-export type QueryGetOnboardingSessionArgs = {
+export type QueryNodeArgs = {
   id: Scalars['ID']['input'];
 };
 
+
+export type QueryNodesArgs = {
+  ids: Array<Scalars['ID']['input']>;
+};
+
+
+export type QuerySessionArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QuerySessionByRecoveryTokenArgs = {
+  recoveryToken: Scalars['String']['input'];
+};
+
+/** Response from refreshToken mutation */
+export type RefreshTokenPayload = {
+  __typename?: 'RefreshTokenPayload';
+  error: Maybe<Scalars['String']['output']>;
+  expiresIn: Maybe<Scalars['Int']['output']>;
+  refreshToken: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
+  token: Maybe<Scalars['String']['output']>;
+  tokenType: Maybe<Scalars['String']['output']>;
+};
+
+/** Parent/guardian relationship to child */
 export type RelationshipType =
   | 'GRANDPARENT'
   | 'GUARDIAN'
   | 'OTHER'
   | 'PARENT';
 
-export type ResetAssessmentPayload = {
-  __typename?: 'ResetAssessmentPayload';
-  session: OnboardingSession;
-};
-
-export type ScheduleAppointmentInput = {
-  onboardingSessionId: Scalars['ID']['input'];
-  therapistId: Scalars['ID']['input'];
-  timeSlotId: Scalars['ID']['input'];
-};
-
-export type SendSessionReminderInput = {
-  email: Scalars['String']['input'];
-  sessionId: Scalars['ID']['input'];
-};
-
-export type SendSessionReminderPayload = {
-  __typename?: 'SendSessionReminderPayload';
-  message: Maybe<Scalars['String']['output']>;
+/** Response from requestSessionRecovery mutation */
+export type RequestRecoveryPayload = {
+  __typename?: 'RequestRecoveryPayload';
+  message: Scalars['String']['output'];
   success: Scalars['Boolean']['output'];
 };
 
+/** Response from sendMessage mutation */
+export type SendMessagePayload = {
+  __typename?: 'SendMessagePayload';
+  assistantMessage: Message;
+  errors: Maybe<Array<Scalars['String']['output']>>;
+  userMessage: Message;
+};
+
+/** Response from abandonSession mutation */
+export type SessionAbandonmentPayload = {
+  __typename?: 'SessionAbandonmentPayload';
+  session: OnboardingSession;
+  success: Scalars['Boolean']['output'];
+};
+
+/** Minimal session info returned from createSession (before full onboarding data exists) */
 export type SessionInfo = {
   __typename?: 'SessionInfo';
   id: Scalars['ID']['output'];
   status: Scalars['String']['output'];
 };
 
-export type StartOnboardingInput = {
-  childDateOfBirth: Scalars['String']['input'];
-  childFirstName: Scalars['String']['input'];
-  parentEmail: Scalars['String']['input'];
+/** Response from session recovery query */
+export type SessionRecoveryPayload = {
+  __typename?: 'SessionRecoveryPayload';
+  refreshToken: Scalars['String']['output'];
+  session: OnboardingSession;
+  token: Scalars['String']['output'];
 };
 
-export type SubmitAssessmentMessageInput = {
-  messageContent: Scalars['String']['input'];
-  onboardingSessionId: Scalars['ID']['input'];
+/** Session status enum matching backend OnboardingSession.status */
+export type SessionStatus =
+  | 'ABANDONED'
+  | 'ASSESSMENT_COMPLETE'
+  | 'EXPIRED'
+  | 'INSURANCE_PENDING'
+  | 'IN_PROGRESS'
+  | 'STARTED'
+  | 'SUBMITTED';
+
+/** Response from setSelfPay mutation */
+export type SetSelfPayPayload = {
+  __typename?: 'SetSelfPayPayload';
+  session: OnboardingSession;
 };
 
-export type SubmitInsuranceImageInput = {
-  onboardingSessionId: Scalars['ID']['input'];
-};
-
+/** Input for submitting insurance information */
 export type SubmitInsuranceInfoInput = {
-  groupId?: InputMaybe<Scalars['String']['input']>;
+  groupNumber?: InputMaybe<Scalars['String']['input']>;
   memberId: Scalars['String']['input'];
-  onboardingSessionId: Scalars['ID']['input'];
-  planName?: InputMaybe<Scalars['String']['input']>;
-  provider: Scalars['String']['input'];
+  payerName: Scalars['String']['input'];
+  relationshipToSubscriber: Scalars['String']['input'];
+  sessionId: Scalars['ID']['input'];
+  subscriberName: Scalars['String']['input'];
+};
+
+/** Response from submitInsuranceInfo mutation */
+export type SubmitInsuranceInfoPayload = {
+  __typename?: 'SubmitInsuranceInfoPayload';
+  session: OnboardingSession;
 };
 
 export type Subscription = {
   __typename?: 'Subscription';
-  supportChatMessages: Maybe<ChatMessage>;
+  /** Subscribe to updates for a specific session */
+  sessionUpdated: Maybe<OnboardingSession>;
 };
 
 
-export type SubscriptionSupportChatMessagesArgs = {
-  onboardingSessionId: Scalars['ID']['input'];
+export type SubscriptionSessionUpdatedArgs = {
+  sessionId: Scalars['ID']['input'];
 };
 
-export type UpdateDemographicsInput = {
-  childConcerns?: InputMaybe<Array<Scalars['String']['input']>>;
-  childPronouns?: InputMaybe<Scalars['String']['input']>;
-  onboardingSessionId: Scalars['ID']['input'];
-  parentFirstName?: InputMaybe<Scalars['String']['input']>;
-  parentLastName?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type UpdateParentInfoPayload = {
-  __typename?: 'UpdateParentInfoPayload';
-  demographics: Maybe<Demographics>;
+/** Therapist information for matching display */
+export type Therapist = {
+  __typename?: 'Therapist';
+  /** Availability status */
+  availabilityStatus: AvailabilityStatus;
+  /** Human-readable availability text (e.g., 'Available this week') */
+  availabilityText: Scalars['String']['output'];
+  /** Brief bio or description */
+  bio: Maybe<Scalars['String']['output']>;
+  /** Professional credentials (e.g., 'LMFT', 'PhD', 'LCSW') */
+  credentials: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  status: OnboardingStatus;
-  updatedAt: Scalars['String']['output'];
+  /** Whether this is the best match (top recommendation) */
+  isBestMatch: Scalars['Boolean']['output'];
+  /** Reasons why this therapist was matched */
+  matchReasons: Array<MatchReason>;
+  /** Match quality score (0-100, higher is better) */
+  matchScore: Scalars['Int']['output'];
+  /** Full name of the therapist */
+  name: Scalars['String']['output'];
+  /** Professional photo URL */
+  photoUrl: Maybe<Scalars['String']['output']>;
+  /** Specialty areas (e.g., 'Anxiety', 'Teen Issues', 'ADHD') */
+  specialties: Array<Scalars['String']['output']>;
+  /** Years of experience */
+  yearsOfExperience: Maybe<Scalars['Int']['output']>;
 };
 
-export type User = {
-  __typename?: 'User';
-  children: Maybe<Array<Child>>;
-  createdAt: Scalars['String']['output'];
-  email: Scalars['String']['output'];
-  firstName: Maybe<Scalars['String']['output']>;
-  id: Scalars['ID']['output'];
-  lastName: Maybe<Scalars['String']['output']>;
-  role: UserRole;
+/** Therapist matching results */
+export type TherapistMatchResults = {
+  __typename?: 'TherapistMatchResults';
+  /** General explanation of matching criteria */
+  matchingCriteria: Scalars['String']['output'];
+  /** List of matched therapists (2-3 typically) */
+  therapists: Array<Therapist>;
+  /** Total number of therapists matched */
+  totalCount: Scalars['Int']['output'];
 };
 
-export type UserRole =
-  | 'ADMIN'
-  | 'PARENT'
-  | 'SUPPORT_STAFF';
+/** Response from updateSessionProgress mutation */
+export type UpdateSessionProgressPayload = {
+  __typename?: 'UpdateSessionProgressPayload';
+  session: OnboardingSession;
+};
 
-export type UpdateParentInfoMutationVariables = Exact<{
-  sessionId: Scalars['ID']['input'];
-  input: ParentInfoInput;
-}>;
+/** Insurance verification status */
+export type VerificationStatus =
+  | 'FAILED'
+  | 'IN_PROGRESS'
+  | 'MANUAL_REVIEW'
+  | 'PENDING'
+  | 'SELF_PAY'
+  | 'VERIFIED';
 
-
-export type UpdateParentInfoMutation = { __typename?: 'Mutation', updateParentInfo: { __typename?: 'UpdateParentInfoPayload', id: string, status: OnboardingStatus, updatedAt: string, demographics: { __typename?: 'Demographics', isComplete: boolean, parent: { __typename?: 'ParentInfo', firstName: string, lastName: string, email: string, phone: string, relationshipToChild: RelationshipType } | null } | null } | null };
-
-export type CompleteAssessmentMutationVariables = Exact<{
-  sessionId: Scalars['ID']['input'];
-}>;
-
-
-export type CompleteAssessmentMutation = { __typename?: 'Mutation', completeAssessment: { __typename?: 'AssessmentSummaryPayload', summary: { __typename?: 'AssessmentSummary', keyConcerns: Array<string>, childName: string, recommendedFocus: Array<string> | null, generatedAt: string } } | null };
-
-export type ConfirmAssessmentSummaryMutationVariables = Exact<{
-  sessionId: Scalars['ID']['input'];
-  confirmed: Scalars['Boolean']['input'];
-}>;
-
-
-export type ConfirmAssessmentSummaryMutation = { __typename?: 'Mutation', confirmAssessmentSummary: { __typename?: 'ConfirmSummaryPayload', session: { __typename?: 'OnboardingSession', id: string, status: OnboardingStatus, assessment: { __typename?: 'Assessment', isComplete: boolean | null, summary: { __typename?: 'AssessmentSummary', keyConcerns: Array<string>, childName: string, recommendedFocus: Array<string> | null, generatedAt: string } | null } | null } } | null };
-
-export type CreateSessionMutationVariables = Exact<{ [key: string]: never; }>;
-
-
-export type CreateSessionMutation = { __typename?: 'Mutation', createSession: { __typename?: 'CreateSessionPayload', token: string, refreshToken: string | null, session: { __typename?: 'SessionInfo', id: string, status: string } } | null };
-
-export type ResetAssessmentMutationVariables = Exact<{
+export type GetMatchedTherapistsQueryVariables = Exact<{
   sessionId: Scalars['ID']['input'];
 }>;
 
 
-export type ResetAssessmentMutation = { __typename?: 'Mutation', resetAssessment: { __typename?: 'ResetAssessmentPayload', session: { __typename?: 'OnboardingSession', id: string, status: OnboardingStatus, assessment: { __typename?: 'Assessment', isComplete: boolean | null, conversationHistory: Array<{ __typename?: 'ChatMessage', id: string, sender: MessageSender, content: string, timestamp: string }> } | null } } | null };
+export type GetMatchedTherapistsQuery = { __typename?: 'Query', matchedTherapists: { __typename?: 'TherapistMatchResults', totalCount: number, matchingCriteria: string, therapists: Array<{ __typename?: 'Therapist', id: string, name: string, credentials: string, photoUrl: string | null, specialties: Array<string>, availabilityStatus: AvailabilityStatus, availabilityText: string, yearsOfExperience: number | null, bio: string | null, matchScore: number, isBestMatch: boolean, matchReasons: Array<{ __typename?: 'MatchReason', id: string, text: string, icon: string | null }> }> } | null };
 
-export type SendSessionReminderMutationVariables = Exact<{
-  input: SendSessionReminderInput;
-}>;
-
-
-export type SendSessionReminderMutation = { __typename?: 'Mutation', sendSessionReminder: { __typename?: 'SendSessionReminderPayload', success: boolean, message: string | null } | null };
-
-export type StartOnboardingMutationVariables = Exact<{
-  input: StartOnboardingInput;
-}>;
-
-
-export type StartOnboardingMutation = { __typename?: 'Mutation', startOnboarding: { __typename?: 'OnboardingSession', id: string, status: OnboardingStatus, createdAt: string, parent: { __typename?: 'User', id: string, email: string }, child: { __typename?: 'Child', id: string, firstName: string, dateOfBirth: string } } | null };
-
-export type SubmitAssessmentMessageMutationVariables = Exact<{
-  input: SubmitAssessmentMessageInput;
-}>;
-
-
-export type SubmitAssessmentMessageMutation = { __typename?: 'Mutation', submitAssessmentMessage: { __typename?: 'Assessment', id: string, isFitForDaybreak: boolean | null, suggestedNextSteps: string | null, isComplete: boolean | null, summary: { __typename?: 'AssessmentSummary', keyConcerns: Array<string>, childName: string, recommendedFocus: Array<string> | null, generatedAt: string } | null, conversationHistory: Array<{ __typename?: 'ChatMessage', id: string, sender: MessageSender, content: string, timestamp: string }> } | null };
-
-export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetCurrentUserQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, firstName: string | null, lastName: string | null, role: UserRole, createdAt: string, children: Array<{ __typename?: 'Child', id: string, firstName: string, dateOfBirth: string }> | null } | null };
-
-export type GetOnboardingSessionQueryVariables = Exact<{
+export type AbandonSessionMutationVariables = Exact<{
   sessionId: Scalars['ID']['input'];
 }>;
 
 
-export type GetOnboardingSessionQuery = { __typename?: 'Query', getOnboardingSession: { __typename?: 'OnboardingSession', id: string, status: OnboardingStatus, createdAt: string, updatedAt: string, parent: { __typename?: 'User', id: string, email: string, firstName: string | null, lastName: string | null }, child: { __typename?: 'Child', id: string, firstName: string, dateOfBirth: string, pronouns: string | null, concerns: Array<string> | null }, assessment: { __typename?: 'Assessment', id: string, isFitForDaybreak: boolean | null, suggestedNextSteps: string | null, isComplete: boolean | null, summary: { __typename?: 'AssessmentSummary', keyConcerns: Array<string>, childName: string, recommendedFocus: Array<string> | null, generatedAt: string } | null, conversationHistory: Array<{ __typename?: 'ChatMessage', id: string, sender: MessageSender, content: string, timestamp: string }> } | null, insuranceInfo: { __typename?: 'InsuranceInformation', id: string, provider: string, planName: string | null, memberId: string, groupId: string | null } | null, appointment: { __typename?: 'Appointment', id: string, therapistName: string, startTime: string, endTime: string, confirmationId: string } | null } | null };
+export type AbandonSessionMutation = { __typename?: 'Mutation', abandonSession: { __typename?: 'SessionAbandonmentPayload', success: boolean, session: { __typename?: 'OnboardingSession', id: string, status: SessionStatus } } | null };
 
-export type SupportChatMessagesSubscriptionVariables = Exact<{
-  onboardingSessionId: Scalars['ID']['input'];
+export type CreateSessionMutationVariables = Exact<{
+  referralSource?: InputMaybe<Scalars['String']['input']>;
+  deviceFingerprint?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type SupportChatMessagesSubscription = { __typename?: 'Subscription', supportChatMessages: { __typename?: 'ChatMessage', id: string, sender: MessageSender, content: string, timestamp: string } | null };
+export type CreateSessionMutation = { __typename?: 'Mutation', createSession: { __typename?: 'CreateSessionPayload', token: string, refreshToken: string | null, session: { __typename?: 'OnboardingSession', id: string, status: SessionStatus, expiresAt: string, createdAt: string, progress: { __typename?: 'Progress', percentage: number, currentPhase: string, completedPhases: Array<string>, nextPhase: string | null, estimatedMinutesRemaining: number } } } | null };
+
+export type RefreshTokenMutationVariables = Exact<{
+  refreshToken: Scalars['String']['input'];
+  deviceFingerprint?: InputMaybe<Scalars['String']['input']>;
+}>;
 
 
-export const UpdateParentInfoDocument = gql`
-    """
-UpdateParentInfo Mutation
-Updates parent/guardian contact information for an onboarding session.
-Called by useAutoSave hook on blur and on form submission.
-"""
-mutation UpdateParentInfo($sessionId: ID!, $input: ParentInfoInput!) {
-  updateParentInfo(sessionId: $sessionId, input: $input) {
-    id
-    status
-    demographics {
-      parent {
-        firstName
-        lastName
-        email
-        phone
-        relationshipToChild
-      }
-      isComplete
-    }
-    updatedAt
-  }
-}
-    `;
-export function useUpdateParentInfoMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateParentInfoMutation, UpdateParentInfoMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useMutation<UpdateParentInfoMutation, UpdateParentInfoMutationVariables>(UpdateParentInfoDocument, options);
-      }
-export type UpdateParentInfoMutationHookResult = ReturnType<typeof useUpdateParentInfoMutation>;
-export const CompleteAssessmentDocument = gql`
-    mutation CompleteAssessment($sessionId: ID!) {
-  completeAssessment(sessionId: $sessionId) {
-    summary {
-      keyConcerns
-      childName
-      recommendedFocus
-      generatedAt
-    }
-  }
-}
-    `;
-export function useCompleteAssessmentMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CompleteAssessmentMutation, CompleteAssessmentMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useMutation<CompleteAssessmentMutation, CompleteAssessmentMutationVariables>(CompleteAssessmentDocument, options);
-      }
-export type CompleteAssessmentMutationHookResult = ReturnType<typeof useCompleteAssessmentMutation>;
-export const ConfirmAssessmentSummaryDocument = gql`
-    mutation ConfirmAssessmentSummary($sessionId: ID!, $confirmed: Boolean!) {
-  confirmAssessmentSummary(sessionId: $sessionId, confirmed: $confirmed) {
-    session {
+export type RefreshTokenMutation = { __typename?: 'Mutation', refreshToken: { __typename?: 'RefreshTokenPayload', success: boolean, error: string | null, token: string | null, refreshToken: string | null, tokenType: string | null, expiresIn: number | null } | null };
+
+export type RequestSessionRecoveryMutationVariables = Exact<{
+  sessionId: Scalars['ID']['input'];
+}>;
+
+
+export type RequestSessionRecoveryMutation = { __typename?: 'Mutation', requestSessionRecovery: { __typename?: 'RequestRecoveryPayload', success: boolean, message: string } | null };
+
+export type SendMessageMutationVariables = Exact<{
+  sessionId: Scalars['ID']['input'];
+  content: Scalars['String']['input'];
+}>;
+
+
+export type SendMessageMutation = { __typename?: 'Mutation', sendMessage: { __typename?: 'SendMessagePayload', errors: Array<string> | null, userMessage: { __typename?: 'Message', id: string, role: MessageRole, content: string, createdAt: string }, assistantMessage: { __typename?: 'Message', id: string, role: MessageRole, content: string, createdAt: string } } | null };
+
+export type SetSelfPayMutationVariables = Exact<{
+  sessionId: Scalars['ID']['input'];
+}>;
+
+
+export type SetSelfPayMutation = { __typename?: 'Mutation', setSelfPay: { __typename?: 'SetSelfPayPayload', session: { __typename?: 'OnboardingSession', id: string, status: SessionStatus, insurance: { __typename?: 'Insurance', id: string, verificationStatus: VerificationStatus } | null } } | null };
+
+export type SubmitInsuranceInfoMutationVariables = Exact<{
+  input: SubmitInsuranceInfoInput;
+}>;
+
+
+export type SubmitInsuranceInfoMutation = { __typename?: 'Mutation', submitInsuranceInfo: { __typename?: 'SubmitInsuranceInfoPayload', session: { __typename?: 'OnboardingSession', id: string, status: SessionStatus, insurance: { __typename?: 'Insurance', id: string, payerName: string, subscriberName: string, memberId: string, groupNumber: string | null, verificationStatus: VerificationStatus } | null } } | null };
+
+export type UpdateSessionProgressMutationVariables = Exact<{
+  sessionId: Scalars['ID']['input'];
+  progress: Scalars['JSON']['input'];
+}>;
+
+
+export type UpdateSessionProgressMutation = { __typename?: 'Mutation', updateSessionProgress: { __typename?: 'UpdateSessionProgressPayload', session: { __typename?: 'OnboardingSession', id: string, status: SessionStatus, expiresAt: string, updatedAt: string, progress: { __typename?: 'Progress', percentage: number, currentPhase: string, completedPhases: Array<string>, nextPhase: string | null, estimatedMinutesRemaining: number } } } | null };
+
+export type GetSessionQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetSessionQuery = { __typename?: 'Query', session: { __typename?: 'OnboardingSession', id: string, status: SessionStatus, referralSource: string | null, expiresAt: string, createdAt: string, updatedAt: string, progress: { __typename?: 'Progress', percentage: number, currentPhase: string, completedPhases: Array<string>, nextPhase: string | null, estimatedMinutesRemaining: number }, parent: { __typename?: 'Parent', id: string, email: string, phone: string, firstName: string, lastName: string, relationship: string, isGuardian: boolean } | null, child: { __typename?: 'Child', id: string, firstName: string, lastName: string, dateOfBirth: string, gender: string, schoolName: string | null, grade: string | null } | null, assessment: { __typename?: 'Assessment', id: string, responses: Record<string, unknown>, riskFlags: Array<string>, summary: string | null, consentGiven: boolean, score: number | null } | null, insurance: { __typename?: 'Insurance', id: string, payerName: string, subscriberName: string, memberId: string, policyNumber: string | null, groupNumber: string | null, verificationStatus: VerificationStatus } | null, messages: Array<{ __typename?: 'Message', id: string, role: MessageRole, content: string, createdAt: string }> | null } | null };
+
+export type SessionByRecoveryTokenQueryVariables = Exact<{
+  recoveryToken: Scalars['String']['input'];
+}>;
+
+
+export type SessionByRecoveryTokenQuery = { __typename?: 'Query', sessionByRecoveryToken: { __typename?: 'SessionRecoveryPayload', token: string, refreshToken: string, session: { __typename?: 'OnboardingSession', id: string, status: SessionStatus, expiresAt: string, createdAt: string, updatedAt: string, progress: { __typename?: 'Progress', percentage: number, currentPhase: string, completedPhases: Array<string>, nextPhase: string | null, estimatedMinutesRemaining: number } } } | null };
+
+export type SessionUpdatedSubscriptionVariables = Exact<{
+  sessionId: Scalars['ID']['input'];
+}>;
+
+
+export type SessionUpdatedSubscription = { __typename?: 'Subscription', sessionUpdated: { __typename?: 'OnboardingSession', id: string, status: SessionStatus, expiresAt: string, updatedAt: string, progress: { __typename?: 'Progress', percentage: number, currentPhase: string, completedPhases: Array<string>, nextPhase: string | null, estimatedMinutesRemaining: number } } | null };
+
+
+export const GetMatchedTherapistsDocument = gql`
+    query GetMatchedTherapists($sessionId: ID!) {
+  matchedTherapists(sessionId: $sessionId) {
+    therapists {
       id
-      status
-      assessment {
-        isComplete
-        summary {
-          keyConcerns
-          childName
-          recommendedFocus
-          generatedAt
+      name
+      credentials
+      photoUrl
+      specialties
+      availabilityStatus
+      availabilityText
+      yearsOfExperience
+      bio
+      matchScore
+      isBestMatch
+      matchReasons {
+        id
+        text
+        icon
+      }
+    }
+    totalCount
+    matchingCriteria
+  }
+}
+    `;
+export function useGetMatchedTherapistsQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetMatchedTherapistsQuery, GetMatchedTherapistsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetMatchedTherapistsQuery, GetMatchedTherapistsQueryVariables>(GetMatchedTherapistsDocument, options);
+      }
+export function useGetMatchedTherapistsLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetMatchedTherapistsQuery, GetMatchedTherapistsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetMatchedTherapistsQuery, GetMatchedTherapistsQueryVariables>(GetMatchedTherapistsDocument, options);
         }
-      }
-    }
-  }
-}
-    `;
-export function useConfirmAssessmentSummaryMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<ConfirmAssessmentSummaryMutation, ConfirmAssessmentSummaryMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useMutation<ConfirmAssessmentSummaryMutation, ConfirmAssessmentSummaryMutationVariables>(ConfirmAssessmentSummaryDocument, options);
-      }
-export type ConfirmAssessmentSummaryMutationHookResult = ReturnType<typeof useConfirmAssessmentSummaryMutation>;
-export const CreateSessionDocument = gql`
-    mutation CreateSession {
-  createSession {
+export type GetMatchedTherapistsQueryHookResult = ReturnType<typeof useGetMatchedTherapistsQuery>;
+export type GetMatchedTherapistsLazyQueryHookResult = ReturnType<typeof useGetMatchedTherapistsLazyQuery>;
+export const AbandonSessionDocument = gql`
+    mutation AbandonSession($sessionId: ID!) {
+  abandonSession(sessionId: $sessionId) {
     session {
       id
       status
+    }
+    success
+  }
+}
+    `;
+export function useAbandonSessionMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<AbandonSessionMutation, AbandonSessionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<AbandonSessionMutation, AbandonSessionMutationVariables>(AbandonSessionDocument, options);
+      }
+export type AbandonSessionMutationHookResult = ReturnType<typeof useAbandonSessionMutation>;
+export const CreateSessionDocument = gql`
+    mutation CreateSession($referralSource: String, $deviceFingerprint: String) {
+  createSession(
+    referralSource: $referralSource
+    deviceFingerprint: $deviceFingerprint
+  ) {
+    session {
+      id
+      status
+      progress {
+        percentage
+        currentPhase
+        completedPhases
+        nextPhase
+        estimatedMinutesRemaining
+      }
+      expiresAt
+      createdAt
     }
     token
     refreshToken
@@ -530,197 +629,247 @@ export function useCreateSessionMutation(baseOptions?: ApolloReactHooks.Mutation
         return ApolloReactHooks.useMutation<CreateSessionMutation, CreateSessionMutationVariables>(CreateSessionDocument, options);
       }
 export type CreateSessionMutationHookResult = ReturnType<typeof useCreateSessionMutation>;
-export const ResetAssessmentDocument = gql`
-    mutation ResetAssessment($sessionId: ID!) {
-  resetAssessment(sessionId: $sessionId) {
-    session {
-      id
-      status
-      assessment {
-        conversationHistory {
-          id
-          sender
-          content
-          timestamp
-        }
-        isComplete
-      }
-    }
+export const RefreshTokenDocument = gql`
+    mutation RefreshToken($refreshToken: String!, $deviceFingerprint: String) {
+  refreshToken(refreshToken: $refreshToken, deviceFingerprint: $deviceFingerprint) {
+    success
+    error
+    token
+    refreshToken
+    tokenType
+    expiresIn
   }
 }
     `;
-export function useResetAssessmentMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<ResetAssessmentMutation, ResetAssessmentMutationVariables>) {
+export function useRefreshTokenMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<RefreshTokenMutation, RefreshTokenMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useMutation<ResetAssessmentMutation, ResetAssessmentMutationVariables>(ResetAssessmentDocument, options);
+        return ApolloReactHooks.useMutation<RefreshTokenMutation, RefreshTokenMutationVariables>(RefreshTokenDocument, options);
       }
-export type ResetAssessmentMutationHookResult = ReturnType<typeof useResetAssessmentMutation>;
-export const SendSessionReminderDocument = gql`
-    mutation SendSessionReminder($input: SendSessionReminderInput!) {
-  sendSessionReminder(input: $input) {
+export type RefreshTokenMutationHookResult = ReturnType<typeof useRefreshTokenMutation>;
+export const RequestSessionRecoveryDocument = gql`
+    mutation RequestSessionRecovery($sessionId: ID!) {
+  requestSessionRecovery(sessionId: $sessionId) {
     success
     message
   }
 }
     `;
-export function useSendSessionReminderMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<SendSessionReminderMutation, SendSessionReminderMutationVariables>) {
+export function useRequestSessionRecoveryMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<RequestSessionRecoveryMutation, RequestSessionRecoveryMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useMutation<SendSessionReminderMutation, SendSessionReminderMutationVariables>(SendSessionReminderDocument, options);
+        return ApolloReactHooks.useMutation<RequestSessionRecoveryMutation, RequestSessionRecoveryMutationVariables>(RequestSessionRecoveryDocument, options);
       }
-export type SendSessionReminderMutationHookResult = ReturnType<typeof useSendSessionReminderMutation>;
-export const StartOnboardingDocument = gql`
-    mutation StartOnboarding($input: StartOnboardingInput!) {
-  startOnboarding(input: $input) {
-    id
-    status
-    createdAt
-    parent {
+export type RequestSessionRecoveryMutationHookResult = ReturnType<typeof useRequestSessionRecoveryMutation>;
+export const SendMessageDocument = gql`
+    mutation SendMessage($sessionId: ID!, $content: String!) {
+  sendMessage(sessionId: $sessionId, content: $content) {
+    userMessage {
       id
-      email
-    }
-    child {
-      id
-      firstName
-      dateOfBirth
-    }
-  }
-}
-    `;
-export function useStartOnboardingMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<StartOnboardingMutation, StartOnboardingMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useMutation<StartOnboardingMutation, StartOnboardingMutationVariables>(StartOnboardingDocument, options);
-      }
-export type StartOnboardingMutationHookResult = ReturnType<typeof useStartOnboardingMutation>;
-export const SubmitAssessmentMessageDocument = gql`
-    mutation SubmitAssessmentMessage($input: SubmitAssessmentMessageInput!) {
-  submitAssessmentMessage(input: $input) {
-    id
-    summary {
-      keyConcerns
-      childName
-      recommendedFocus
-      generatedAt
-    }
-    isFitForDaybreak
-    suggestedNextSteps
-    isComplete
-    conversationHistory {
-      id
-      sender
+      role
       content
-      timestamp
+      createdAt
     }
-  }
-}
-    `;
-export function useSubmitAssessmentMessageMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<SubmitAssessmentMessageMutation, SubmitAssessmentMessageMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useMutation<SubmitAssessmentMessageMutation, SubmitAssessmentMessageMutationVariables>(SubmitAssessmentMessageDocument, options);
-      }
-export type SubmitAssessmentMessageMutationHookResult = ReturnType<typeof useSubmitAssessmentMessageMutation>;
-export const GetCurrentUserDocument = gql`
-    query GetCurrentUser {
-  me {
-    id
-    email
-    firstName
-    lastName
-    role
-    createdAt
-    children {
+    assistantMessage {
       id
-      firstName
-      dateOfBirth
+      role
+      content
+      createdAt
+    }
+    errors
+  }
+}
+    `;
+export function useSendMessageMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<SendMessageMutation, SendMessageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<SendMessageMutation, SendMessageMutationVariables>(SendMessageDocument, options);
+      }
+export type SendMessageMutationHookResult = ReturnType<typeof useSendMessageMutation>;
+export const SetSelfPayDocument = gql`
+    mutation SetSelfPay($sessionId: ID!) {
+  setSelfPay(sessionId: $sessionId) {
+    session {
+      id
+      status
+      insurance {
+        id
+        verificationStatus
+      }
     }
   }
 }
     `;
-export function useGetCurrentUserQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetCurrentUserQuery, GetCurrentUserQueryVariables>) {
+export function useSetSelfPayMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<SetSelfPayMutation, SetSelfPayMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useQuery<GetCurrentUserQuery, GetCurrentUserQueryVariables>(GetCurrentUserDocument, options);
+        return ApolloReactHooks.useMutation<SetSelfPayMutation, SetSelfPayMutationVariables>(SetSelfPayDocument, options);
       }
-export function useGetCurrentUserLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetCurrentUserQuery, GetCurrentUserQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return ApolloReactHooks.useLazyQuery<GetCurrentUserQuery, GetCurrentUserQueryVariables>(GetCurrentUserDocument, options);
-        }
-export type GetCurrentUserQueryHookResult = ReturnType<typeof useGetCurrentUserQuery>;
-export type GetCurrentUserLazyQueryHookResult = ReturnType<typeof useGetCurrentUserLazyQuery>;
-export const GetOnboardingSessionDocument = gql`
-    query GetOnboardingSession($sessionId: ID!) {
-  getOnboardingSession(id: $sessionId) {
+export type SetSelfPayMutationHookResult = ReturnType<typeof useSetSelfPayMutation>;
+export const SubmitInsuranceInfoDocument = gql`
+    mutation SubmitInsuranceInfo($input: SubmitInsuranceInfoInput!) {
+  submitInsuranceInfo(input: $input) {
+    session {
+      id
+      status
+      insurance {
+        id
+        payerName
+        subscriberName
+        memberId
+        groupNumber
+        verificationStatus
+      }
+    }
+  }
+}
+    `;
+export function useSubmitInsuranceInfoMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<SubmitInsuranceInfoMutation, SubmitInsuranceInfoMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<SubmitInsuranceInfoMutation, SubmitInsuranceInfoMutationVariables>(SubmitInsuranceInfoDocument, options);
+      }
+export type SubmitInsuranceInfoMutationHookResult = ReturnType<typeof useSubmitInsuranceInfoMutation>;
+export const UpdateSessionProgressDocument = gql`
+    mutation UpdateSessionProgress($sessionId: ID!, $progress: JSON!) {
+  updateSessionProgress(sessionId: $sessionId, progress: $progress) {
+    session {
+      id
+      status
+      progress {
+        percentage
+        currentPhase
+        completedPhases
+        nextPhase
+        estimatedMinutesRemaining
+      }
+      expiresAt
+      updatedAt
+    }
+  }
+}
+    `;
+export function useUpdateSessionProgressMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateSessionProgressMutation, UpdateSessionProgressMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateSessionProgressMutation, UpdateSessionProgressMutationVariables>(UpdateSessionProgressDocument, options);
+      }
+export type UpdateSessionProgressMutationHookResult = ReturnType<typeof useUpdateSessionProgressMutation>;
+export const GetSessionDocument = gql`
+    query GetSession($id: ID!) {
+  session(id: $id) {
     id
     status
+    progress {
+      percentage
+      currentPhase
+      completedPhases
+      nextPhase
+      estimatedMinutesRemaining
+    }
+    referralSource
+    expiresAt
     createdAt
     updatedAt
     parent {
       id
       email
+      phone
       firstName
       lastName
+      relationship
+      isGuardian
     }
     child {
       id
       firstName
+      lastName
       dateOfBirth
-      pronouns
-      concerns
+      gender
+      schoolName
+      grade
     }
     assessment {
       id
-      summary {
-        keyConcerns
-        childName
-        recommendedFocus
-        generatedAt
-      }
-      isFitForDaybreak
-      suggestedNextSteps
-      isComplete
-      conversationHistory {
-        id
-        sender
-        content
-        timestamp
-      }
+      responses
+      riskFlags
+      summary
+      consentGiven
+      score
     }
-    insuranceInfo {
+    insurance {
       id
-      provider
-      planName
+      payerName
+      subscriberName
       memberId
-      groupId
+      policyNumber
+      groupNumber
+      verificationStatus
     }
-    appointment {
+    messages {
       id
-      therapistName
-      startTime
-      endTime
-      confirmationId
+      role
+      content
+      createdAt
     }
   }
 }
     `;
-export function useGetOnboardingSessionQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>) {
+export function useGetSessionQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetSessionQuery, GetSessionQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useQuery<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>(GetOnboardingSessionDocument, options);
+        return ApolloReactHooks.useQuery<GetSessionQuery, GetSessionQueryVariables>(GetSessionDocument, options);
       }
-export function useGetOnboardingSessionLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>) {
+export function useGetSessionLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetSessionQuery, GetSessionQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return ApolloReactHooks.useLazyQuery<GetOnboardingSessionQuery, GetOnboardingSessionQueryVariables>(GetOnboardingSessionDocument, options);
+          return ApolloReactHooks.useLazyQuery<GetSessionQuery, GetSessionQueryVariables>(GetSessionDocument, options);
         }
-export type GetOnboardingSessionQueryHookResult = ReturnType<typeof useGetOnboardingSessionQuery>;
-export type GetOnboardingSessionLazyQueryHookResult = ReturnType<typeof useGetOnboardingSessionLazyQuery>;
-export const SupportChatMessagesDocument = gql`
-    subscription SupportChatMessages($onboardingSessionId: ID!) {
-  supportChatMessages(onboardingSessionId: $onboardingSessionId) {
-    id
-    sender
-    content
-    timestamp
+export type GetSessionQueryHookResult = ReturnType<typeof useGetSessionQuery>;
+export type GetSessionLazyQueryHookResult = ReturnType<typeof useGetSessionLazyQuery>;
+export const SessionByRecoveryTokenDocument = gql`
+    query SessionByRecoveryToken($recoveryToken: String!) {
+  sessionByRecoveryToken(recoveryToken: $recoveryToken) {
+    session {
+      id
+      status
+      progress {
+        percentage
+        currentPhase
+        completedPhases
+        nextPhase
+        estimatedMinutesRemaining
+      }
+      expiresAt
+      createdAt
+      updatedAt
+    }
+    token
+    refreshToken
   }
 }
     `;
-export function useSupportChatMessagesSubscription(baseOptions: ApolloReactHooks.SubscriptionHookOptions<SupportChatMessagesSubscription, SupportChatMessagesSubscriptionVariables>) {
+export function useSessionByRecoveryTokenQuery(baseOptions: ApolloReactHooks.QueryHookOptions<SessionByRecoveryTokenQuery, SessionByRecoveryTokenQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useSubscription<SupportChatMessagesSubscription, SupportChatMessagesSubscriptionVariables>(SupportChatMessagesDocument, options);
+        return ApolloReactHooks.useQuery<SessionByRecoveryTokenQuery, SessionByRecoveryTokenQueryVariables>(SessionByRecoveryTokenDocument, options);
       }
-export type SupportChatMessagesSubscriptionHookResult = ReturnType<typeof useSupportChatMessagesSubscription>;
+export function useSessionByRecoveryTokenLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<SessionByRecoveryTokenQuery, SessionByRecoveryTokenQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<SessionByRecoveryTokenQuery, SessionByRecoveryTokenQueryVariables>(SessionByRecoveryTokenDocument, options);
+        }
+export type SessionByRecoveryTokenQueryHookResult = ReturnType<typeof useSessionByRecoveryTokenQuery>;
+export type SessionByRecoveryTokenLazyQueryHookResult = ReturnType<typeof useSessionByRecoveryTokenLazyQuery>;
+export const SessionUpdatedDocument = gql`
+    subscription SessionUpdated($sessionId: ID!) {
+  sessionUpdated(sessionId: $sessionId) {
+    id
+    status
+    progress {
+      percentage
+      currentPhase
+      completedPhases
+      nextPhase
+      estimatedMinutesRemaining
+    }
+    expiresAt
+    updatedAt
+  }
+}
+    `;
+export function useSessionUpdatedSubscription(baseOptions: ApolloReactHooks.SubscriptionHookOptions<SessionUpdatedSubscription, SessionUpdatedSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useSubscription<SessionUpdatedSubscription, SessionUpdatedSubscriptionVariables>(SessionUpdatedDocument, options);
+      }
+export type SessionUpdatedSubscriptionHookResult = ReturnType<typeof useSessionUpdatedSubscription>;

@@ -1,0 +1,285 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>6.2</storyId>
+    <title>Self-Pay Rate Display</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-30</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/stories/6-2-self-pay-rate-display.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent without insurance or preferring self-pay</asA>
+    <iWant>to see clear self-pay pricing</iWant>
+    <soThat>I understand my options and can compare costs</soThat>
+    <tasks>
+      - Task 1: Create Self-Pay Rate Display Component (AC: #1, #2, #3)
+        - Create `features/cost/SelfPayRateCard.tsx` component
+        - Display per-session self-pay rate with clear heading
+        - Show package discount options if available from backend
+        - Style using Daybreak design tokens (teal, cream, typography)
+        - Ensure mobile-responsive layout (single column)
+
+      - Task 2: Implement Insurance vs Self-Pay Comparison View (AC: #4, #5, #6, #7)
+        - Create `features/cost/CostComparisonView.tsx` component
+        - Implement side-by-side comparison layout (responsive)
+        - Add visual highlighting for more affordable option
+        - Display trade-offs and considerations for each option
+        - Conditional rendering based on insurance data availability
+
+      - Task 3: Integrate Backend Self-Pay Configuration (AC: #8)
+        - Create or update GraphQL query to fetch self-pay rates
+        - Handle package pricing structure from backend
+        - Implement Apollo Client caching for self-pay rates
+        - Add error handling for missing self-pay configuration
+
+      - Task 4: Add Self-Pay Selection Functionality (AC: #9)
+        - Create "Choose self-pay" button/action
+        - Implement mutation to update session payment preference
+        - Update local Apollo cache on selection
+        - Add confirmation or feedback on selection
+
+      - Task 5: Accessibility and Testing (AC: #10)
+        - Ensure WCAG AA compliance for all text and interactive elements
+        - Add proper ARIA labels for screen readers
+        - Test keyboard navigation for comparison view
+        - Write unit tests for cost comparison logic
+        - Write integration tests for self-pay selection flow
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    ### Self-Pay Section (AC #1-3)
+    1. "Self-Pay Rate" heading displayed prominently
+    2. Per-session price clearly shown (e.g., "$150 per session")
+    3. Package discounts if available (e.g., "Buy 4 sessions, save 10%")
+    4. Comparison with insurance estimate (if insurance information was provided)
+
+    ### Comparison View (AC #5-7)
+    5. Side-by-side display: Insurance estimate vs Self-pay rate
+    6. Highlight which option is more affordable
+    7. Note any trade-offs (e.g., "Insurance requires using in-network therapists")
+
+    ### Functional Requirements (AC #8-10)
+    8. Self-pay rates come from backend configuration
+    9. "Choose self-pay" button updates session preference
+    10. All pricing information is displayed in a clear, accessible format with proper WCAG compliance
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Daybreak Health Architecture</title>
+        <section>Component Structure</section>
+        <snippet>Feature-based organization with functional components in features/ directory. Use composition pattern, TypeScript interfaces, and shadcn/ui base components.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Daybreak Health Architecture</title>
+        <section>Apollo Client Configuration</section>
+        <snippet>Apollo Client v4 with Next.js App Router integration. Normalized cache with type policies, optimistic updates, and WebSocket subscriptions.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Daybreak Health Architecture</title>
+        <section>Styling Guidelines</section>
+        <snippet>Daybreak color palette: teal (#2A9D8F), cream (#FEF7ED), deep-text (#1A3C34). Typography: Inter for body, Fraunces for headings. Spacing: 4px base unit. Border radius: md (12px) for cards. Touch targets: minimum 44x44px for WCAG.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/stories/6-1-cost-estimation-display.md</path>
+        <title>Story 6.1: Cost Estimation Display</title>
+        <section>Component Architecture</section>
+        <snippet>Related story that creates features/cost/ directory structure with CostEstimationCard and CoverageDetails components. Establishes currency formatting patterns and Apollo integration for cost data.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/api_schema.graphql</path>
+        <title>GraphQL API Schema</title>
+        <section>Mutations</section>
+        <snippet>setSelfPay mutation available at line 392: setSelfPay(sessionId: ID!): SetSelfPayPayload. SetSelfPayPayload returns session with updated status.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>lib/utils/formatters.ts</path>
+        <kind>utility</kind>
+        <symbol>formatPhoneNumber, toE164, formatRelativeTime</symbol>
+        <lines>1-123</lines>
+        <reason>Existing formatting utility patterns for creating formatCurrency function. Shows JSDoc documentation style and error handling patterns.</reason>
+      </artifact>
+      <artifact>
+        <path>features/insurance/InsuranceForm.tsx</path>
+        <kind>component</kind>
+        <symbol>InsuranceForm</symbol>
+        <lines>1-100</lines>
+        <reason>Reference for form component patterns, React Hook Form integration, auto-save hooks, and Daybreak design token usage.</reason>
+      </artifact>
+      <artifact>
+        <path>features/insurance/SelfPayModal.tsx</path>
+        <kind>component</kind>
+        <symbol>SelfPayModal</symbol>
+        <lines>entire file</lines>
+        <reason>Existing self-pay modal component that may need integration or extension for self-pay rate display.</reason>
+      </artifact>
+      <artifact>
+        <path>features/insurance/useInsurance.ts</path>
+        <kind>hook</kind>
+        <symbol>useInsurance</symbol>
+        <lines>entire file</lines>
+        <reason>Custom hook pattern for insurance features. Reference for implementing useCostEstimate and useSelfPay hooks.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/card.tsx</path>
+        <kind>ui-component</kind>
+        <symbol>Card, CardHeader, CardTitle, CardDescription, CardContent</symbol>
+        <lines>entire file</lines>
+        <reason>shadcn/ui Card components to use as base for SelfPayRateCard and CostComparisonView.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/button.tsx</path>
+        <kind>ui-component</kind>
+        <symbol>Button</symbol>
+        <lines>entire file</lines>
+        <reason>shadcn/ui Button component for "Choose self-pay" action button.</reason>
+      </artifact>
+      <artifact>
+        <path>hooks/useAutoSave.ts</path>
+        <kind>hook</kind>
+        <symbol>useAutoSave</symbol>
+        <lines>entire file</lines>
+        <reason>Auto-save pattern for implementing optimistic cache updates when selecting payment preference.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/unit/lib/utils/formatters.test.ts</path>
+        <kind>test</kind>
+        <symbol>Phone Formatting Utilities tests</symbol>
+        <lines>1-50</lines>
+        <reason>Testing patterns and structure for creating currency formatter tests. Shows Vitest describe/it patterns.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>@apollo/client</package>
+        <version>4.0.9</version>
+        <reason>GraphQL client for fetching self-pay rates and executing payment preference mutations</reason>
+      </node>
+      <node>
+        <package>react-hook-form</package>
+        <version>^7.67.0</version>
+        <reason>Form management for comparison view if needed for user selection</reason>
+      </node>
+      <node>
+        <package>zod</package>
+        <version>^3.25.76</version>
+        <reason>Schema validation for self-pay rate data structures</reason>
+      </node>
+      <node>
+        <package>@radix-ui/react-dialog</package>
+        <version>^1.1.15</version>
+        <reason>Base for modal/dialog components if needed for confirmation dialogs</reason>
+      </node>
+      <node>
+        <package>lucide-react</package>
+        <version>^0.555.0</version>
+        <reason>Icons for comparison view highlighting and visual indicators</reason>
+      </node>
+      <node>
+        <package>tailwind-merge</package>
+        <version>^3.4.0</version>
+        <reason>Utility for merging Tailwind classes in component styling</reason>
+      </node>
+      <node>
+        <package>vitest</package>
+        <version>^4.0.14</version>
+        <reason>Unit testing framework for cost comparison logic and components</reason>
+      </node>
+      <node>
+        <package>@testing-library/react</package>
+        <version>^16.3.0</version>
+        <reason>Component testing library for rendering and interaction tests</reason>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    1. **Feature-based Structure**: All new components must go in features/cost/ directory to align with Story 6.1
+    2. **Component Composition**: Use SelfPayRateCard and CostComparisonView as separate, composable components
+    3. **No Client-side Calculations**: All pricing calculations come from backend; frontend only displays results
+    4. **Currency Formatting**: Create or reuse formatCurrency utility in lib/utils/ for consistent USD formatting
+    5. **Mobile-first Design**: Design for mobile viewport first, then enhance for larger screens
+    6. **Responsive Comparison**: Side-by-side comparison must adapt to single column on mobile (stack vertically)
+    7. **Apollo Cache**: Self-pay rates should cache in Apollo Client for session duration
+    8. **Optimistic Updates**: Payment preference selection should use optimistic UI updates
+    9. **Accessibility**: Minimum WCAG AA compliance with proper ARIA labels and keyboard navigation
+    10. **File Size Limit**: No component file should exceed 500 lines per CLAUDE.md guidelines
+    11. **JSDoc Comments**: All functions require descriptive block comments with purpose and parameters
+    12. **GraphQL Codegen**: Must run pnpm codegen after creating .graphql files to generate TypeScript types
+    13. **Backend Dependency**: Depends on Backend Story 6-3 (Self-Pay Rates & Comparison API) being complete
+    14. **Integration with 6.1**: Should integrate with CostEstimationCard from Story 6.1 for comparison view
+    15. **No PHI Logging**: Do not log any pricing or insurance information per PHI protection requirements
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>setSelfPay</name>
+      <kind>GraphQL Mutation</kind>
+      <signature>setSelfPay(sessionId: ID!): SetSelfPayPayload</signature>
+      <path>docs/sprint-artifacts/api_schema.graphql</path>
+      <description>Updates session to indicate self-pay preference. Returns session with updated payment method.</description>
+    </interface>
+    <interface>
+      <name>getSelfPayRates</name>
+      <kind>GraphQL Query (to be created)</kind>
+      <signature>Expected: getSelfPayRates(sessionId: ID!): SelfPayRatesPayload</signature>
+      <path>Backend Story 6-3</path>
+      <description>Fetches self-pay rates and package discounts. Expected to return baseRate, packageOptions array, and comparison data.</description>
+    </interface>
+    <interface>
+      <name>formatCurrency</name>
+      <kind>Utility Function (to be created)</kind>
+      <signature>formatCurrency(amount: number, currency?: string): string</signature>
+      <path>lib/utils/currency.ts or lib/utils/formatters.ts</path>
+      <description>Formats numeric amounts as currency strings (e.g., 150 → "$150.00"). Should handle edge cases like null/undefined.</description>
+    </interface>
+    <interface>
+      <name>useAutoSave</name>
+      <kind>React Hook</kind>
+      <signature>useAutoSave(callback: Function, delay: number)</signature>
+      <path>hooks/useAutoSave.ts</path>
+      <description>Existing hook for debounced auto-save functionality. Can be used for optimistic cache updates.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing follows Vitest for unit tests and Playwright for E2E tests. All components must have co-located .test.tsx files. Mock GraphQL queries using MSW. Achieve minimum 80% code coverage for features/cost/ directory. Test loading, error, and success states. Verify accessibility with jest-dom matchers. Test currency formatting edge cases (zero, null, large numbers). Integration tests should verify Apollo cache behavior and optimistic updates.
+    </standards>
+    <locations>
+      - Unit tests: features/cost/__tests__/ or co-located .test.tsx files
+      - Integration tests: tests/integration/
+      - E2E tests: tests/e2e/
+      - Test utilities and mocks: tests/mocks/
+    </locations>
+    <ideas>
+      - AC #1-3: Test SelfPayRateCard renders heading, per-session price, and package discounts correctly
+      - AC #1-3: Test SelfPayRateCard handles missing package discounts gracefully
+      - AC #5-7: Test CostComparisonView renders side-by-side layout on desktop
+      - AC #5-7: Test CostComparisonView stacks vertically on mobile viewports
+      - AC #6: Test comparison view highlights the more affordable option visually
+      - AC #7: Test trade-offs section displays appropriate messaging based on insurance status
+      - AC #8: Test GraphQL query for self-pay rates executes with correct sessionId
+      - AC #8: Test error handling when self-pay configuration is missing from backend
+      - AC #9: Test "Choose self-pay" button triggers setSelfPay mutation
+      - AC #9: Test Apollo cache updates optimistically when self-pay is selected
+      - AC #10: Test keyboard navigation through comparison view components
+      - AC #10: Test screen reader compatibility with ARIA labels
+      - Currency formatter: Test formatCurrency with various inputs (0, null, large numbers, decimals)
+      - Currency formatter: Test locale-specific formatting if internationalization needed
+      - Integration: Test navigation flow from insurance page to self-pay comparison
+      - Integration: Test conditional rendering when insurance data is vs. isn't available
+      - E2E: Test complete flow of viewing self-pay rates and selecting self-pay option
+      - E2E: Test visual regression for comparison view layout on multiple screen sizes
+    </ideas>
+  </tests>
+</story-context>

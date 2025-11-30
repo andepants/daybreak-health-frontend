@@ -8,7 +8,9 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { ChatWindow, useAssessmentChat, AssessmentSummary } from "@/features/assessment";
+import { getAuthToken } from "@/lib/apollo/client";
 
 /**
  * Props for AssessmentClient component
@@ -25,12 +27,14 @@ interface AssessmentClientProps {
  * crisis detection, and completeness validation.
  */
 export function AssessmentClient({ sessionId }: AssessmentClientProps) {
+  const router = useRouter();
   const {
     messages,
     sendMessage,
     retryLastMessage,
     isAiResponding,
     suggestedReplies,
+    error,
     assessmentMode,
     structuredQuestion,
     structuredProgress,
@@ -45,6 +49,39 @@ export function AssessmentClient({ sessionId }: AssessmentClientProps) {
   } = useAssessmentChat(sessionId);
 
   /**
+   * Check for auth token and redirect if missing.
+   * This handles cases where users navigate directly to assessment page
+   * without going through the session creation flow.
+   */
+  React.useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      console.warn("No auth token found, redirecting to home page");
+      router.replace("/");
+    }
+  }, [router]);
+
+  /**
+   * Handle auth errors by redirecting to home page.
+   * Common errors: "Session not found", "Unauthorized", "Invalid token"
+   */
+  React.useEffect(() => {
+    if (error) {
+      const errorMessage = error.message.toLowerCase();
+      const isAuthError =
+        errorMessage.includes("unauthorized") ||
+        errorMessage.includes("session not found") ||
+        errorMessage.includes("invalid token") ||
+        errorMessage.includes("authentication");
+
+      if (isAuthError) {
+        console.error("Auth error detected, redirecting to home:", error.message);
+        router.replace("/");
+      }
+    }
+  }, [error, router]);
+
+  /**
    * Handle message updates
    * In production, this would trigger analytics/logging
    */
@@ -52,6 +89,12 @@ export function AssessmentClient({ sessionId }: AssessmentClientProps) {
     // Could add analytics tracking here
     // TODO: Integrate with analytics service when available
   }, []);
+
+  // Show error message for non-auth errors
+  const showError = error && !error.message.toLowerCase().includes("unauthorized") &&
+    !error.message.toLowerCase().includes("session not found") &&
+    !error.message.toLowerCase().includes("invalid token") &&
+    !error.message.toLowerCase().includes("authentication");
 
   // Show summary when assessment is complete and summary is generated
   if (isComplete && summary) {
@@ -70,7 +113,21 @@ export function AssessmentClient({ sessionId }: AssessmentClientProps) {
 
   // Otherwise show chat interface
   return (
-    <main className="flex flex-col h-screen bg-background">
+    <main className="flex flex-col flex-1 bg-background overflow-hidden min-h-0">
+      {/* Error banner for non-auth errors */}
+      {showError && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-3">
+          <div className="max-w-2xl mx-auto">
+            <p className="text-sm text-amber-800 font-medium">
+              Something went wrong: {error?.message}
+            </p>
+            <p className="text-xs text-amber-600 mt-1">
+              You can try sending your message again.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Crisis detection banner */}
       {crisisDetected && (
         <div className="bg-red-50 border-b border-red-200 px-4 py-3">

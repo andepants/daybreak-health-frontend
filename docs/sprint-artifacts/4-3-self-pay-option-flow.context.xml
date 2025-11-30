@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Story Context: 4-3-self-pay-option-flow
+  Generated: 2025-11-29
+
+  This XML provides comprehensive context for implementing Story 4.3: Self-Pay Option Flow.
+  All AI agents implementing this story must reference this context to ensure consistency.
+-->
+
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>3</storyId>
+    <title>Self-Pay Option Flow</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/4-3-self-pay-option-flow.md</sourceStoryPath>
+    <priority>high</priority>
+    <estimatedEffort>5 story points</estimatedEffort>
+  </metadata>
+
+  <story>
+    <asA>a parent without insurance or preferring self-pay</asA>
+    <iWant>to choose self-pay as my payment option</iWant>
+    <soThat>I can proceed with booking therapy sessions for my child</soThat>
+
+    <context>
+      This story implements the self-pay option for parents who either don't have insurance,
+      have insurance that isn't accepted, or prefer to pay out-of-pocket. The implementation
+      must follow a warm, supportive, non-judgmental approach that acknowledges the parent's
+      situation without creating friction or shame.
+
+      Key principles:
+      - Empathy-first messaging (parents are in a stressful situation)
+      - Clear pricing transparency
+      - Multiple pathways (proceed with self-pay, add insurance later, contact support)
+      - Session state persistence for recovery
+      - Mobile-first design with accessibility
+    </context>
+
+    <tasks>
+      <task id="1" acs="4.3.1">
+        <title>Create SelfPayModal component with pricing</title>
+        <subtasks>
+          <subtask>Create SelfPayModal.tsx using Radix Dialog</subtask>
+          <subtask>Display clear pricing information (price per session)</subtask>
+          <subtask>Source pricing from environment config (NEXT_PUBLIC_SELF_PAY_PRICE)</subtask>
+          <subtask>Format pricing as currency using Intl.NumberFormat</subtask>
+          <subtask>Write unit test for pricing display</subtask>
+        </subtasks>
+      </task>
+      <task id="2" acs="4.3.2">
+        <title>Add supportive messaging</title>
+        <subtasks>
+          <subtask>Write empathetic, non-judgmental copy</subtask>
+          <subtask>Include supportive language for stressful situation</subtask>
+          <subtask>Follow UX design guidelines for Daybreak brand tone</subtask>
+          <subtask>Write unit test verifying empathy copy present</subtask>
+        </subtasks>
+      </task>
+      <task id="3" acs="4.3.3">
+        <title>Implement "Proceed with self-pay" action</title>
+        <subtasks>
+          <subtask>Add setSelfPay function to useInsurance hook</subtask>
+          <subtask>Call updateSessionProgress mutation with isSelfPay flag</subtask>
+          <subtask>Handle loading and error states</subtask>
+          <subtask>Write integration test for session update</subtask>
+        </subtasks>
+      </task>
+      <task id="4" acs="4.3.4">
+        <title>Implement "I'll add insurance later" action</title>
+        <subtasks>
+          <subtask>Add close handler that dismisses modal</subtask>
+          <subtask>Ensure form remains with no changes</subtask>
+          <subtask>Write unit test for modal dismiss</subtask>
+        </subtasks>
+      </task>
+      <task id="5" acs="4.3.5">
+        <title>Implement navigation after self-pay</title>
+        <subtasks>
+          <subtask>Navigate to therapist matching after setSelfPay succeeds</subtask>
+          <subtask>Use router.push to /onboarding/[sessionId]/matching</subtask>
+          <subtask>Write integration test for navigation</subtask>
+        </subtasks>
+      </task>
+      <task id="6" acs="4.3.6">
+        <title>Implement self-pay changeability</title>
+        <subtasks>
+          <subtask>Ensure isSelfPay flag is updatable via mutation</subtask>
+          <subtask>Allow changing before first appointment</subtask>
+          <subtask>Write integration test for flag update</subtask>
+        </subtasks>
+      </task>
+      <task id="7" acs="">
+        <title>Integrate with insurance form</title>
+        <subtasks>
+          <subtask>Wire "I don't have insurance" link to open modal</subtask>
+          <subtask>Handle modal open/close state</subtask>
+          <subtask>Write integration test for modal trigger</subtask>
+        </subtasks>
+      </task>
+      <task id="8" acs="">
+        <title>Add Contact Us option</title>
+        <subtasks>
+          <subtask>Add "Contact us" link/button in modal</subtask>
+          <subtask>Wire to support chat opening (when available)</subtask>
+          <subtask>Write unit test for contact action</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-4.3.1">
+      <description>Modal displays clear pricing information</description>
+      <testableAssertion>Price per session visible in modal</testableAssertion>
+      <verification>Unit test verifies pricing element renders with correct format ($150.00)</verification>
+    </criterion>
+    <criterion id="AC-4.3.2">
+      <description>Supportive, non-judgmental messaging present</description>
+      <testableAssertion>Copy includes empathy language</testableAssertion>
+      <verification>Unit test checks for supportive phrases like "We believe every family deserves access to care"</verification>
+    </criterion>
+    <criterion id="AC-4.3.3">
+      <description>"Proceed with self-pay" marks session as self-pay</description>
+      <testableAssertion>Session `isSelfPay` flag set to true</testableAssertion>
+      <verification>Integration test verifies updateSessionProgress mutation called with { isSelfPay: true }</verification>
+    </criterion>
+    <criterion id="AC-4.3.4">
+      <description>"I'll add insurance later" closes modal</description>
+      <testableAssertion>Modal dismisses, form remains</testableAssertion>
+      <verification>Integration test verifies onClose callback triggered and modal state changes</verification>
+    </criterion>
+    <criterion id="AC-4.3.5">
+      <description>Self-pay selection navigates to matching</description>
+      <testableAssertion>User proceeds to therapist matching</testableAssertion>
+      <verification>Integration test verifies router.push called with /matching route</verification>
+    </criterion>
+    <criterion id="AC-4.3.6">
+      <description>Self-pay can be changed before first appointment</description>
+      <testableAssertion>Flag is updatable in session</testableAssertion>
+      <verification>Integration test verifies isSelfPay flag can be toggled via mutation</verification>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact name="tech-spec-epic-4">
+        <path>docs/sprint-artifacts/tech-spec-epic-4.md</path>
+        <sections>
+          <section>Story 4.3: Self-Pay Option Flow overview and workflow</section>
+          <section>Services and Modules - SelfPayModal component structure</section>
+          <section>Workflows and Sequencing - Self-Pay Flow steps</section>
+          <section>Acceptance Criteria mapping</section>
+          <section>Test Strategy Summary</section>
+        </sections>
+        <keyExcerpts>
+          <excerpt type="workflow">
+            Self-Pay Flow:
+            1. User clicks "I don't have insurance" link
+            2. SelfPayModal opens
+            3. Modal displays pricing info and supportive messaging
+            4. User can:
+               a. Click "Proceed with self-pay" → Session marked as self-pay, continue to matching
+               b. Click "I'll add insurance later" → Close modal, return to form
+               c. Click "Contact us" → Opens support chat
+            5. If self-pay selected → Update session, navigate to matching
+          </excerpt>
+          <excerpt type="pricing">
+            Store self-pay price in environment config as fallback.
+            Use NEXT_PUBLIC_SELF_PAY_PRICE environment variable.
+          </excerpt>
+        </keyExcerpts>
+      </artifact>
+
+      <artifact name="architecture">
+        <path>docs/architecture.md</path>
+        <sections>
+          <section>PHI Protection requirements</section>
+          <section>Error Handling patterns</section>
+          <section>Accessibility Requirements (WCAG 2.1 AA)</section>
+          <section>Mobile-first design principles</section>
+        </sections>
+        <keyExcerpts>
+          <excerpt type="security">
+            PHI Protection: No PHI in logs, URLs, or browser history.
+            Note: Self-pay preference is NOT PHI, but session may contain PHI.
+          </excerpt>
+          <excerpt type="accessibility">
+            - Color contrast: 4.5:1 for body text
+            - Keyboard navigation: All interactive elements focusable
+            - Touch targets: Minimum 44x44px
+            - ARIA labels on all interactive elements
+          </excerpt>
+        </keyExcerpts>
+      </artifact>
+
+      <artifact name="ux-design">
+        <path>docs/ux-design-specification.md</path>
+        <sections>
+          <section>Modal Patterns (size, dismiss behavior)</section>
+          <section>Button Hierarchy (primary, secondary, tertiary)</section>
+          <section>Emotional Design Goals (supportive, hopeful)</section>
+          <section>Color System (Daybreak Teal, Warm Orange)</section>
+        </sections>
+        <keyExcerpts>
+          <excerpt type="modal">
+            Modal Patterns: Dismissible via ESC, outside click, close button.
+            Size: Medium (600px) on desktop, full-screen on mobile.
+          </excerpt>
+          <excerpt type="tone">
+            Primary Feeling: Supported and understood (not judged)
+            Design Implication: Warm color palette, conversational tone
+          </excerpt>
+        </keyExcerpts>
+      </artifact>
+
+      <artifact name="api-schema">
+        <path>docs/sprint-artifacts/api_schema.graphql</path>
+        <sections>
+          <section>Insurance type definition</section>
+          <section>VerificationStatus enum (includes SELF_PAY)</section>
+          <section>UpdateSessionProgress mutation</section>
+        </sections>
+        <keyExcerpts>
+          <excerpt type="enum">
+            enum VerificationStatus {
+              PENDING | IN_PROGRESS | VERIFIED | FAILED | MANUAL_REVIEW | SELF_PAY
+            }
+          </excerpt>
+          <excerpt type="mutation">
+            mutation UpdateSessionProgress($sessionId: ID!, $progress: JSON!)
+            # Use to set: { isSelfPay: true, insurance: { status: "SELF_PAY" } }
+          </excerpt>
+        </keyExcerpts>
+      </artifact>
+    </docs>
+
+    <code>
+      <artifact name="dialog-component">
+        <path>components/ui/dialog.tsx</path>
+        <purpose>Radix UI Dialog wrapper - base for SelfPayModal</purpose>
+        <patterns>
+          <pattern>Dialog component structure with DialogContent, DialogHeader, DialogTitle</pattern>
+          <pattern>Automatic dismissal via ESC, outside click, close button</pattern>
+          <pattern>Focus management via Radix primitives</pattern>
+        </patterns>
+      </artifact>
+
+      <artifact name="save-exit-modal">
+        <path>components/layout/SaveExitModal.tsx</path>
+        <purpose>Reference modal implementation showing Daybreak patterns</purpose>
+        <patterns>
+          <pattern>State management: useState for loading, error states</pattern>
+          <pattern>Reset state when modal opens via useEffect</pattern>
+          <pattern>Supportive messaging style and tone</pattern>
+          <pattern>Button styling with conditional classes based on state</pattern>
+        </patterns>
+      </artifact>
+
+      <artifact name="parent-info-form">
+        <path>features/demographics/ParentInfoForm.tsx</path>
+        <purpose>Form component showing validation and auto-save patterns</purpose>
+        <patterns>
+          <pattern>React Hook Form with Zod resolver</pattern>
+          <pattern>useAutoSave integration for session persistence</pattern>
+          <pattern>Accessibility: aria-required, aria-invalid, aria-describedby</pattern>
+          <pattern>Error display with role="alert"</pattern>
+        </patterns>
+      </artifact>
+
+      <artifact name="use-auto-save-hook">
+        <path>hooks/useAutoSave.ts</path>
+        <purpose>Session persistence pattern</purpose>
+        <patterns>
+          <pattern>Hook returns: saveStatus, save function, retry function</pattern>
+          <pattern>Usage: const { save, saveStatus } = useAutoSave({ sessionId })</pattern>
+        </patterns>
+      </artifact>
+
+      <artifact name="button-component">
+        <path>components/ui/button.tsx</path>
+        <purpose>Button variants and styling</purpose>
+        <patterns>
+          <pattern>Primary button: bg-daybreak-teal for main CTAs</pattern>
+          <pattern>Outline button: variant="outline" for secondary actions</pattern>
+          <pattern>Ghost button: variant="ghost" for minimal actions</pattern>
+        </patterns>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <internal>
+        <dependency status="to-be-created-in-4.1">
+          <name>InsuranceForm component</name>
+          <description>Must trigger SelfPayModal via "I don't have insurance" link</description>
+        </dependency>
+        <dependency status="to-be-created-in-4.1">
+          <name>useInsurance hook</name>
+          <description>Custom hook for insurance state - add setSelfPay function</description>
+        </dependency>
+        <dependency status="available">
+          <name>Dialog component</name>
+          <path>components/ui/dialog.tsx</path>
+        </dependency>
+        <dependency status="available">
+          <name>Button component</name>
+          <path>components/ui/button.tsx</path>
+        </dependency>
+        <dependency status="available">
+          <name>useAutoSave hook</name>
+          <path>hooks/useAutoSave.ts</path>
+        </dependency>
+      </internal>
+
+      <external>
+        <dependency>
+          <name>@radix-ui/react-dialog</name>
+          <version>^1.1.15</version>
+          <purpose>Dialog primitive for modal</purpose>
+        </dependency>
+        <dependency>
+          <name>lucide-react</name>
+          <purpose>Icons (Check, Info, X)</purpose>
+        </dependency>
+      </external>
+
+      <backend>
+        <dependency status="available">
+          <name>UpdateSessionProgress mutation</name>
+          <description>Updates session.progress JSON with { isSelfPay: true }</description>
+        </dependency>
+      </backend>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <security>
+      <constraint>
+        <name>PHI Protection</name>
+        <description>
+          Self-pay preference and pricing are NOT PHI, but session data may contain PHI.
+          - No PHI in console logs
+          - No PHI in URLs or browser history
+          - Session updates via secure GraphQL mutations only
+        </description>
+      </constraint>
+    </security>
+
+    <performance>
+      <constraint>
+        <name>Modal Load Time</name>
+        <description>
+          Modal should open instantly (&lt;100ms) as it's triggered by user action.
+          - No lazy loading for modal content
+          - Inline pricing in component (no API call needed)
+        </description>
+      </constraint>
+    </performance>
+
+    <accessibility>
+      <constraint>
+        <name>WCAG 2.1 AA Compliance</name>
+        <requirements>
+          <requirement>All interactive elements keyboard accessible</requirement>
+          <requirement>Focus trapped in modal when open</requirement>
+          <requirement>ESC key closes modal</requirement>
+          <requirement>Screen reader announcements for modal open/close</requirement>
+          <requirement>Minimum 44x44px touch targets</requirement>
+          <requirement>Color contrast ratios met (4.5:1 for body text)</requirement>
+        </requirements>
+      </constraint>
+    </accessibility>
+
+    <mobile-first>
+      <constraint>
+        <name>Mobile Responsive Design</name>
+        <requirements>
+          <requirement>Modal full-screen on mobile (&lt;640px)</requirement>
+          <requirement>Buttons stack vertically on mobile</requirement>
+          <requirement>Text readable without zoom (16px minimum)</requirement>
+          <requirement>Touch targets appropriately sized (44x44px)</requirement>
+        </requirements>
+      </constraint>
+    </mobile-first>
+
+    <ux>
+      <constraint>
+        <name>Supportive Tone Required</name>
+        <description>
+          All copy must be:
+          - Warm and empathetic
+          - Non-judgmental (avoid "can't afford" language)
+          - Reassuring (emphasize care access)
+          - Clear and transparent (no hidden costs messaging)
+        </description>
+        <examples>
+          <example type="headline">Self-pay is a great option</example>
+          <example type="body">We believe every family deserves access to quality mental health care. Whether you're between insurance plans, prefer to keep sessions private, or your insurance isn't in-network, we're here to help.</example>
+        </examples>
+      </constraint>
+    </ux>
+  </constraints>
+
+  <interfaces>
+    <component name="SelfPayModal">
+      <path>features/insurance/SelfPayModal.tsx</path>
+      <signature><![CDATA[
+/**
+ * Props for SelfPayModal component
+ */
+export interface SelfPayModalProps {
+  /** Whether the modal is displayed */
+  isOpen: boolean;
+
+  /** Callback when modal is closed */
+  onClose: () => void;
+
+  /** Callback when self-pay is selected and session updated */
+  onSelfPayConfirmed: () => void;
+
+  /** Current session ID for updating session state */
+  sessionId: string;
+
+  /** Optional price override (defaults to env var) */
+  pricePerSession?: number;
+}
+
+/**
+ * Self-pay option modal component
+ *
+ * Features:
+ * - Displays clear pricing information
+ * - Supportive, non-judgmental messaging
+ * - Three action options: proceed, defer, contact support
+ * - Updates session with self-pay flag
+ * - Mobile-responsive design
+ */
+export function SelfPayModal(props: SelfPayModalProps): JSX.Element;
+      ]]></signature>
+    </component>
+
+    <hook name="useInsurance">
+      <path>features/insurance/useInsurance.ts</path>
+      <signature><![CDATA[
+/**
+ * Insurance state management hook
+ * To be extended with setSelfPay function for Story 4.3
+ */
+export interface UseInsuranceReturn {
+  insuranceInfo: InsuranceInfo | null;
+  isLoading: boolean;
+  isSaving: boolean;
+  error: Error | null;
+  submitInsurance: (data: InsuranceFormData) => Promise<void>;
+  setSelfPay: () => Promise<void>; // NEW for Story 4.3
+  clearError: () => void;
+}
+
+export function useInsurance(sessionId: string): UseInsuranceReturn;
+      ]]></signature>
+    </hook>
+
+    <mutation name="UpdateSessionProgress">
+      <operation>updateSessionProgress</operation>
+      <graphql><![CDATA[
+mutation UpdateSessionProgress($sessionId: ID!, $progress: JSON!) {
+  updateSessionProgress(sessionId: $sessionId, progress: $progress) {
+    session {
+      id
+      status
+      progress
+      insurance {
+        id
+        verificationStatus
+      }
+    }
+  }
+}
+
+# Example variables for self-pay:
+{
+  "sessionId": "sess_abc123",
+  "progress": {
+    "isSelfPay": true,
+    "insurance": {
+      "status": "SELF_PAY",
+      "selectedAt": "2025-11-29T12:00:00Z"
+    }
+  }
+}
+      ]]></graphql>
+    </mutation>
+  </interfaces>
+
+  <tests>
+    <standards>
+      <framework>Vitest + React Testing Library</framework>
+      <coverage>
+        <requirement>All acceptance criteria covered by tests</requirement>
+        <requirement>Unit tests for component rendering and content</requirement>
+        <requirement>Integration tests for state updates and navigation</requirement>
+        <requirement>E2E tests for complete user flows</requirement>
+      </coverage>
+    </standards>
+
+    <locations>
+      <unit-tests>
+        <file>features/insurance/__tests__/SelfPayModal.test.tsx</file>
+        <file>features/insurance/__tests__/useInsurance.test.tsx</file>
+      </unit-tests>
+      <integration-tests>
+        <file>features/insurance/__tests__/SelfPayModal.integration.test.tsx</file>
+      </integration-tests>
+      <e2e-tests>
+        <file>tests/e2e/insurance-self-pay.spec.ts</file>
+      </e2e-tests>
+    </locations>
+
+    <ideas>
+      <unit>
+        <test id="U-4.3.1" ac="AC-4.3.1">
+          <description>SelfPayModal renders with pricing</description>
+          <assertion>Pricing element displays formatted price from env var</assertion>
+        </test>
+        <test id="U-4.3.2" ac="AC-4.3.2">
+          <description>Modal displays supportive messaging</description>
+          <assertion>Copy includes empathy phrases and non-judgmental language</assertion>
+        </test>
+        <test id="U-4.3.3">
+          <description>Modal has three action buttons</description>
+          <assertion>Proceed, defer, and contact buttons all render</assertion>
+        </test>
+        <test id="U-4.3.4">
+          <description>Modal is dismissible</description>
+          <assertion>ESC key and outside click trigger onClose</assertion>
+        </test>
+        <test id="U-4.3.5">
+          <description>Accessibility attributes present</description>
+          <assertion>ARIA labels, focus management, keyboard nav work</assertion>
+        </test>
+      </unit>
+
+      <integration>
+        <test id="I-4.3.1" ac="AC-4.3.3">
+          <description>Proceed button updates session</description>
+          <assertion>updateSessionProgress mutation called with isSelfPay: true</assertion>
+        </test>
+        <test id="I-4.3.2" ac="AC-4.3.4">
+          <description>Defer button closes modal</description>
+          <assertion>onClose callback triggered, modal closes</assertion>
+        </test>
+        <test id="I-4.3.3" ac="AC-4.3.5">
+          <description>Self-pay confirmation triggers navigation</description>
+          <assertion>onSelfPayConfirmed callback triggers route to /matching</assertion>
+        </test>
+        <test id="I-4.3.4" ac="AC-4.3.3">
+          <description>useInsurance.setSelfPay function works</description>
+          <assertion>Hook function updates session and returns success</assertion>
+        </test>
+        <test id="I-4.3.5">
+          <description>Error handling for failed mutation</description>
+          <assertion>Error state shown with retry option</assertion>
+        </test>
+      </integration>
+
+      <e2e>
+        <test id="E2E-4.3.1" ac="AC-4.3.1,AC-4.3.3,AC-4.3.5">
+          <description>Complete self-pay flow</description>
+          <steps>
+            1. Navigate to insurance step
+            2. Click "I don't have insurance" link
+            3. Modal opens with pricing
+            4. Click "Proceed with self-pay"
+            5. Navigate to therapist matching
+            6. Verify session has isSelfPay flag
+          </steps>
+        </test>
+        <test id="E2E-4.3.2" ac="AC-4.3.4">
+          <description>Defer self-pay and return to form</description>
+          <steps>
+            1. Open self-pay modal
+            2. Click "I'll add insurance later"
+            3. Modal closes
+            4. Insurance form still displayed
+            5. No session changes
+          </steps>
+        </test>
+        <test id="E2E-4.3.3">
+          <description>Contact support from modal</description>
+          <steps>
+            1. Open self-pay modal
+            2. Click "Contact us"
+            3. Support chat widget opens
+          </steps>
+        </test>
+      </e2e>
+    </ideas>
+  </tests>
+
+  <implementation-notes>
+    <note category="pricing">
+      <title>Pricing Configuration</title>
+      <content>
+        Price per session from NEXT_PUBLIC_SELF_PAY_PRICE env var.
+        Format as currency:
+        const price = Number(process.env.NEXT_PUBLIC_SELF_PAY_PRICE) || 150;
+        const formatted = new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD'
+        }).format(price);
+      </content>
+    </note>
+
+    <note category="messaging">
+      <title>Supportive Messaging Examples</title>
+      <content>
+        Headline: "Self-pay is a great option"
+        Body: "We believe every family deserves access to quality mental health care..."
+        Pricing: "Our self-pay rate is $150 per session."
+        Buttons: "Proceed with self-pay" | "I'll add insurance later" | "Contact us"
+      </content>
+    </note>
+
+    <note category="state">
+      <title>Session State Update</title>
+      <content>
+        Use updateSessionProgress mutation:
+        progress: {
+          isSelfPay: true,
+          insurance: { status: "SELF_PAY", selectedAt: ISO8601 timestamp }
+        }
+      </content>
+    </note>
+
+    <note category="navigation">
+      <title>Post-Selection Navigation</title>
+      <content>
+        After setSelfPay succeeds: router.push(`/onboarding/${sessionId}/matching`)
+        Matching page should detect isSelfPay flag and skip insurance verification.
+      </content>
+    </note>
+  </implementation-notes>
+
+  <environment>
+    <variable>
+      <name>NEXT_PUBLIC_SELF_PAY_PRICE</name>
+      <type>number</type>
+      <required>false</required>
+      <default>150</default>
+      <description>Price per therapy session for self-pay option (in USD)</description>
+      <example>NEXT_PUBLIC_SELF_PAY_PRICE=150</example>
+    </variable>
+  </environment>
+</story-context>

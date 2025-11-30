@@ -12,17 +12,18 @@
 "use client";
 
 import * as React from "react";
-import { Check, Copy, Mail } from "lucide-react";
+import { Check, Copy, Mail, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 /**
  * Props for SaveExitModal component
@@ -64,7 +65,8 @@ export function SaveExitModal({
 
   // Generate session URL using configured public URL or fallback to window origin
   const sessionUrl = React.useMemo(() => {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
       (typeof window !== "undefined" ? window.location.origin : "");
     return `${baseUrl}/onboarding/${sessionId}/assessment`;
   }, [sessionId]);
@@ -166,96 +168,145 @@ export function SaveExitModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-teal-50">
-            <Check className="w-8 h-8 text-teal-600" />
-          </div>
-          <DialogTitle className="text-center text-xl">
-            Your progress has been saved!
-          </DialogTitle>
-          <DialogDescription className="text-center text-base">
-            You can return anytime using this link:
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent showCloseButton={false} className="sm:max-w-[480px] p-0 overflow-visible gap-0 border-0 shadow-2xl rounded-3xl">
+        <div className="relative p-8 bg-white rounded-3xl">
+          <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+            <X className="h-5 w-5 text-gray-400" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
 
-        <div className="space-y-6">
-          {/* Session URL Display */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-muted text-sm break-all">
-              <span className="flex-1">{sessionUrl}</span>
+          <DialogHeader className="flex flex-col items-center mb-8 space-y-4">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-teal-50 ring-8 ring-teal-50/50">
+              <Check className="w-8 h-8 text-teal-600" strokeWidth={3} />
             </div>
-            <Button
-              onClick={handleCopyLink}
-              variant="outline"
-              className="w-full"
-              disabled={isCopied}
-            >
-              {isCopied ? (
-                <>
-                  <Check className="w-4 h-4 mr-2" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4 mr-2" />
-                  Copy link
-                </>
-              )}
-            </Button>
-          </div>
+            <div className="space-y-2 text-center">
+              <DialogTitle className="text-2xl font-bold text-gray-900 tracking-tight whitespace-nowrap">
+                Your progress has been saved!
+              </DialogTitle>
+              <p className="text-gray-500 text-base max-w-[320px] mx-auto leading-relaxed">
+                You can return anytime using this link:
+              </p>
+            </div>
+          </DialogHeader>
 
-          {/* Email Reminder Section */}
-          <div className="space-y-3">
-            <Label htmlFor="reminder-email" className="text-base font-medium">
-              Want a reminder to come back?
-            </Label>
-            <div className="space-y-2">
-              <Input
-                id="reminder-email"
-                type="email"
-                placeholder="email@example.com"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setEmailError(null);
-                }}
-                onKeyDown={handleEmailKeyDown}
-                disabled={isSendingReminder || reminderSent}
-                className={emailError ? "border-red-500" : ""}
-                aria-invalid={!!emailError}
-                aria-describedby={emailError ? "email-error" : undefined}
-              />
-              {emailError && (
-                <p id="email-error" className="text-sm text-red-500">
-                  {emailError}
+          <div className="space-y-8">
+            {/* Session URL Display */}
+            <div className="space-y-3">
+              <div className="relative group">
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 transition-colors group-hover:border-gray-200 group-hover:bg-gray-50/80">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-600 truncate font-medium font-mono">
+                      {sessionUrl}
+                    </p>
+                  </div>
+                </div>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                  <Button
+                    onClick={handleCopyLink}
+                    size="sm"
+                    className={cn(
+                      "h-8 px-3 transition-all duration-200",
+                      isCopied
+                        ? "bg-teal-600 hover:bg-teal-700 text-white"
+                        : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 shadow-sm"
+                    )}
+                  >
+                    {isCopied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 mr-1.5" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 mr-1.5" />
+                        Copy
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Email Reminder Section */}
+            <div className="space-y-4 pt-6 border-t border-gray-100">
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="reminder-email"
+                  className="text-sm font-semibold text-gray-900"
+                >
+                  Want a reminder to come back?
+                </Label>
+                <p className="text-sm text-gray-500">
+                  We'll send you a secure link to resume later.
                 </p>
-              )}
-              <Button
-                onClick={handleSendReminder}
-                variant="secondary"
-                className="w-full"
-                disabled={isSendingReminder || reminderSent || !email.trim()}
-              >
-                {reminderSent ? (
-                  <>
-                    <Check className="w-4 h-4 mr-2" />
-                    Reminder sent!
-                  </>
-                ) : (
-                  <>
-                    <Mail className="w-4 h-4 mr-2" />
-                    {isSendingReminder ? "Sending..." : "Send reminder"}
-                  </>
+              </div>
+
+              <div className="space-y-3">
+                <div className="relative">
+                  <Input
+                    id="reminder-email"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailError(null);
+                    }}
+                    onKeyDown={handleEmailKeyDown}
+                    disabled={isSendingReminder || reminderSent}
+                    className={cn(
+                      "h-11 px-4 bg-white border-gray-200 focus:border-teal-500 focus:ring-teal-500/20 transition-all",
+                      emailError &&
+                      "border-red-300 focus:border-red-500 focus:ring-red-500/20",
+                      reminderSent &&
+                      "border-teal-500 bg-teal-50/30 text-teal-900"
+                    )}
+                  />
+                  {reminderSent && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-600">
+                      <Check className="w-5 h-5" />
+                    </div>
+                  )}
+                </div>
+
+                {emailError && (
+                  <p className="text-sm text-red-600 flex items-center animate-in slide-in-from-top-1 fade-in">
+                    <span className="w-1 h-1 rounded-full bg-red-600 mr-2" />
+                    {emailError}
+                  </p>
                 )}
-              </Button>
+
+                <Button
+                  onClick={handleSendReminder}
+                  className={cn(
+                    "w-full h-11 text-base font-medium transition-all duration-200",
+                    reminderSent
+                      ? "bg-teal-100 text-teal-900 hover:bg-teal-200 border-transparent"
+                      : "bg-gray-900 text-white hover:bg-gray-800 shadow-lg shadow-gray-900/10"
+                  )}
+                  disabled={isSendingReminder || reminderSent || !email.trim()}
+                >
+                  {reminderSent ? (
+                    "Reminder sent!"
+                  ) : (
+                    <>
+                      {isSendingReminder ? (
+                        <span className="flex items-center">
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                          Sending...
+                        </span>
+                      ) : (
+                        <span className="flex items-center">
+                          <Mail className="w-4 h-4 mr-2 opacity-80" />
+                          Send reminder
+                        </span>
+                      )}
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
-
-          {/* Save & Exit Button */}
-          <Button onClick={onClose} className="w-full" size="lg" variant="outline">
-            Save & Exit
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -1,0 +1,466 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>1</storyId>
+    <title>Cost Estimation Display</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-30</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/stories/6-1-cost-estimation-display.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>to see an estimated cost for therapy sessions based on my insurance</iWant>
+    <soThat>I can make an informed decision about care for my child</soThat>
+    <tasks>
+### Task 1: Create Cost Estimation Component (AC: #1, #2)
+- Create `features/cost/CostEstimationCard.tsx` component
+- Create `features/cost/CoverageDetails.tsx` subcomponent
+
+### Task 2: Implement GraphQL Query and Type Generation (AC: #4, #5)
+- Create GraphQL query file `features/cost/getCostEstimate.graphql`
+- Run GraphQL code generation (`pnpm codegen`)
+
+### Task 3: Implement Apollo Integration and State Management (AC: #4, #5)
+- Create custom hook `features/cost/useCostEstimate.ts`
+- Configure Apollo cache policy for cost data
+
+### Task 4: Create Cost Estimation Page Route (AC: #1)
+- Create page at `app/onboarding/[sessionId]/cost/page.tsx`
+- Update progress indicator for cost estimation step
+
+### Task 5: Implement Loading and Error States (AC: #3)
+- Create loading state component with skeleton loader
+- Create error state component with support fallback
+
+### Task 6: Currency Formatting and Display Utilities
+- Create `lib/utils/currency.ts` utility
+- Create `lib/utils/insurance.ts` utility for masking
+
+### Task 7: Testing (AC: All)
+- Unit tests for CostEstimationCard component
+- Unit tests for useCostEstimate hook
+- Integration tests for cost page
+- E2E test for cost estimation flow
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+### AC1: Cost Summary Display
+**Given** I have submitted insurance information
+**When** I view the cost estimation screen at `/onboarding/[sessionId]/cost`
+**Then** I see a Cost Summary Card with:
+- "Your Estimated Cost" heading
+- Per-session cost estimate (e.g., "$25 per session")
+- Insurance coverage breakdown
+- "Based on [Insurance Carrier] coverage" note
+- Disclaimer: "Final cost may vary based on your specific plan"
+
+### AC2: Coverage Details
+**Given** the cost estimation is displayed
+**Then** I see coverage details including:
+- What insurance typically covers (percentage or amount)
+- My expected copay/coinsurance
+- Any applicable deductible information
+
+### AC3: Loading and Error States
+**Given** the cost estimation is being fetched
+**When** the API is processing
+**Then** I see a loading state with appropriate messaging
+
+**Given** the cost estimation is unavailable
+**When** an error occurs or data cannot be retrieved
+**Then** I see an error state with fallback to contact support
+
+### AC4: Cost Calculation from Backend
+**Given** I am viewing cost estimation
+**Then** all costs are calculated by the backend based on my insurance data
+**And** the frontend displays the results without performing calculations
+
+### AC5: Data Privacy
+**Given** the cost information is displayed
+**Then** any sensitive insurance details are masked appropriately
+**And** the estimate is cached in Apollo for the session
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Technology Stack Details</section>
+        <snippet>Apollo Client 4.x for GraphQL data fetching and caching with type-safe hooks from GraphQL Code Generator. Component architecture follows functional components with TypeScript, feature-based folder structure (features/cost/), and separation of presentational and container components.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Data Architecture - Cache Normalization</section>
+        <snippet>Apollo Client cache configured with InMemoryCache and typePolicies for OnboardingSession (keyed by id with deep merge for assessment updates), Message (keyed by id), and TherapistMatch (keyed by therapistId).</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Security Architecture - PHI Protection</section>
+        <snippet>No PHI in console.log, URL parameters, or browser history. Session tokens use secure httpOnly cookies. Form autofill disabled for sensitive fields. All costs calculated by backend, frontend only displays results.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Styling and Design Tokens</section>
+        <snippet>Use Daybreak design tokens: daybreak-teal (#2A9D8F), cream (#FEF7ED), deep-text (#1A3C34). Use shadcn/ui Card component as base. Mobile-first responsive design with max-width 640px on desktop.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/api_schema.graphql</path>
+        <title>GraphQL API Schema</title>
+        <section>Core Types</section>
+        <snippet>Insurance type includes payerName, subscriberName, memberId, verificationStatus. OnboardingSession includes insurance field. Expected cost estimation schema will include CostEstimate, Coverage, DeductibleInfo, and Money types.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/stories/6-1-cost-estimation-display.md</path>
+        <title>Story 6.1: Cost Estimation Display</title>
+        <section>Backend Integration</section>
+        <snippet>Consumes Story 6-1 (Backend): Cost Calculation Engine and Story 6-2 (Backend): Insurance Cost Estimation API. Expected GraphQL schema includes CostEstimate type with perSessionCost, insuranceCoverage, copay, coinsurance, deductible fields.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>features/matching/TherapistCard.tsx</path>
+        <kind>component</kind>
+        <symbol>TherapistCard</symbol>
+        <lines>1-239</lines>
+        <reason>Example of well-structured feature component with Card UI, proper TypeScript props, accessibility features, and Daybreak styling patterns. Demonstrates shadcn/ui Card usage, image optimization with next/image, and responsive design.</reason>
+      </artifact>
+      <artifact>
+        <path>app/onboarding/[sessionId]/layout.tsx</path>
+        <kind>layout</kind>
+        <symbol>OnboardingLayout</symbol>
+        <lines>1-134</lines>
+        <reason>Onboarding layout pattern showing how to integrate new pages into the flow. Includes OnboardingProgress component integration, route-to-step mapping (ROUTE_TO_STEP), and ErrorBoundary usage. Cost page needs to be added to this flow.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/apollo/client.ts</path>
+        <kind>service</kind>
+        <symbol>makeClient</symbol>
+        <lines>1-103</lines>
+        <reason>Apollo Client configuration showing cache setup with typePolicies. Cost estimation will need similar cache configuration for CostEstimate type. Shows pattern for InMemoryCache configuration and default fetch policies.</reason>
+      </artifact>
+      <artifact>
+        <path>app/globals.css</path>
+        <kind>styles</kind>
+        <symbol>Daybreak Design Tokens</symbol>
+        <lines>1-100</lines>
+        <reason>Daybreak design system tokens including brand colors (daybreak-teal: #2A9D8F, cream: #FEF7ED, deep-text: #1A3C34), spacing scale (4px base), and border radius. Use these tokens for consistent styling in cost components.</reason>
+      </artifact>
+      <artifact>
+        <path>features/matching/graphql/GetMatchedTherapists.graphql</path>
+        <kind>graphql</kind>
+        <symbol>GetMatchedTherapists</symbol>
+        <lines>N/A</lines>
+        <reason>Example GraphQL query pattern for feature-specific queries. Cost estimation will follow similar pattern with getCostEstimate.graphql co-located in features/cost/ directory.</reason>
+      </artifact>
+      <artifact>
+        <path>graphql/mutations/SubmitInsuranceInfo.graphql</path>
+        <kind>graphql</kind>
+        <symbol>SubmitInsuranceInfo</symbol>
+        <lines>N/A</lines>
+        <reason>Insurance submission mutation that precedes cost estimation. Cost page will use sessionId from this flow. Shows pattern for mutation structure and payload handling.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/card.tsx</path>
+        <kind>component</kind>
+        <symbol>Card</symbol>
+        <lines>N/A</lines>
+        <reason>shadcn/ui Card component used as base for CostEstimationCard. Provides Card, CardHeader, CardContent, CardFooter components with proper Tailwind styling.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/badge.tsx</path>
+        <kind>component</kind>
+        <symbol>Badge</symbol>
+        <lines>N/A</lines>
+        <reason>shadcn/ui Badge component for displaying coverage information tags and status indicators.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="@apollo/client" version="4.0.9">GraphQL client for data fetching, caching, and state management</package>
+        <package name="graphql" version="^16.12.0">GraphQL query language</package>
+        <package name="graphql-ws" version="^6.0.6">WebSocket GraphQL client for subscriptions</package>
+        <package name="react-hook-form" version="^7.67.0">Form state management (if needed for fallback forms)</package>
+        <package name="zod" version="^3.25.76">Schema validation for data masking utilities</package>
+        <package name="next" version="16.0.5">Next.js framework with App Router</package>
+        <package name="react" version="19.2.0">React library</package>
+        <package name="lucide-react" version="^0.555.0">Icon library for UI elements</package>
+        <package name="date-fns" version="^4.1.0">Date formatting if needed for timestamps</package>
+        <package name="class-variance-authority" version="^0.7.1">CSS variant utilities</package>
+        <package name="clsx" version="^2.1.1">Conditional className utility</package>
+        <package name="tailwind-merge" version="^3.4.0">Tailwind class merging</package>
+      </node>
+      <dev>
+        <package name="@graphql-codegen/cli" version="^6.1.0">GraphQL code generation CLI</package>
+        <package name="@graphql-codegen/typescript" version="^5.0.6">TypeScript types generator</package>
+        <package name="@graphql-codegen/typescript-operations" version="^5.0.6">Operation types generator</package>
+        <package name="@graphql-codegen/typescript-react-apollo" version="^3.3.7">Apollo hooks generator</package>
+        <package name="vitest" version="^4.0.14">Unit testing framework</package>
+        <package name="@testing-library/react" version="^16.3.0">React testing utilities</package>
+        <package name="@playwright/test" version="^1.57.0">E2E testing framework</package>
+      </dev>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+**Component Architecture:**
+- Use functional components with TypeScript
+- Implement component composition pattern (separate CostEstimationCard and CoverageDetails)
+- Follow feature-based folder structure: features/cost/
+- Keep files under 500 lines for AI compatibility
+- Document all functions with JSDoc/TSDoc
+
+**State Management:**
+- Apollo Client for GraphQL data fetching and caching
+- Use generated hooks from GraphQL Code Generator (useGetCostEstimateQuery)
+- Configure cache policy for CostEstimate type in lib/apollo/client.ts
+- No global state needed - Apollo cache is sufficient
+
+**Data Flow:**
+1. User navigates to /onboarding/[sessionId]/cost
+2. Page component renders CostEstimationCard
+3. Card uses useCostEstimate hook
+4. Hook executes useGetCostEstimateQuery with sessionId
+5. Backend calculates cost (never client-side)
+6. Frontend displays with currency formatting
+
+**Security (PHI Protection):**
+- Mask sensitive insurance data (member ID last 4 digits only)
+- Cost calculation happens on backend only
+- No PHI in console.log, URL params, or error messages
+- Use HTTPS for all API calls
+- Validate sessionId parameter
+
+**Styling:**
+- Use Daybreak design tokens from globals.css
+- Primary: daybreak-teal (#2A9D8F)
+- Background: cream (#FEF7ED)
+- Text: deep-text (#1A3C34)
+- Use shadcn/ui Card component as base
+- Mobile-first: max-width 640px on desktop
+- Follow existing component patterns (see TherapistCard)
+
+**Testing Requirements:**
+- Minimum 80% code coverage for features/cost/
+- 100% coverage for utility functions
+- All ACs must have corresponding tests
+- Use Vitest for unit tests, Playwright for E2E
+- Mock GraphQL queries in tests
+
+**Error Handling:**
+- Display user-friendly error messages
+- Provide support contact option on errors
+- Log errors for backend visibility
+- Graceful degradation if cost unavailable
+
+**Naming Conventions:**
+- Components: PascalCase (CostEstimationCard.tsx)
+- Utilities: camelCase (currency.ts)
+- Hooks: use prefix (useCostEstimate.ts)
+- Test files: match source with .test suffix
+- GraphQL operations: PascalCase (GetCostEstimate)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GetCostEstimate</name>
+      <kind>GraphQL Query</kind>
+      <signature>
+query GetCostEstimate($sessionId: ID!) {
+  costEstimate(sessionId: $sessionId) {
+    id
+    sessionId
+    perSessionCost {
+      amount
+      currency
+    }
+    insuranceCoverage {
+      percentage
+      amount {
+        amount
+        currency
+      }
+      description
+    }
+    copay {
+      amount
+      currency
+    }
+    coinsurance
+    deductible {
+      total {
+        amount
+        currency
+      }
+      met {
+        amount
+        currency
+      }
+      remaining {
+        amount
+        currency
+      }
+    }
+    insuranceCarrier
+    disclaimer
+    calculatedAt
+  }
+}
+      </signature>
+      <path>features/cost/getCostEstimate.graphql</path>
+    </interface>
+    <interface>
+      <name>CostEstimationCardProps</name>
+      <kind>TypeScript Interface</kind>
+      <signature>
+interface CostEstimationCardProps {
+  sessionId: string;
+  className?: string;
+}
+      </signature>
+      <path>features/cost/CostEstimationCard.tsx</path>
+    </interface>
+    <interface>
+      <name>useCostEstimate</name>
+      <kind>Custom Hook</kind>
+      <signature>
+function useCostEstimate(sessionId: string): {
+  costEstimate: CostEstimate | undefined;
+  loading: boolean;
+  error: ApolloError | undefined;
+  refetch: () => Promise&lt;ApolloQueryResult&lt;GetCostEstimateQuery&gt;&gt;;
+}
+      </signature>
+      <path>features/cost/useCostEstimate.ts</path>
+    </interface>
+    <interface>
+      <name>formatCurrency</name>
+      <kind>Utility Function</kind>
+      <signature>
+function formatCurrency(amount: number, currency: string = 'USD'): string
+// Returns formatted currency string (e.g., "$25.00")
+// Handles null, undefined, zero edge cases
+      </signature>
+      <path>lib/utils/currency.ts</path>
+    </interface>
+    <interface>
+      <name>maskInsuranceDetails</name>
+      <kind>Utility Function</kind>
+      <signature>
+function maskInsuranceDetails(memberId: string): string
+// Returns masked member ID showing only last 4 digits
+// Example: "1234567890" -> "******7890"
+      </signature>
+      <path>lib/utils/insurance.ts</path>
+    </interface>
+    <interface>
+      <name>OnboardingProgress</name>
+      <kind>Component Props</kind>
+      <signature>
+// Update ROUTE_TO_STEP mapping in app/onboarding/[sessionId]/layout.tsx
+const ROUTE_TO_STEP: Record&lt;string, StepId&gt; = {
+  assessment: "assessment",
+  demographics: "info",
+  insurance: "insurance",
+  cost: "cost", // ADD THIS
+  match: "match",
+  book: "book",
+};
+      </signature>
+      <path>app/onboarding/[sessionId]/layout.tsx</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+**Unit Testing (Vitest):**
+- Test all components in isolation with React Testing Library
+- Mock GraphQL queries using @apollo/client/testing (MockedProvider)
+- Test loading, error, and success states for all components
+- Verify currency formatting edge cases (null, undefined, zero, negative)
+- Test data masking functions thoroughly
+- Minimum 80% code coverage for features/cost/ directory
+- 100% coverage required for utility functions
+
+**Integration Testing:**
+- Test Apollo Client integration with real cache behavior
+- Test page routing and navigation flow
+- Mock backend API responses with realistic data
+- Verify cache updates after query execution
+
+**E2E Testing (Playwright):**
+- Test complete user flow: insurance submission → cost display
+- Verify visual appearance matches design specifications
+- Test error scenarios and fallback states
+- Test across mobile and desktop viewports
+- Verify accessibility (keyboard navigation, screen readers)
+
+**Testing Files Location:**
+- Unit: features/cost/__tests__/
+- Integration: tests/integration/
+- E2E: tests/e2e/
+    </standards>
+    <locations>
+features/cost/__tests__/CostEstimationCard.test.tsx
+features/cost/__tests__/CoverageDetails.test.tsx
+features/cost/__tests__/useCostEstimate.test.ts
+lib/utils/__tests__/currency.test.ts
+lib/utils/__tests__/insurance.test.ts
+tests/integration/cost-estimation.test.ts
+tests/e2e/cost-flow.spec.ts
+    </locations>
+    <ideas>
+**AC1 Tests (Cost Summary Display):**
+- Verify "Your Estimated Cost" heading renders
+- Verify per-session cost displays with correct currency formatting
+- Verify insurance carrier name displays
+- Verify disclaimer text is present and properly styled
+- Test responsive layout (mobile/desktop)
+
+**AC2 Tests (Coverage Details):**
+- Verify coverage percentage displays when available
+- Verify coverage amount displays when available
+- Verify copay amount displays with currency formatting
+- Verify coinsurance percentage displays
+- Verify deductible breakdown (total, met, remaining)
+
+**AC3 Tests (Loading and Error States):**
+- Test skeleton loader displays during query loading
+- Test "Calculating your estimate..." message shows
+- Test error state displays on GraphQL error
+- Test error state shows "Contact support" option
+- Test retry mechanism works correctly
+
+**AC4 Tests (Backend Calculation):**
+- Verify no client-side cost calculations occur
+- Verify all cost data comes from GraphQL response
+- Test query execution with correct sessionId parameter
+- Verify GraphQL query structure matches expected schema
+
+**AC5 Tests (Data Privacy):**
+- Verify sensitive insurance data is masked (member ID)
+- Verify no PHI appears in console logs
+- Verify cost estimate is cached in Apollo
+- Test cache policy prevents unnecessary refetches
+- Verify sessionId validation
+
+**Utility Tests:**
+- formatCurrency: test USD formatting, null handling, zero values
+- formatPercentage: test percentage display, decimal places
+- maskInsuranceDetails: test masking logic, edge cases
+- Test error boundary catches component errors
+
+**E2E Flow Test:**
+- Complete flow: start → insurance → cost → matching
+- Verify cost data persists across navigation
+- Test back/forward navigation maintains state
+- Verify session recovery includes cost data
+    </ideas>
+  </tests>
+</story-context>

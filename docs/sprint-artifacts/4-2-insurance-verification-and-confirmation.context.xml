@@ -1,0 +1,303 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>4.2</storyId>
+    <title>Insurance Verification and Confirmation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/4-2-insurance-verification-and-confirmation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent</asA>
+    <iWant>to see a confirmation of my submitted insurance information</iWant>
+    <soThat>I can verify the details are correct before proceeding</soThat>
+    <tasks>
+      - Task 1: Create loading/processing state UI (AC: 4.2.1)
+        - Create InsuranceConfirmation.tsx component
+        - Add loading indicator during mutation
+        - Use existing loading animation patterns from Epic 2
+        - Write unit test for loading state display
+
+      - Task 2: Build confirmation display with masked member ID (AC: 4.2.2)
+        - Display carrier name from saved data
+        - Create maskMemberId utility function (show last 4 only: ****XXXX)
+        - Display masked member ID in confirmation view
+        - Write unit test for masking utility
+
+      - Task 3: Implement edit functionality (AC: 4.2.3)
+        - Add Edit link/button to confirmation view
+        - Wire edit to return to form with preserved data
+        - Ensure form pre-populates with existing values from cache
+        - Write integration test for edit flow
+
+      - Task 4: Implement error handling with retry (AC: 4.2.4)
+        - Display specific error messages on mutation failure
+        - Add "Try again" retry button
+        - Clear error on retry attempt
+        - Write integration test for error recovery
+
+      - Task 5: Ensure performance target (AC: 4.2.5)
+        - Measure mutation + UI update time
+        - Optimize if exceeds 2s target
+        - Write E2E test verifying timing constraint
+
+      - Task 6: Implement session persistence (AC: 4.2.6)
+        - Ensure Apollo cache persistence for insurance data
+        - Verify refresh shows confirmation view
+        - Write integration test for data persistence on refresh
+
+      - Task 7: Integration testing
+        - Write full flow tests: submit → processing → confirmation
+        - Test error scenarios (network failure, validation errors)
+        - Test edit and resubmit flow
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    | # | Criterion | Testable Assertion |
+    |---|-----------|-------------------|
+    | AC-4.2.1 | Processing state shows during mutation | Loading indicator visible while `isSaving` is true |
+    | AC-4.2.2 | Confirmation shows carrier and masked member ID | Member ID shows `****XXXX` format (last 4 visible) |
+    | AC-4.2.3 | Edit link returns to form with data preserved | Clicking edit shows form with previously entered values |
+    | AC-4.2.4 | Error state shows specific message and retry | Error displayed with "Try again" action |
+    | AC-4.2.5 | Success confirmation completes in < 2s | Mutation + UI update within 2000ms |
+    | AC-4.2.6 | Insurance data persists in session | Refresh page shows confirmation view |
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/sprint-artifacts/tech-spec-epic-4.md</path>
+        <title>Epic Technical Specification: Insurance Submission</title>
+        <section>Story 4.2: Insurance Verification and Confirmation</section>
+        <snippet>Processing state with loading animation, confirmation display with masked member ID, edit capability for corrections, and error handling with retry option. Mutation + UI update must complete in &lt; 2s (AC-4.2.5).</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/sprint-artifacts/tech-spec-epic-4.md</path>
+        <title>Epic Technical Specification: Insurance Submission</title>
+        <section>Data Models and Contracts - InsuranceInformation Type</section>
+        <snippet>InsuranceInformation GraphQL type includes: id, provider (carrier name), planName (optional), memberId (subscriber ID), groupId (optional), imageFileUrl (reserved for Growth OCR).</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/sprint-artifacts/tech-spec-epic-4.md</path>
+        <title>Epic Technical Specification: Insurance Submission</title>
+        <section>Security - PHI Protection</section>
+        <snippet>Insurance data (member ID, group number) is PHI. Never log to console, never include in URLs, use phiGuard utility for debugging, mask member ID in confirmation display (show last 4 only).</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/sprint-artifacts/tech-spec-epic-4.md</path>
+        <title>Epic Technical Specification: Insurance Submission</title>
+        <section>APIs and Interfaces - SubmitInsuranceInfo Mutation</section>
+        <snippet>Mutation submitInsuranceInfo returns: id, status, and insuranceInfo (id, provider, planName, memberId, groupId). Used for submitting insurance data and receiving confirmation.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Security Architecture - PHI Protection Checklist</section>
+        <snippet>No PHI in console.log, URLs, browser history, or error messages. Session tokens use secure httpOnly cookies. Form autofill disabled for sensitive fields (autoComplete="off").</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Performance Budgets</section>
+        <snippet>LCP &lt; 1.5s, FID &lt; 100ms, CLS &lt; 0.1, TTI &lt; 3s. Use optimistic UI updates, skeleton components, and efficient loading strategies.</snippet>
+      </artifact>
+      <artifact>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>Feedback Patterns</section>
+        <snippet>Success: Toast (bottom) + inline, 4 seconds. Error: Inline below field, persistent until fixed. Loading: Skeleton OR spinner with text until complete.</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>hooks/useAutoSave.ts</path>
+        <kind>hook</kind>
+        <symbol>useAutoSave</symbol>
+        <lines>1-171</lines>
+        <reason>Auto-save pattern for insurance data persistence. Provides saveStatus, save function, and retry logic that can be adapted for insurance submission flow.</reason>
+      </artifact>
+      <artifact>
+        <path>hooks/useOnboardingSession.ts</path>
+        <kind>hook</kind>
+        <symbol>useOnboardingSession</symbol>
+        <lines>1-180</lines>
+        <reason>Session management pattern for loading and persisting onboarding state. Shows how to handle session data, loading states, and localStorage backup for insurance confirmation persistence.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/validations/demographics.ts</path>
+        <kind>validation</kind>
+        <symbol>parentInfoSchema, childInfoSchema, clinicalIntakeSchema</symbol>
+        <lines>1-367</lines>
+        <reason>Zod validation pattern examples for forms. Shows structure for validation schemas, error messages, TypeScript type inference, and default values. Reference for creating insurance validation schema.</reason>
+      </artifact>
+      <artifact>
+        <path>features/assessment/TypingIndicator.tsx</path>
+        <kind>component</kind>
+        <symbol>TypingIndicator</symbol>
+        <lines>all</lines>
+        <reason>Loading animation component from Epic 2. Can be reused or adapted for insurance submission loading state (AC-4.2.1).</reason>
+      </artifact>
+      <artifact>
+        <path>features/demographics/ParentInfoForm.tsx</path>
+        <kind>component</kind>
+        <symbol>ParentInfoForm</symbol>
+        <lines>all</lines>
+        <reason>Form component pattern using React Hook Form, Zod validation, and shadcn/ui components. Reference for building InsuranceConfirmation component and handling form state.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/apollo/client.ts</path>
+        <kind>apollo-config</kind>
+        <symbol>Apollo Client configuration</symbol>
+        <lines>all</lines>
+        <reason>Apollo Client setup for GraphQL mutations and cache. Needed for understanding how to implement submitInsuranceInfo mutation and cache persistence (AC-4.2.6).</reason>
+      </artifact>
+      <artifact>
+        <path>lib/apollo/links.ts</path>
+        <kind>apollo-config</kind>
+        <symbol>Apollo Links configuration</symbol>
+        <lines>all</lines>
+        <reason>HTTP and WebSocket link setup for mutations. Shows error handling patterns and retry logic for network failures (AC-4.2.4).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <react>19.2.0</react>
+        <react-dom>19.2.0</react-dom>
+        <next>16.0.5</next>
+        <@apollo/client>4.0.9</@apollo/client>
+        <graphql>^16.12.0</graphql>
+        <react-hook-form>^7.67.0</react-hook-form>
+        <@hookform/resolvers>^5.2.2</@hookform/resolvers>
+        <zod>^3.25.76</zod>
+        <lucide-react>^0.555.0</lucide-react>
+        <@radix-ui/react-dialog>^1.1.15</@radix-ui/react-dialog>
+        <@radix-ui/react-alert-dialog>^1.1.15</@radix-ui/react-alert-dialog>
+        <class-variance-authority>^0.7.1</class-variance-authority>
+        <clsx>^2.1.1</clsx>
+        <tailwind-merge>^3.4.0</tailwind-merge>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - **PHI Protection (Critical)**: Member ID is PHI - NEVER log to console, NEVER include in URLs or query parameters, NEVER store in browser history. Use phiGuard utility for any debugging. Mask member ID in UI display (show last 4 characters only: ****XXXX format).
+    - **Component Location**: Place InsuranceConfirmation.tsx in features/insurance/ alongside InsuranceForm from Story 4.1 (not yet implemented). Follow co-located pattern: component + logic + GraphQL ops.
+    - **Validation Pattern**: Use Zod for schema validation following existing patterns in lib/validations/. Create lib/validations/insurance.ts if not exists from Story 4.1.
+    - **Apollo Cache**: Insurance data must persist in Apollo Client cache to survive page refresh (AC-4.2.6). Configure cache policy for insurance queries.
+    - **Error Handling**: Display specific error messages with retry option. Follow architecture pattern: inline errors with actionable retry buttons (AC-4.2.4).
+    - **Performance Target**: Mutation + UI update must complete in &lt; 2s (AC-4.2.5). Use optimistic response for immediate UI feedback. Loading state should appear within 200ms.
+    - **Mobile-First**: All components designed mobile-native first per architecture. Touch targets minimum 44x44px. Test on mobile viewport.
+    - **Accessibility**: WCAG 2.1 AA compliance. Proper ARIA labels, keyboard navigation, focus indicators (2px teal outline), screen reader support.
+    - **Styling**: Use shadcn/ui components (Button, Card, Alert). Follow Daybreak design system: Teal primary (#2A9D8F), warm orange accents (#E9A23B), generous border radii (xl: 24px for cards).
+    - **Testing Standards**: Unit tests for masking utility, integration tests for mutation flow and error handling, E2E test for timing verification (< 2s requirement), test refresh persistence via cache.
+    - **Dependency on Story 4.1**: Requires InsuranceForm.tsx, useInsurance hook with submitInsurance mutation, and insurance.graphql operations from Story 4.1. Story 4.1 must be completed first.
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>submitInsuranceInfo (GraphQL Mutation)</name>
+      <kind>GraphQL</kind>
+      <signature>mutation SubmitInsuranceInfo($input: SubmitInsuranceInfoInput!) {
+  submitInsuranceInfo(input: $input) {
+    id
+    status
+    insuranceInfo {
+      id
+      provider
+      planName
+      memberId
+      groupId
+    }
+  }
+}</signature>
+      <path>features/insurance/insurance.graphql</path>
+    </interface>
+    <interface>
+      <name>GetInsuranceInfo (GraphQL Query)</name>
+      <kind>GraphQL</kind>
+      <signature>query GetInsuranceInfo($sessionId: ID!) {
+  getOnboardingSession(id: $sessionId) {
+    id
+    status
+    insuranceInfo {
+      id
+      provider
+      planName
+      memberId
+      groupId
+    }
+  }
+}</signature>
+      <path>features/insurance/insurance.graphql</path>
+    </interface>
+    <interface>
+      <name>useInsurance Hook</name>
+      <kind>React Hook</kind>
+      <signature>interface UseInsuranceReturn {
+  insuranceInfo: InsuranceInformation | null;
+  isLoading: boolean;
+  isSaving: boolean;
+  error: Error | null;
+  submitInsurance: (data: InsuranceFormData) => Promise&lt;void&gt;;
+  setSelfPay: () => void;
+  clearError: () => void;
+}</signature>
+      <path>features/insurance/useInsurance.ts</path>
+    </interface>
+    <interface>
+      <name>InsuranceInformation Type (GraphQL)</name>
+      <kind>GraphQL Type</kind>
+      <signature>type InsuranceInformation = {
+  id: string;
+  provider: string;       // Insurance carrier name
+  planName?: string;      // Optional plan name
+  memberId: string;       // Member/subscriber ID
+  groupId?: string;       // Group number (optional)
+  imageFileUrl?: string;  // Reserved for Growth (OCR)
+};</signature>
+      <path>types/graphql.ts</path>
+    </interface>
+    <interface>
+      <name>maskMemberId Utility Function</name>
+      <kind>Utility Function</kind>
+      <signature>/**
+ * Masks member ID for PHI protection in UI display
+ * Shows last 4 characters only in format: ****XXXX
+ * @param memberId - Full member ID string
+ * @returns Masked member ID string
+ */
+function maskMemberId(memberId: string): string</signature>
+      <path>lib/utils/phiGuard.ts OR features/insurance/utils.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Test Framework: Vitest + React Testing Library for unit/integration tests, Playwright for E2E tests.
+      Location: tests/unit/ for unit tests, tests/e2e/ for E2E tests.
+      Patterns: Follow existing test patterns in tests/unit/lib/validations/demographics.test.ts and features/assessment tests.
+      Coverage: Unit tests for utility functions (maskMemberId), integration tests for component behavior and mutation flows, E2E tests for full user journeys and performance constraints.
+    </standards>
+    <locations>
+      - tests/unit/lib/utils/phiGuard.test.ts (or tests/unit/features/insurance/utils.test.ts)
+      - tests/unit/features/insurance/InsuranceConfirmation.test.ts
+      - tests/integration/features/insurance/confirmation-flow.test.ts
+      - tests/e2e/insurance-submission.spec.ts
+    </locations>
+    <ideas>
+      - AC-4.2.1: Unit test - InsuranceConfirmation renders loading state when isSaving is true. Check for presence of loading indicator/spinner component.
+      - AC-4.2.2: Unit test - maskMemberId function correctly masks member ID to show last 4 characters (input: "ABC123456789" → output: "****6789"). Test edge cases: short IDs (&lt; 4 chars), empty string, special characters.
+      - AC-4.2.2: Integration test - InsuranceConfirmation displays carrier name and masked member ID from insuranceInfo prop. Verify member ID is never shown unmasked.
+      - AC-4.2.3: Integration test - Clicking Edit button/link returns to form view with data preserved. Form fields are pre-populated with insuranceInfo from Apollo cache.
+      - AC-4.2.4: Integration test - Error state displays specific error message when mutation fails. Retry button clears error and re-triggers mutation. Test network error, validation error, and server error scenarios.
+      - AC-4.2.5: E2E test - Measure time from mutation trigger to confirmation display. Assert total time &lt; 2000ms. Use performance.now() or Playwright timing APIs.
+      - AC-4.2.6: Integration test - After successful submission, refresh page and verify confirmation view still shows (data persisted in Apollo cache). Test cache policy configuration.
+      - Integration test - Full flow: Form submission → loading state → success confirmation → edit → resubmit → updated confirmation.
+      - Integration test - Network failure during submission → error displayed → retry succeeds → confirmation shown.
+      - Unit test - Verify no PHI (member ID) appears in console.log output during component lifecycle. Mock console methods and assert member ID is never logged.
+    </ideas>
+  </tests>
+</story-context>

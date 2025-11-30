@@ -1,0 +1,25 @@
+# SessionByRecoveryToken Query
+# Recovers session using magic link token from email
+# No authentication required (token is the credential)
+# Returns session with new JWT tokens
+
+query SessionByRecoveryToken($recoveryToken: String!) {
+  sessionByRecoveryToken(recoveryToken: $recoveryToken) {
+    session {
+      id
+      status
+      progress {
+        percentage
+        currentPhase
+        completedPhases
+        nextPhase
+        estimatedMinutesRemaining
+      }
+      expiresAt
+      createdAt
+      updatedAt
+    }
+    token
+    refreshToken
+  }
+}

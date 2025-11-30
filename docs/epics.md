@@ -20,11 +20,15 @@ This document provides the complete epic and story breakdown for daybreak-health
 | 1 | Foundation & Project Setup | 5 | Technical foundation for all features |
 | 2 | AI-Guided Assessment Experience | 6 | Parents describe child's needs via supportive AI |
 | 3 | Parent & Child Information Collection | 4 | Family info with validation and auto-save |
-| 4 | Insurance Submission | 3 | Friction-reduced insurance entry |
-| 5 | Therapist Matching & Booking | 5 | End-to-end scheduling with confirmation |
-| 6 | Human Support Integration | 3 | Real-time staff escalation |
+| 4 | Insurance Submission | 2 | Insurance entry for verification and cost estimation |
+| 5 | Enhanced Scheduling Module | 5 | AI-assisted matching and booking |
+| 6 | Cost Estimation Tool | 4 | Transparent pricing based on insurance |
+| 7 | Support Interface | 3 | Live chat with Daybreak staff via Intercom |
 
-**Total:** 6 Epics, 26 Stories covering 15 MVP functional requirements
+**Total:** 7 Epics, 29 Stories
+
+**Deferred:**
+- Image-to-Text Insurance Submission (FR-009)
 
 ---
 
@@ -84,26 +88,28 @@ This document provides the complete epic and story breakdown for daybreak-health
 | Epic 1: Foundation | Infrastructure for all FRs | Project ready for feature development |
 | Epic 2: AI Assessment | FR-001, FR-002, FR-003, FR-007 | Parents can describe child's needs via supportive AI chat |
 | Epic 3: Information Collection | FR-004, FR-005, FR-006, FR-007 | Parents can provide family information with auto-save |
-| Epic 4: Insurance Submission | FR-008, FR-007 | Parents can submit insurance and continue onboarding |
-| Epic 5: Therapist Matching & Booking | FR-011, FR-012, FR-013, FR-015 | Parents can find a matched therapist and book appointment |
-| Epic 6: Human Support | FR-014 | Parents can escalate to human support at any time |
+| Epic 4: Insurance Submission | FR-008, FR-007 | Parents can submit insurance for verification |
+| Epic 5: Enhanced Scheduling | FR-011, FR-012, FR-013, FR-015 | AI-assisted therapist matching and booking |
+| Epic 6: Cost Estimation | FR-010 | Transparent pricing before booking |
+| Epic 7: Support Interface | FR-014 | Live chat with Daybreak staff via Intercom |
 
-**Coverage Validation:** All 15 MVP FRs are mapped. FR-009, FR-010 (Growth) and FR-016, FR-017 (Vision) are deferred.
+**Coverage Validation:** All P0/P1 FRs mapped. Deferred: FR-009 (image-to-text). Deferred to Vision: FR-016, FR-017.
 
 ---
 
 ## Epics Summary
 
-| # | Epic | Stories | Primary Value |
-|:--|:-----|:--------|:--------------|
-| 1 | Foundation & Project Setup | 5 | Technical foundation enabling all features |
-| 2 | AI-Guided Assessment Experience | 6 | Core value prop - conversational screening |
-| 3 | Parent & Child Information Collection | 4 | Demographics with validation and auto-save |
-| 4 | Insurance Submission | 3 | Friction-reduced insurance entry |
-| 5 | Therapist Matching & Booking | 5 | End-to-end booking with confirmation |
-| 6 | Human Support Integration | 3 | Real-time staff escalation for emotional safety |
+| # | Epic | Stories | Primary Value | Status |
+|:--|:-----|:--------|:--------------|:-------|
+| 1 | Foundation & Project Setup | 5 | Technical foundation enabling all features | ✅ Done |
+| 2 | AI-Guided Assessment Experience | 6 | Core value prop - conversational screening | ✅ Done |
+| 3 | Parent & Child Information Collection | 4 | Demographics with validation and auto-save | ✅ Done |
+| 4 | Insurance Submission | 2 | Insurance entry for verification | 4-1 Done |
+| 5 | Enhanced Scheduling Module | 5 | AI-assisted therapist matching and booking | Ready |
+| 6 | Cost Estimation Tool | 4 | Transparent pricing based on insurance | Pending |
+| 7 | Support Interface | 3 | Live chat with Daybreak staff via Intercom | Pending |
 
-**Total: 6 Epics, 26 Stories**
+**Total: 7 Epics, 29 Stories**
 
 ---
 
@@ -762,19 +768,21 @@ So that **I can proceed even if the chat experience doesn't work for me**.
 
 ## Epic 4: Insurance Submission
 
-**Goal:** Enable parents to submit insurance information with minimal friction, using manual entry as the primary reliable path.
+**Goal:** Enable parents to submit insurance information with minimal friction for verification and cost estimation.
 
-**User Value:** Parents can quickly provide insurance details without getting stuck, with clear feedback on what's needed.
+**User Value:** Parents can quickly provide insurance details to understand coverage and costs before booking.
 
 **FRs Covered:** FR-008, FR-007 (persistence)
 
+**Status:** 4-1 DONE, 4-2 ready-for-dev, 4-3 skipped
+
 ---
 
-### Story 4.1: Manual Insurance Entry Form
+### Story 4.1: Manual Insurance Entry Form ✅ DONE
 
 As a **parent**,
 I want **to enter my insurance information manually**,
-So that **I can proceed with onboarding without depending on photo capture**.
+So that **Daybreak can verify coverage and estimate costs**.
 
 **Acceptance Criteria:**
 
@@ -782,31 +790,23 @@ So that **I can proceed with onboarding without depending on photo capture**.
 **When** the insurance form loads
 **Then** I see:
 
-**Form Header:**
-- "Let's handle insurance - this is the quick part!"
-- Reassuring tone, not bureaucratic
-
 **Form Fields (`features/insurance/InsuranceForm.tsx`):**
-- Insurance Carrier (required, searchable dropdown with common carriers + "Other")
+- Insurance Carrier (required, searchable dropdown)
 - Member ID (required, alphanumeric, 5-30 chars)
-- Group Number (optional, alphanumeric)
-- Subscriber Name (required, defaults to parent name if "Self")
-- Relationship to Subscriber (required, select: Self, Spouse, Child, Other)
+- Group Number (optional)
+- Subscriber Name (required)
+- Relationship to Subscriber (required, select)
 
-**And** carrier dropdown shows logos for major carriers
-**And** member ID field shows example format based on carrier
 **And** form validates on blur with helpful error messages
-**And** "I don't have insurance" link offers self-pay information
-**And** "Continue" button is enabled when required fields are valid
+**And** "I don't have insurance" link offers self-pay flow
+**And** auto-save triggers on field blur
 
 **Prerequisites:** Epic 3 complete
 
 **Technical Notes:**
-- Carrier list from backend or static JSON (top 20 carriers)
-- Member ID validation varies by carrier (implement basic length check)
-- Self-pay modal shows pricing information (from backend)
-- Store in `insurance` field of session
-- No PHI in console logs (use phi-guard utility)
+- Implemented in `features/insurance/InsuranceForm.tsx`
+- Uses `useInsurance` hook for state management
+- Zod validation in `lib/validations/insurance.ts`
 
 ---
 
@@ -824,83 +824,36 @@ So that **I can move forward with confidence**.
 
 **Processing State:**
 - "Saving your insurance information..."
-- Subtle loading animation (not blocking)
-- Completes quickly (< 2 seconds)
+- Subtle loading animation
 
 **Confirmation State:**
 - Green checkmark icon
 - "Insurance information saved!"
-- Summary of what was captured (carrier, member ID - partially masked)
+- Summary with masked member ID (last 4 digits)
 - "Edit" link if correction needed
-- "Continue to find your therapist" button (primary)
-
-**Error State (if backend rejects):**
-- Specific error message ("We couldn't verify this member ID")
-- Inline edit capability
-- "Try again" button
-- "Skip for now" option with warning
+- "Continue" button (primary)
 
 **And** confirmation shows without full page reload
-**And** insurance data persists correctly in session
+**And** insurance data persists in session
 
 **Prerequisites:** Story 4.1
 
 **Technical Notes:**
-- Use Apollo mutation with optimistic response
-- Mask member ID in confirmation (show last 4 digits)
-- Backend verification is async (MVP may just save, Growth adds verification)
-- Error handling per Architecture patterns
-- Proceed even if verification pending (flag in session)
+- Uses Apollo mutation with optimistic response
+- Mask member ID in confirmation display
+- Error handling with retry option
 
 ---
 
-### Story 4.3: Self-Pay Option Flow
+## Epic 5: Enhanced Scheduling Module
 
-As a **parent without insurance or with rejected coverage**,
-I want **clear information about self-pay options**,
-So that **I can still access care for my child**.
+**Goal:** Display AI-matched therapists with transparent reasoning and enable appointment booking with confirmation.
 
-**Acceptance Criteria:**
-
-**Given** I click "I don't have insurance" or insurance is rejected
-**When** the self-pay modal appears
-**Then** I see:
-
-**Self-Pay Information:**
-- Clear pricing per session
-- Payment plans available (if applicable)
-- "We believe every family deserves access to care" messaging
-- No judgment, supportive tone
-
-**Actions:**
-- "Proceed with self-pay" button
-- "I'll add insurance later" option
-- "Contact us for questions" link
-
-**Given** I choose self-pay
-**When** I proceed
-**Then** the session is marked as self-pay and continues to matching
-
-**And** self-pay can be changed later (before first appointment)
-**And** session persists self-pay choice
-
-**Prerequisites:** Story 4.1
-
-**Technical Notes:**
-- Modal uses shadcn/ui `Dialog` component
-- Pricing comes from backend or environment config
-- Self-pay flag stored in session
-- FR-010 (cost estimates) is Growth scope - MVP shows static pricing
-
----
-
-## Epic 5: Therapist Matching & Booking
-
-**Goal:** Show matched therapists with transparent reasoning and enable appointment booking with confirmation.
-
-**User Value:** Parents can understand why therapists were matched, choose with confidence, and book immediately with clear next steps.
+**User Value:** Parents can understand why therapists were recommended based on their child's assessment, choose with confidence, and book immediately.
 
 **FRs Covered:** FR-011, FR-012, FR-013, FR-015
+
+**Backend Integration:** Consumes APIs from backend stories 5-1 through 5-5
 
 ---
 
@@ -939,7 +892,7 @@ So that **I understand why they're recommended and can choose confidently**.
 **And** "Why these therapists?" expandable section explains matching criteria
 **And** "None of these feel right?" link offers to see more or contact support
 
-**Prerequisites:** Epic 4 complete
+**Prerequisites:** Epic 3 complete
 
 **Technical Notes:**
 - Therapists from `matchTherapists` query
@@ -997,7 +950,7 @@ So that **I feel confident they're the right fit for my child**.
 
 ---
 
-### Story 5.3: Appointment Calendar and Time Selection
+### Story 5.3: Availability Calendar and Time Selection
 
 As a **parent**,
 I want **to see available appointment times and select one**,
@@ -1124,168 +1077,343 @@ So that **I have a record and won't forget**.
 
 ---
 
-## Epic 6: Human Support Integration
+## Epic 6: Cost Estimation Tool
 
-**Goal:** Provide real-time human support escalation throughout the onboarding flow, ensuring parents never feel trapped.
+**Goal:** Display transparent cost information based on insurance or self-pay, helping parents understand pricing before booking.
+
+**User Value:** Parents can see upfront costs, understand their financial responsibility, and explore payment options without surprises.
+
+**FRs Covered:** FR-010
+
+**Backend Integration:** Consumes APIs from backend stories 6-1 through 6-5
+
+---
+
+### Story 6.1: Cost Estimation Display
+
+As a **parent**,
+I want **to see an estimated cost for therapy sessions based on my insurance**,
+So that **I can make an informed decision about care for my child**.
+
+**Acceptance Criteria:**
+
+**Given** I have submitted insurance information
+**When** I view the cost estimation screen at `/onboarding/[sessionId]/cost`
+**Then** I see:
+
+**Cost Summary Card (`features/cost/CostEstimationCard.tsx`):**
+- "Your Estimated Cost" heading
+- Per-session cost estimate (e.g., "$25 per session")
+- Insurance coverage breakdown
+- "Based on [Insurance Carrier] coverage" note
+- Disclaimer: "Final cost may vary based on your specific plan"
+
+**Coverage Details:**
+- What insurance typically covers (percentage or amount)
+- Your expected copay/coinsurance
+- Any applicable deductible information
+
+**And** costs are calculated by backend based on insurance data
+**And** loading state shows while fetching estimate
+**And** error state if estimate unavailable (with fallback to contact support)
+
+**Prerequisites:** Epic 3 complete (insurance data available)
+
+**Technical Notes:**
+- Query `getCostEstimate` with session ID
+- Display from backend story 6-1 (Cost Calculation Engine) and 6-2 (Insurance Cost Estimation)
+- Cache estimate in Apollo for session
+- Mask any sensitive insurance details
+
+---
+
+### Story 6.2: Self-Pay Rate Display
+
+As a **parent without insurance or preferring self-pay**,
+I want **to see clear self-pay pricing**,
+So that **I understand my options and can compare costs**.
+
+**Acceptance Criteria:**
+
+**Given** I selected self-pay or want to compare options
+**When** viewing the cost estimation screen
+**Then** I see:
+
+**Self-Pay Section:**
+- "Self-Pay Rate" heading
+- Per-session price (e.g., "$150 per session")
+- Package discounts if available (e.g., "Buy 4 sessions, save 10%")
+- Comparison with insurance estimate (if available)
+
+**Comparison View (if insurance provided):**
+- Side-by-side: Insurance estimate vs Self-pay rate
+- Highlight which option is more affordable
+- Note any trade-offs (e.g., "Insurance requires using in-network therapists")
+
+**And** self-pay rates come from backend configuration
+**And** "Choose self-pay" button updates session preference
+
+**Prerequisites:** Story 6.1
+
+**Technical Notes:**
+- Consumes backend story 6-3 (Self-Pay Rates & Comparison)
+- Toggle between insurance/self-pay views
+- Store preference in session
+
+---
+
+### Story 6.3: Deductible and Out-of-Pocket Tracking
+
+As a **parent using insurance**,
+I want **to understand my deductible status and out-of-pocket maximum**,
+So that **I know how costs might change over time**.
+
+**Acceptance Criteria:**
+
+**Given** I have insurance with deductible information
+**When** viewing cost details
+**Then** I see:
+
+**Deductible Progress (`features/cost/DeductibleTracker.tsx`):**
+- Current deductible amount met (if known)
+- Remaining deductible (e.g., "$500 remaining of $1,500")
+- Progress bar visualization
+- Note: "Costs may decrease after deductible is met"
+
+**Out-of-Pocket Maximum:**
+- Annual out-of-pocket maximum (if available)
+- Amount applied toward maximum
+- "You've reached your max" indicator if applicable
+
+**And** data comes from insurance verification (when available)
+**And** shows "Unable to determine" with explanation if data unavailable
+**And** link to "Contact your insurance for details"
+
+**Prerequisites:** Story 6.1
+
+**Technical Notes:**
+- Consumes backend story 6-4 (Deductible & Out-of-Pocket Tracking)
+- May require insurance API integration (Growth feature)
+- Graceful degradation if data unavailable
+- Progress bar uses Tailwind/shadcn styling
+
+---
+
+### Story 6.4: Payment Plan Options
+
+As a **parent concerned about affordability**,
+I want **to see available payment plan options**,
+So that **I can spread costs over time if needed**.
+
+**Acceptance Criteria:**
+
+**Given** I am viewing cost information
+**When** I click "Payment options" or costs exceed a threshold
+**Then** I see:
+
+**Payment Plans Modal (`features/cost/PaymentPlanModal.tsx`):**
+- "Flexible Payment Options" heading
+- Available plans listed (e.g., "Pay per session", "Monthly billing", "Package prepay")
+- For each plan:
+  - Payment frequency
+  - Amount per payment
+  - Any savings/discounts
+  - Terms and conditions link
+
+**Actions:**
+- "Select this plan" for each option
+- "Pay as you go" default option
+- "Talk to us about financial assistance" link
+
+**And** selecting a plan updates session with payment preference
+**And** modal is accessible (keyboard navigation, screen reader)
+**And** "Continue to booking" proceeds with selected plan
+
+**Prerequisites:** Stories 6.1, 6.2
+
+**Technical Notes:**
+- Consumes backend story 6-5 (Payment Plan Options)
+- Plans configured in backend
+- shadcn/ui `Dialog` for modal
+- Store selection in session for checkout
+- Financial assistance link opens support chat
+
+---
+
+## Epic 7: Support Interface
+
+**Goal:** Provide real-time human support via Intercom throughout the onboarding flow, ensuring parents never feel trapped.
 
 **User Value:** Parents can get human help at any moment if the AI experience isn't working for them, providing emotional safety.
 
 **FRs Covered:** FR-014
 
+**Backend Integration:** Consumes APIs from backend stories 7-1 through 7-3
+
 ---
 
-### Story 6.1: Floating Support Button
+### Story 7.1: Intercom Widget Integration
 
 As a **parent**,
-I want **to always see an option to get human help**,
+I want **to always see an option to get human help via live chat**,
 So that **I know I'm not alone if I get stuck or need reassurance**.
 
 **Acceptance Criteria:**
 
 **Given** I am anywhere in the onboarding flow
-**When** I look at the screen
-**Then** I see a floating support button:
+**When** the page loads
+**Then** I see the Intercom chat widget:
 
-**Support Button (`components/layout/SupportButton.tsx`):**
-- Position: fixed bottom-right (16px margin)
-- Warm orange background (#E9A23B)
-- Chat bubble icon + "Help" text
-- Subtle shadow for elevation
-- 56px height (accessible touch target)
-- Doesn't overlap with input areas
+**Intercom Launcher:**
+- Position: fixed bottom-right (standard Intercom placement)
+- Daybreak-branded colors (configured in Intercom)
+- Chat bubble icon
+- Accessible touch target
+- Doesn't overlap with critical UI elements
 
-**On Hover/Tap:**
-- Tooltip: "Chat with our team"
-- Gentle pulse animation
+**On Click:**
+- Opens Intercom Messenger
+- Shows "Chat with Daybreak Support"
+- Pre-populated with helpful prompts
 
-**And** button is present on all onboarding pages
-**And** button does not appear on landing page (only during onboarding)
-**And** button position adjusts for mobile keyboard
+**And** widget is present on all onboarding pages
+**And** widget loads asynchronously (doesn't block page render)
+**And** widget position adjusts for mobile
 
 **Prerequisites:** Epic 1 (layout components)
 
 **Technical Notes:**
-- Component added to onboarding layout
-- Use `fixed bottom-4 right-4` positioning
-- Z-index above content but below modals
-- Detect keyboard open on mobile to adjust position
-- Track clicks for analytics
+- Install `@intercom/messenger-js-sdk` or use script tag
+- Initialize in `app/layout.tsx` or dedicated provider
+- Configure app_id from environment variable
+- Consumes backend story 7-1 (Intercom Widget Integration)
+- Use Intercom's React hooks if available
 
 ---
 
-### Story 6.2: Support Chat Widget
+### Story 7.2: Session Context Passing
 
-As a **parent**,
-I want **to chat with a real person in real-time**,
-So that **I can get immediate help with questions or concerns**.
+As a **support staff member**,
+I want **to see the parent's onboarding context when they reach out**,
+So that **I can help them quickly without asking repetitive questions**.
 
 **Acceptance Criteria:**
 
-**Given** I click the support button
-**When** the chat widget opens
-**Then** I see:
+**Given** a parent opens Intercom chat during onboarding
+**When** the chat session starts
+**Then** Intercom receives context data:
 
-**Chat Widget (`features/support-chat/SupportChatWidget.tsx`):**
-- Slides up from button position
-- Similar to AI chat UI (consistent experience)
-- "Chat with Daybreak Support" header
-- Message input at bottom
-- Previous messages if returning to chat
+**User Attributes Passed:**
+- Parent name (if collected)
+- Email address
+- Current onboarding step (e.g., "assessment", "insurance", "scheduling")
+- Session ID for lookup
+- Child's name (if collected, for context)
 
-**Initial Message:**
-- Automated: "Hi! How can I help you today?"
-- Shows "Typically replies in < 2 minutes" or real wait time
+**Custom Attributes:**
+- `onboarding_step`: Current step in flow
+- `session_id`: Onboarding session ID
+- `assessment_complete`: Boolean
+- `insurance_submitted`: Boolean
 
-**Real-Time Behavior:**
-- Messages appear instantly via GraphQL subscription
-- Staff responses show staff name and avatar
-- Typing indicator when staff is responding
-- "Seen" indicator when staff has read message
+**And** context updates as parent progresses through onboarding
+**And** staff can view full session in Daybreak admin via session ID
+**And** no sensitive PHI is passed to Intercom (assessment details stay in backend)
 
-**And** widget can be minimized back to button (with unread badge)
-**And** conversation persists across page navigation
-**And** if staff is offline, show "Leave a message" with email followup
-
-**Prerequisites:** Story 6.1, Story 1.4 (WebSocket)
+**Prerequisites:** Story 7.1, Epic 3 (user data available)
 
 **Technical Notes:**
-- Uses `SupportChatMessagesSubscription` for real-time
-- Messages via `sendSupportMessage` mutation
-- Subscription reconnects automatically on disconnect
-- Widget state managed in context (open/minimized/closed)
-- Store conversation ID in session for continuity
+- Use Intercom `update` method to pass attributes
+- Call on route changes via `useEffect`
+- Consumes backend story 7-2 (Session Context Passing)
+- Filter out PHI - only pass non-sensitive identifiers
+- Update context on step transitions
+
+```typescript
+// Example context update
+window.Intercom('update', {
+  name: parentName,
+  email: parentEmail,
+  onboarding_step: currentStep,
+  session_id: sessionId,
+});
+```
 
 ---
 
-### Story 6.3: Support Availability and Fallback
+### Story 7.3: Support Availability and Request Tracking
 
-As a **parent reaching out after hours**,
-I want **clear expectations about when I'll get a response**,
+As a **parent reaching out for help**,
+I want **to know when I'll get a response and track my request**,
 So that **I don't feel ignored or abandoned**.
 
 **Acceptance Criteria:**
 
-**Given** I open support chat outside business hours
-**When** the widget loads
+**Given** I open Intercom chat
+**When** the messenger loads
 **Then** I see:
 
-**After-Hours State:**
-- "Our team is away right now"
-- Business hours displayed (e.g., "Mon-Fri 9am-6pm ET")
-- "Leave a message and we'll respond first thing"
-- Email input for follow-up (pre-filled if known)
-- "Send" button for offline message
+**Availability Indicator:**
+- Real-time availability from Intercom
+- "Typically replies in X minutes" (Intercom feature)
+- Team member photos/avatars
 
-**Given** I send an offline message
-**When** I return during business hours
-**Then** I see:
-- Previous message I sent
-- Any staff responses
-- Real-time connection reestablished
+**After-Hours Experience:**
+- Intercom's built-in away mode
+- "Leave a message" with expected response time
+- Email notification option for replies
 
-**And** critical keywords (crisis, emergency) show immediate hotline resources
-**And** offline messages are queued and delivered when staff available
+**Given** I send a message
+**When** waiting for response
+**Then**:
+- Message shows "Sent" indicator
+- Typing indicator when staff responds
+- Push/email notification when reply arrives
 
-**Prerequisites:** Story 6.2
+**And** crisis keywords trigger immediate resources (configured in Intercom)
+**And** conversation history persists across sessions
+**And** support requests are tracked in backend for analytics
+
+**Prerequisites:** Story 7.1
 
 **Technical Notes:**
-- Business hours from backend config or environment
-- Offline messages via regular mutation (not subscription)
-- Crisis detection via keyword list (backend logic)
-- Show crisis hotlines (988, Crisis Text Line) for flagged content
-- Queue mechanism is backend responsibility
+- Intercom handles availability display natively
+- Crisis keyword automation configured in Intercom dashboard
+- Backend story 7-3 tracks support requests via Intercom webhooks
+- Configure Intercom's "Office Hours" feature
+- Set up crisis response automation for keywords like "suicide", "emergency"
 
 ---
 
 ## FR Coverage Matrix
 
-| FR | Description | Epic | Story |
-|:---|:------------|:-----|:------|
-| FR-001 | Conversational AI interface for screening | Epic 2 | 2.1, 2.2, 2.4 |
-| FR-002 | Adaptive questions based on responses | Epic 2 | 2.4 |
-| FR-003 | Assessment summary for therapist matching | Epic 2 | 2.5 |
-| FR-004 | Parent demographic collection | Epic 3 | 3.1 |
-| FR-005 | Child demographic collection | Epic 3 | 3.2 |
-| FR-006 | Clinical intake information | Epic 3 | 3.3 |
-| FR-007 | Session persistence/resume | Epic 2 | 2.6 | Also: 3.1, 3.2, 3.3, 4.1 (auto-save in all) |
-| FR-008 | Manual insurance entry | Epic 4 | 4.1 |
-| FR-009 | Insurance card OCR | [Growth] | Deferred |
-| FR-010 | Cost estimation | [Growth] | Deferred |
-| FR-011 | Therapist matching/suggestions | Epic 5 | 5.1, 5.2 |
-| FR-012 | Available appointment slots | Epic 5 | 5.3 |
-| FR-013 | Appointment booking + confirmation | Epic 5 | 5.4 |
-| FR-014 | Real-time staff support chat | Epic 6 | 6.1, 6.2, 6.3 |
-| FR-015 | Email notifications | Epic 5 | 5.5 |
-| FR-016 | Educational content library | [Vision] | Deferred |
-| FR-017 | Searchable knowledge base | [Vision] | Deferred |
+| FR | Description | Epic | Story | Status |
+|:---|:------------|:-----|:------|:-------|
+| FR-001 | Conversational AI interface for screening | Epic 2 | 2.1, 2.2, 2.4 | ✅ Done |
+| FR-002 | Adaptive questions based on responses | Epic 2 | 2.4 | ✅ Done |
+| FR-003 | Assessment summary for therapist matching | Epic 2 | 2.5 | ✅ Done |
+| FR-004 | Parent demographic collection | Epic 3 | 3.1 | ✅ Done |
+| FR-005 | Child demographic collection | Epic 3 | 3.2 | ✅ Done |
+| FR-006 | Clinical intake information | Epic 3 | 3.3 | ✅ Done |
+| FR-007 | Session persistence/resume | Epic 2 | 2.6 | ✅ Done |
+| FR-008 | Manual insurance entry | Epic 4 | 4.1, 4.2 | 4-1 Done |
+| FR-009 | Insurance card OCR (Image-to-Text) | [Deferred] | - | - |
+| FR-010 | Cost estimation | Epic 6 | 6.1, 6.2, 6.3, 6.4 | Pending |
+| FR-011 | AI-assisted therapist matching | Epic 5 | 5.1, 5.2 | Ready |
+| FR-012 | Available appointment slots | Epic 5 | 5.3 | Ready |
+| FR-013 | Appointment booking + confirmation | Epic 5 | 5.4 | Ready |
+| FR-014 | Live chat support (Intercom) | Epic 7 | 7.1, 7.2, 7.3 | Pending |
+| FR-015 | Email notifications | Epic 5 | 5.5 | Ready |
+| FR-016 | Educational content library | [Vision] | Deferred | - |
+| FR-017 | Searchable knowledge base | [Vision] | Deferred | - |
 
-**Coverage Status:** ✅ All 15 MVP FRs covered by stories
+**Coverage Status:** ✅ All P0/P1 FRs covered. Deferred: FR-009 (image-to-text), FR-016, FR-017 (Vision).
 
 ---
 
 ## Summary
 
-This epic breakdown transforms the Parent Onboarding AI PRD into 6 epics and 26 stories, each designed to be:
+This epic breakdown transforms the Parent Onboarding AI PRD into 7 epics and 29 stories, each designed to be:
 
 - **Bite-sized:** Completable by a single developer in one focused session
 - **Vertically sliced:** Each story delivers complete functionality
@@ -1293,17 +1421,27 @@ This epic breakdown transforms the Parent Onboarding AI PRD into 6 epics and 26 
 - **Detail-rich:** Includes UX patterns, Architecture decisions, and acceptance criteria
 
 **Epic Sequence:**
-1. **Foundation** (5 stories) - Technical setup enabling all features
-2. **AI Assessment** (6 stories) - Core value prop: conversational screening
-3. **Information Collection** (4 stories) - Demographics with validation
-4. **Insurance** (3 stories) - Friction-reduced insurance entry
-5. **Matching & Booking** (5 stories) - End-to-end scheduling
-6. **Human Support** (3 stories) - Real-time staff escalation
+1. **Foundation** (5 stories) - Technical setup enabling all features ✅ Done
+2. **AI Assessment** (6 stories) - Core value prop: conversational screening ✅ Done
+3. **Information Collection** (4 stories) - Demographics with validation ✅ Done
+4. **Insurance Submission** (2 stories) - Insurance entry for verification (4-1 Done)
+5. **Enhanced Scheduling** (5 stories) - AI-assisted therapist matching and booking (Ready)
+6. **Cost Estimation** (4 stories) - Transparent pricing based on insurance (Pending)
+7. **Support Interface** (3 stories) - Live chat with Daybreak staff via Intercom (Pending)
+
+**Backend Alignment:**
+- Epic 5 consumes backend stories 5-1 through 5-5
+- Epic 6 consumes backend stories 6-1 through 6-5
+- Epic 7 consumes backend stories 7-1 through 7-3
+
+**Deferred:**
+- FR-009: Image-to-Text Insurance Submission
 
 **Context Incorporated:**
-- ✅ PRD functional requirements (all 15 MVP FRs mapped)
+- ✅ PRD functional requirements (P0/P1 FRs mapped)
 - ✅ UX Design patterns (colors, typography, component specs)
 - ✅ Architecture decisions (tech stack, project structure, patterns)
+- ✅ Backend epic alignment (consuming APIs from backend stories)
 
 ---
 

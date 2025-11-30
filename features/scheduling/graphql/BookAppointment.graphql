@@ -1,0 +1,26 @@
+# BookAppointment Mutation
+# Books a therapy appointment for a matched therapist
+# Creates appointment record and triggers confirmation email
+
+mutation BookAppointment($input: BookAppointmentInput!) {
+  bookAppointment(input: $input) {
+    appointment {
+      id
+      sessionId
+      therapistId
+      startTime
+      endTime
+      duration
+      status
+      meetingUrl
+      therapist {
+        id
+        name
+        credentials
+        photoUrl
+      }
+    }
+    success
+    message
+  }
+}

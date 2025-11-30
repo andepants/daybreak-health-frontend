@@ -12,5 +12,5 @@ export type { HeaderProps } from "./Header";
 export { OnboardingProgress, STEPS } from "./OnboardingProgress";
 export type { OnboardingProgressProps, StepId } from "./OnboardingProgress";
 
-export { Footer, FOOTER_LINKS } from "./Footer";
+export { Footer } from "./Footer";
 export type { FooterProps } from "./Footer";

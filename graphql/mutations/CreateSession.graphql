@@ -1,12 +1,21 @@
 # CreateSession Mutation
-# Creates a new onboarding session and returns session ID with auth token
+# Creates a new anonymous onboarding session and returns session with auth tokens
 # Called when user clicks "Start Onboarding" to initiate a real session
 
-mutation CreateSession {
-  createSession {
+mutation CreateSession($referralSource: String, $deviceFingerprint: String) {
+  createSession(referralSource: $referralSource, deviceFingerprint: $deviceFingerprint) {
     session {
       id
       status
+      progress {
+        percentage
+        currentPhase
+        completedPhases
+        nextPhase
+        estimatedMinutesRemaining
+      }
+      expiresAt
+      createdAt
     }
     token
     refreshToken

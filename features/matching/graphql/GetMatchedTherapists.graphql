@@ -1,0 +1,28 @@
+# GetMatchedTherapists Query
+# Fetches matched therapists for a session based on assessment results, child needs, and availability
+# Requires valid JWT token - user can only access matches for their own session
+
+query GetMatchedTherapists($sessionId: ID!) {
+  matchedTherapists(sessionId: $sessionId) {
+    therapists {
+      id
+      name
+      credentials
+      photoUrl
+      specialties
+      availabilityStatus
+      availabilityText
+      yearsOfExperience
+      bio
+      matchScore
+      isBestMatch
+      matchReasons {
+        id
+        text
+        icon
+      }
+    }
+    totalCount
+    matchingCriteria
+  }
+}

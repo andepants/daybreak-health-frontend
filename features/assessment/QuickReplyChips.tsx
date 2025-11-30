@@ -104,15 +104,13 @@ export const QuickReplyChips = React.memo(function QuickReplyChips({
   return (
     <div
       className={cn(
-        "w-full overflow-x-auto pb-2 animate-fade-in",
-        "scrollbar-hide", // Hide scrollbar for cleaner look
-        "scroll-smooth",
+        "w-full pb-2 animate-fade-in",
         className
       )}
       role="group"
       aria-label="Quick reply options. Use Tab to navigate between options."
     >
-      <div className="flex gap-2 px-4">
+      <div className="flex flex-wrap gap-2 px-4 justify-center">
         {options.map((option) => {
           const isSelected = selectedChip === option.value;
 
@@ -122,7 +120,7 @@ export const QuickReplyChips = React.memo(function QuickReplyChips({
               variant="outline"
               onClick={() => handleSelect(option.value)}
               className={cn(
-                "rounded-full px-6 min-h-[44px] shrink-0",
+                "rounded-full px-6 min-h-[44px]",
                 "border-2 border-daybreak-teal text-daybreak-teal",
                 "hover:bg-daybreak-teal/10",
                 "transition-all duration-200",

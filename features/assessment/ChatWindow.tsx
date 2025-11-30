@@ -146,9 +146,7 @@ export function ChatWindow({
   return (
     <div
       className={cn(
-        "flex flex-col w-full mx-auto",
-        "h-[calc(100vh-4rem)]", // Full viewport minus header (64px)
-        mode === "chat" && "md:max-w-[640px]", // Centered max-width on desktop in chat mode
+        "flex flex-col flex-1 w-full mx-auto overflow-hidden min-h-0",
         className
       )}
     >
@@ -158,87 +156,89 @@ export function ChatWindow({
           question={structuredQuestion}
           currentStep={structuredProgress.current}
           totalSteps={structuredProgress.total}
-          onAnswer={onStructuredAnswer || (() => {})}
+          onAnswer={onStructuredAnswer || (() => { })}
           onBack={onStructuredBack}
         />
       ) : (
         <>
           {/* Chat mode - messages container */}
           <div
-        ref={scrollContainerRef}
-        role="log"
-        aria-live="polite"
-        aria-label="Chat conversation"
-        className={cn(
-          "flex-1 overflow-y-auto px-4 py-6",
-          "scroll-smooth", // Smooth scrolling
-          "overscroll-contain", // Prevent bounce on mobile
-          "space-y-4" // Vertical spacing between messages
-        )}
-        style={{
-          WebkitOverflowScrolling: "touch", // Enable momentum scrolling on iOS
-        }}
-      >
-        {/* Messages list */}
-        {messages.length > 0 ? (
-          messages.map((message) => (
-            <ChatBubble
-              key={message.id}
-              message={message}
-              variant={
-                message.sender === "AI"
-                  ? "ai"
-                  : message.sender === "USER"
-                  ? "user"
-                  : "system"
-              }
-            />
-          ))
-        ) : (
-          // Empty state
-          <div
-            className="flex items-center justify-center h-full text-muted-foreground"
-            role="status"
+            ref={scrollContainerRef}
+            role="log"
+            aria-live="polite"
+            aria-label="Chat conversation"
+            className={cn(
+              "flex-1 overflow-y-auto px-4 py-4 min-h-0",
+              "scroll-smooth", // Smooth scrolling
+              "overscroll-contain", // Prevent bounce on mobile
+              "flex flex-col justify-end" // Push messages toward bottom
+            )}
+            style={{
+              WebkitOverflowScrolling: "touch", // Enable momentum scrolling on iOS
+            }}
           >
-            <p className="text-sm">No messages yet. Start the conversation!</p>
+            {/* Messages list */}
+            {messages.length > 0 ? (
+              <div className="space-y-4">
+                {messages.map((message) => (
+                  <ChatBubble
+                    key={message.id}
+                    message={message}
+                    variant={
+                      message.sender === "AI"
+                        ? "ai"
+                        : message.sender === "USER"
+                          ? "user"
+                          : "system"
+                    }
+                  />
+                ))}
+              </div>
+            ) : (
+              // Empty state
+              <div
+                className="flex items-center justify-center h-full text-muted-foreground"
+                role="status"
+              >
+                <p className="text-sm">No messages yet. Start the conversation!</p>
+              </div>
+            )}
+
+            {/* Typing indicator - shows when AI is responding */}
+            <TypingIndicator isVisible={isAiResponding} onRetry={onRetry} />
+
+            {/* Scroll anchor - invisible element at bottom for auto-scroll target */}
+            <div aria-hidden="true" />
           </div>
-        )}
 
-        {/* Typing indicator - shows when AI is responding */}
-        <TypingIndicator isVisible={isAiResponding} onRetry={onRetry} />
+          {/* Input area - fixed to bottom */}
+          <div className="shrink-0 safe-area-bottom">
+            {/* Quick reply chips */}
+            <QuickReplyChips
+              options={suggestedReplies}
+              onSelect={handleQuickReply}
+              isVisible={suggestedReplies.length > 0 && !isTyping && !isAiResponding}
+            />
 
-        {/* Scroll anchor - invisible element at bottom for auto-scroll target */}
-        <div aria-hidden="true" />
-      </div>
+            {/* Message input */}
+            <MessageInput
+              onSend={handleSend}
+              isDisabled={isAiResponding}
+            />
 
-      {/* Input area - fixed to bottom */}
-      <div className="shrink-0">
-        {/* Quick reply chips */}
-        <QuickReplyChips
-          options={suggestedReplies}
-          onSelect={handleQuickReply}
-          isVisible={suggestedReplies.length > 0 && !isTyping && !isAiResponding}
-        />
-
-        {/* Message input */}
-        <MessageInput
-          onSend={handleSend}
-          isDisabled={isAiResponding}
-        />
-
-        {/* Form fallback link (AC-3.4.1) */}
-        {sessionId && (
-          <div className="px-4 pb-3 pt-1 text-center border-t border-border/50">
-            <Link
-              href={`/onboarding/${sessionId}/form/assessment`}
-              className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
-            >
-              <FileText className="h-3 w-3" />
-              Prefer a traditional form? Click here
-            </Link>
+            {/* Form fallback link (AC-3.4.1) */}
+            {sessionId && (
+              <div className="px-4 pb-3 pt-1 text-center border-t border-border/50">
+                <Link
+                  href={`/onboarding/${sessionId}/form/assessment`}
+                  className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+                >
+                  <FileText className="h-3 w-3" />
+                  Prefer a traditional form? Click here
+                </Link>
+              </div>
+            )}
           </div>
-        )}
-      </div>
         </>
       )}
     </div>

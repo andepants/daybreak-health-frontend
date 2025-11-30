@@ -1,11 +1,10 @@
 /**
  * Footer Component
  *
- * Displays Privacy Policy and Terms of Service links.
+ * Displays copyright information.
  * Supports 'default' and 'minimal' variants for different contexts.
  *
  * Features:
- * - Keyboard accessible links with focus states
  * - Daybreak design tokens for styling
  * - ARIA labels for accessibility
  */
@@ -24,15 +23,7 @@ interface FooterProps {
 }
 
 /**
- * Footer link configuration
- */
-const FOOTER_LINKS = [
-  { href: "/privacy", label: "Privacy Policy" },
-  { href: "/terms", label: "Terms of Service" },
-] as const;
-
-/**
- * Renders the footer with Privacy and Terms links
+ * Renders the footer with copyright information
  * Default variant includes more padding and border, minimal is compact
  */
 function Footer({ variant = "default", className }: FooterProps) {
@@ -47,27 +38,8 @@ function Footer({ variant = "default", className }: FooterProps) {
       )}
       role="contentinfo"
     >
-      <nav
-        className="flex items-center justify-center gap-4 md:gap-6"
-        aria-label="Footer navigation"
-      >
-        {FOOTER_LINKS.map((link) => (
-          <a
-            key={link.href}
-            href={link.href}
-            className={cn(
-              "text-xs md:text-sm text-muted-foreground",
-              "hover:text-foreground hover:underline",
-              "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-              "rounded-sm transition-colors"
-            )}
-          >
-            {link.label}
-          </a>
-        ))}
-      </nav>
       {variant === "default" && (
-        <p className="text-center text-xs text-muted-foreground mt-2">
+        <p className="text-center text-xs text-muted-foreground">
           &copy; {new Date().getFullYear()} Daybreak Health. All rights reserved.
         </p>
       )}
@@ -75,5 +47,5 @@ function Footer({ variant = "default", className }: FooterProps) {
   );
 }
 
-export { Footer, FOOTER_LINKS };
+export { Footer };
 export type { FooterProps };

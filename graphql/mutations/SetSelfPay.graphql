@@ -1,0 +1,16 @@
+# SetSelfPay Mutation
+# Marks session as self-pay (no insurance)
+# Skips insurance verification step
+
+mutation SetSelfPay($sessionId: ID!) {
+  setSelfPay(sessionId: $sessionId) {
+    session {
+      id
+      status
+      insurance {
+        id
+        verificationStatus
+      }
+    }
+  }
+}

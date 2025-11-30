@@ -1,0 +1,367 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>5</epicId>
+    <storyId>4</storyId>
+    <title>Booking Confirmation and Success</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-29</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/stories/5-4-booking-confirmation-and-success.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a parent</asA>
+    <iWant>confirmation that my appointment is booked</iWant>
+    <soThat>I know help is on the way for my child</soThat>
+    <tasks>
+      - Task 1: Create booking confirmation component (AC: 1, 2)
+        - Create features/scheduling/Confirmation.tsx component
+        - Implement processing/loading state UI
+        - Implement success state UI with celebration animation
+        - Design and implement appointment details card
+        - Create "What's next" information section
+        - Add confetti animation using canvas-confetti library
+
+      - Task 2: Implement "Add to calendar" functionality (AC: 3)
+        - Create ICS file generation utility function
+        - Implement calendar button components (Google, Apple, Outlook)
+        - Generate platform-specific calendar links/downloads
+        - Test ICS file format compatibility across platforms
+
+      - Task 3: Implement booking mutation and state management (AC: 1, 5)
+        - Create BookAppointment.graphql mutation file
+        - Implement mutation in useScheduling.ts hook
+        - Configure optimistic response for immediate UI feedback
+        - Handle mutation loading, success, and error states
+        - Verify email confirmation trigger on backend
+
+      - Task 4: Implement navigation and completion flow (AC: 4, 6)
+        - Implement "Done" button with proper navigation
+        - Update session status to "completed" in backend
+        - Clear local state on completion
+        - Verify dashboard integration (if dashboard exists)
+
+      - Task 5: Testing and error handling (AC: All)
+        - Write unit tests for Confirmation component
+        - Write unit tests for ICS generation utility
+        - Implement error state for failed booking
+        - Write E2E test for complete booking flow
+        - Test accessibility with screen readers
+        - Test calendar downloads on different platforms
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC-1: Loading state during booking processing
+      - Testable Assertion: "Booking your appointment..." message displays while mutation is in flight
+
+    AC-2: Success state displays confirmation details
+      - Testable Assertion: Success screen shows confetti animation, "You're all set!" heading, appointment details card with therapist name/photo/date/time/format, and "What's next" section with email/join link/reschedule info
+
+    AC-3: Add to calendar functionality works
+      - Testable Assertion: Clicking calendar button downloads ICS file for selected platform with correct appointment details
+
+    AC-4: Done button navigates appropriately
+      - Testable Assertion: Clicking "Done" returns user to landing page or dashboard
+
+    AC-5: Confirmation email is triggered
+      - Testable Assertion: Successful booking mutation triggers email confirmation (FR-015)
+
+    AC-6: Appointment appears in dashboard
+      - Testable Assertion: Confirmed appointment shows in existing Daybreak dashboard
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/prd.md</path>
+        <title>Product Requirements Document: Parent Onboarding AI</title>
+        <section>Functional Requirements - Scheduling</section>
+        <snippet>FR-013: The system shall allow parents to book an appointment and receive confirmation. [MVP]. Success includes celebration moment, appointment details display, and clear next steps.</snippet>
+      </doc>
+      <doc>
+        <path>docs/prd.md</path>
+        <title>Product Requirements Document: Parent Onboarding AI</title>
+        <section>Functional Requirements - Support & Communication</section>
+        <snippet>FR-015: The system shall deliver confirmation and reminder notifications via email. [MVP]. Booking confirmation triggers email with appointment details, therapist info, and join link.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Project Structure</section>
+        <snippet>Scheduling features in features/scheduling/ directory: Calendar.tsx, TimeSlotPicker.tsx, Confirmation.tsx, useScheduling.ts, scheduling.graphql. Calendar utilities in lib/utils/calendar.ts for ICS generation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>Visual Foundation - Color System</section>
+        <snippet>Celebration colors: Warm Orange #E9A23B for secondary CTAs and warmth, Success #10B981 for confirmations. Daybreak Teal #2A9D8F for primary actions. Cream Background #FEF7ED for page backgrounds.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>User Journey Flows - Therapist Matching</section>
+        <snippet>Confirmation flow: "Book Now" → Processing: "Finding the best matches for [child]..." → Confirmation: Celebration moment, next steps clear. Include "Add to Calendar" and clear path to dashboard/landing.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>UX Pattern Decisions - Feedback Patterns</section>
+        <snippet>Success: Toast (bottom) + inline, 4 seconds duration. Loading: Skeleton OR spinner with text until complete. Confirmation patterns: Standard submit gets inline success feedback.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>Parent Onboarding AI - UX Design Specification</title>
+        <section>Component Library - Custom Components</section>
+        <snippet>Buttons: Primary (Solid teal, pill shape) for main actions like "Done". Loading states: Spinner with text until complete. Success states: Celebration animations and warm messaging.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>features/assessment/AssessmentSummary.tsx</path>
+        <kind>component</kind>
+        <symbol>AssessmentSummary</symbol>
+        <lines>1-200</lines>
+        <reason>Reference for success/confirmation screen pattern with "Continue" navigation, structured information display, and next steps section. Similar flow structure for booking confirmation.</reason>
+      </artifact>
+      <artifact>
+        <path>features/assessment/useAssessmentChat.ts</path>
+        <kind>hook</kind>
+        <symbol>useAssessmentChat</symbol>
+        <lines>1-663</lines>
+        <reason>Reference pattern for mutation handling with loading states, optimistic updates, error handling, and state management. useScheduling should follow similar patterns for booking mutation.</reason>
+      </artifact>
+      <artifact>
+        <path>features/demographics/ParentInfoForm.tsx</path>
+        <kind>component</kind>
+        <symbol>ParentInfoForm</symbol>
+        <lines>1-489</lines>
+        <reason>Reference for continue button implementation, loading states, success feedback, and navigation patterns. Confirmation component should follow similar UI patterns.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/apollo/links.ts</path>
+        <kind>configuration</kind>
+        <symbol>createHttpLink, createAuthLink</symbol>
+        <lines>1-308</lines>
+        <reason>Apollo Client configuration for GraphQL mutations. BookAppointment mutation will use this infrastructure with proper auth headers and error handling.</reason>
+      </artifact>
+      <artifact>
+        <path>graphql/mutations/CreateSession.graphql</path>
+        <kind>graphql</kind>
+        <symbol>CreateSession</symbol>
+        <lines>1-18</lines>
+        <reason>Reference pattern for GraphQL mutation file structure. BookAppointment.graphql should follow similar format with input types and response fields.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Button component for "Done" and calendar action buttons. Supports loading states, disabled states, and variants.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/card.tsx</path>
+        <kind>component</kind>
+        <symbol>Card</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Card component for appointment details display. Use Card, CardHeader, CardTitle, CardContent for structured information.</reason>
+      </artifact>
+      <artifact>
+        <path>hooks/useAutoSave.ts</path>
+        <kind>hook</kind>
+        <symbol>useAutoSave</symbol>
+        <lines>63-169</lines>
+        <reason>Reference for async operation handling with save status tracking. Similar pattern for booking mutation with loading/success/error states.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>@apollo/client</package>
+        <version>4.0.9</version>
+        <purpose>GraphQL mutations for booking appointment</purpose>
+      </node>
+      <node>
+        <package>canvas-confetti</package>
+        <version>^1.9.3</version>
+        <purpose>Celebration confetti animation on successful booking</purpose>
+      </node>
+      <node>
+        <package>ics</package>
+        <version>^3.7.2</version>
+        <purpose>RFC 5545 compliant ICS calendar file generation</purpose>
+      </node>
+      <node>
+        <package>lucide-react</package>
+        <version>^0.555.0</version>
+        <purpose>Icons (Calendar, Download, Check, ExternalLink)</purpose>
+      </node>
+      <node>
+        <package>next</package>
+        <version>15.1.3</version>
+        <purpose>Navigation with useRouter for "Done" button</purpose>
+      </node>
+      <node>
+        <package>react</package>
+        <version>19.0.0</version>
+        <purpose>Component state management and effects</purpose>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    1. PHI Protection: Therapist details and appointment info are already visible in previous steps, but no PHI should be logged. Video call link sent via email (not generated client-side).
+
+    2. Loading States: Show "Booking your appointment..." with brief loading indicator during mutation. Use optimistic response for immediate UI feedback if possible.
+
+    3. Celebration Moment: Use canvas-confetti library for celebration animation. Trigger once on success state render. Keep animation brief (1-2 seconds) and non-intrusive.
+
+    4. Component Structure: Place in features/scheduling/ directory. Create Confirmation.tsx component and lib/utils/calendar.ts utility for ICS generation.
+
+    5. Accessibility: WCAG 2.1 AA compliance required. Screen reader announcements for success state, keyboard navigation for all buttons, ARIA labels for calendar buttons, focus management after booking.
+
+    6. Mobile-First: Design mobile-native first with centered content, max-width 640px, responsive button layout, minimum 44x44px touch targets.
+
+    7. Calendar Integration: Generate RFC 5545 compliant ICS format. Support Google Calendar (web link), Apple Calendar (ICS download), Outlook (ICS download). Include therapist name, time, video call placeholder, 15-minute reminder.
+
+    8. Error Handling: If booking fails, show retry option with clear error message. Maintain form state for retry. Log errors appropriately (no PHI in logs).
+
+    9. Navigation: "Done" button should route to landing page (/) or dashboard if it exists. Clear onboarding session state on completion.
+
+    10. Email Integration: Booking mutation should trigger confirmation email on backend (FR-015). Frontend confirms mutation success, backend handles email delivery.
+
+    11. Testing Standards: Unit tests with Vitest + RTL for Confirmation component states and ICS utility. E2E tests with Playwright for complete booking flow. Accessibility tests with screen readers.
+
+    12. GraphQL Integration: Use GraphQL Codegen for type-safe mutations. Follow existing mutation patterns with proper error handling and cache updates.
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>BookAppointment</name>
+      <kind>GraphQL mutation</kind>
+      <signature>
+        mutation BookAppointment($input: BookAppointmentInput!) {
+          bookAppointment(input: $input) {
+            appointment {
+              id
+              therapistId
+              therapistName
+              therapistPhoto
+              dateTime
+              duration
+              format
+              status
+            }
+            session {
+              id
+              status
+            }
+            success
+          }
+        }
+      </signature>
+      <path>features/scheduling/scheduling.graphql</path>
+    </interface>
+    <interface>
+      <name>useScheduling</name>
+      <kind>React hook</kind>
+      <signature>
+        interface UseSchedulingReturn {
+          bookAppointment: (therapistId: string, dateTime: string) => Promise&lt;void&gt;;
+          isBooking: boolean;
+          bookingError: Error | null;
+          appointment: AppointmentDetails | null;
+          clearBookingError: () => void;
+        }
+      </signature>
+      <path>features/scheduling/useScheduling.ts</path>
+    </interface>
+    <interface>
+      <name>generateICS</name>
+      <kind>Utility function</kind>
+      <signature>
+        interface ICSEvent {
+          title: string;
+          description: string;
+          start: Date;
+          end: Date;
+          location?: string;
+          url?: string;
+        }
+
+        function generateICS(event: ICSEvent): string;
+        // Returns ICS file content as string for download
+      </signature>
+      <path>lib/utils/calendar.ts</path>
+    </interface>
+    <interface>
+      <name>ConfirmationProps</name>
+      <kind>Component interface</kind>
+      <signature>
+        interface ConfirmationProps {
+          appointment: {
+            therapistName: string;
+            therapistPhoto: string;
+            dateTime: string;
+            duration: number;
+            format: 'video' | 'in-person';
+          };
+          onDone: () => void;
+          isLoading?: boolean;
+        }
+      </signature>
+      <path>features/scheduling/Confirmation.tsx</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit tests with Vitest + React Testing Library for:
+      - Confirmation component rendering in loading state
+      - Confirmation component rendering in success state with all details
+      - Confetti animation triggering on success
+      - Calendar button click handlers
+      - ICS file generation utility with correct format
+      - Done button navigation
+
+      Integration tests for:
+      - Complete booking flow from time selection to confirmation
+      - Calendar download functionality across platforms
+      - Error state display and retry
+      - Navigation after completion
+
+      E2E tests with Playwright for:
+      - Full user journey: select time → book → see confirmation → download calendar → navigate to dashboard
+      - Accessibility testing with screen readers
+      - Cross-browser calendar download testing
+
+      Follow existing test patterns from:
+      - tests/unit/features/assessment/AssessmentSummary.test.tsx
+      - tests/unit/hooks/useAutoSave.test.ts
+      - tests/integration/demographics-form-flow.test.tsx
+    </standards>
+    <locations>
+      - tests/unit/features/scheduling/Confirmation.test.tsx
+      - tests/unit/lib/utils/calendar.test.ts
+      - tests/unit/features/scheduling/useScheduling.test.ts
+      - tests/integration/booking-flow.test.tsx
+      - tests/e2e/complete-onboarding-flow.spec.ts
+    </locations>
+    <ideas>
+      Test Idea for AC-1: Render Confirmation with isLoading=true, verify "Booking your appointment..." message displays, verify loading spinner/indicator present
+
+      Test Idea for AC-2: Render Confirmation in success state, verify confetti animation fires, verify "You're all set!" heading, verify appointment card shows therapist name/photo/date/time/format, verify "What's next" section with 3 items
+
+      Test Idea for AC-3: Mock ICS generation, click "Add to Google Calendar" button, verify ICS file download with correct event details (title, time, location, reminder)
+
+      Test Idea for AC-4: Click "Done" button, verify router.push('/') called (or dashboard route if exists), verify session cleared from localStorage
+
+      Test Idea for AC-5: Mock BookAppointment mutation, verify mutation called with correct variables, verify success response includes confirmation email trigger
+
+      Test Idea for AC-6: Mock appointment data, verify appointment details match booked slot, verify session status updated to "completed"
+
+      E2E Test Idea: Complete full flow - create session → assessment → demographics → insurance → therapist selection → time selection → booking → confirmation → calendar download → navigation to dashboard
+
+      Accessibility Test Idea: Use VoiceOver/NVDA to navigate confirmation screen, verify success announcement, verify all buttons focusable and labeled, verify keyboard navigation works
+    </ideas>
+  </tests>
+</story-context>

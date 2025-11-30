@@ -1,0 +1,548 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>3</storyId>
+    <title>Deductible and Out-of-Pocket Tracking</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-30</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/stories/6-3-deductible-out-of-pocket-tracking.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>parent using insurance</asA>
+    <iWant>to understand my deductible status and out-of-pocket maximum</iWant>
+    <soThat>I know how costs might change over time</soThat>
+    <tasks>
+      - Task 1: Create DeductibleTracker component (AC: #1, #4)
+        - Create features/cost/DeductibleTracker.tsx component
+        - Accept props: deductibleMet, deductibleTotal, isLoading, isAvailable
+        - Implement progress bar using shadcn/ui Progress component
+        - Add Daybreak theme colors (teal for progress, gray for remaining)
+        - Display "remaining" and "total" amounts with proper formatting
+        - Add "Costs may decrease after deductible is met" note
+        - Handle unavailable state with helpful message
+        - Ensure responsive layout (full width on mobile)
+        - Add proper TypeScript types for all props
+
+      - Task 2: Create OutOfPocketTracker component (AC: #2, #4)
+        - Create features/cost/OutOfPocketTracker.tsx component
+        - Accept props: oopMet, oopMax, isLoading, isAvailable
+        - Implement progress bar matching DeductibleTracker style
+        - Display current amount toward max and annual max
+        - Add "You've reached your max" indicator when oopMet >= oopMax
+        - Handle unavailable state with clear messaging
+        - Ensure consistent styling with DeductibleTracker
+        - Add proper TypeScript types for all props
+
+      - Task 3: Integrate with cost estimation screen (AC: #5)
+        - Update features/cost/CostEstimationCard.tsx to include trackers
+        - Add DeductibleTracker and OutOfPocketTracker components
+        - Pass data from getCostEstimate query response
+        - Handle loading states with skeleton UI
+        - Implement error handling with retry mechanism
+        - Ensure proper data flow from GraphQL to components
+
+      - Task 4: Add GraphQL query integration (AC: #5)
+        - Review/update features/cost/cost.graphql query
+        - Ensure query includes deductible and OOP fields:
+          - deductibleMet, deductibleTotal, deductibleAvailable
+          - outOfPocketMet, outOfPocketMax, oopAvailable
+        - Run pnpm codegen to generate TypeScript types
+        - Update types/graphql.ts imports in components
+        - Add proper error handling for query failures
+
+      - Task 5: Implement unavailable data states (AC: #3)
+        - Add unavailable state UI to both tracker components
+        - Display "Unable to determine" message with icon
+        - Add "Contact your insurance for details" link
+        - Link opens support chat or provides phone number
+        - Test with mocked unavailable data scenarios
+        - Ensure accessible fallback messaging
+
+      - Task 6: Styling and responsive design (AC: #4)
+        - Apply Daybreak theme colors from tailwind.config
+        - Progress bars: bg-daybreak-teal for filled, bg-gray-200 for empty
+        - Use Inter font for amounts, proper sizing (16px body)
+        - Implement responsive grid: stacked on mobile, 2-column on desktop
+        - Test on mobile viewports (320px to 640px)
+        - Test on desktop viewports (1024px+)
+        - Ensure touch targets are 44x44px minimum
+
+      - Task 7: Accessibility and UX polish (AC: #1, #2, #4)
+        - Add ARIA labels to progress bars: "Deductible progress", "Out-of-pocket progress"
+        - Ensure progress percentage is announced to screen readers
+        - Add tooltips/help icons explaining deductible vs OOP
+        - Test with VoiceOver/screen readers
+        - Add smooth animations for progress bar fills
+        - Implement loading skeletons for async data
+
+      - Task 8: Testing (All ACs)
+        - Write unit tests for DeductibleTracker component
+        - Write unit tests for OutOfPocketTracker component
+        - Test GraphQL query integration with mocked responses
+        - Add E2E test for cost estimation screen with trackers
+        - Verify responsive behavior at various breakpoints
+        - Test accessibility with automated tools (axe, Lighthouse)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Deductible Progress Display
+       - Given I have insurance with deductible information
+       - When viewing cost details
+       - Then I see:
+         - Current deductible amount met (if known)
+         - Remaining deductible (e.g., "$500 remaining of $1,500")
+         - Progress bar visualization
+         - Note: "Costs may decrease after deductible is met"
+
+    2. Out-of-Pocket Maximum Display
+       - Given I have insurance with out-of-pocket maximum information
+       - When viewing cost details
+       - Then I see:
+         - Annual out-of-pocket maximum (if available)
+         - Amount applied toward maximum
+         - "You've reached your max" indicator if applicable
+         - Progress bar visualization matching deductible style
+
+    3. Unavailable Data Handling
+       - Given the backend cannot determine deductible/OOP information
+       - When viewing cost details
+       - Then I see:
+         - "Unable to determine" message with clear explanation
+         - Link to "Contact your insurance for details"
+         - No broken UI or empty states
+         - Graceful degradation with helpful messaging
+
+    4. Visual Consistency
+       - Given I view deductible and OOP progress indicators
+       - When comparing visual elements
+       - Then:
+         - Progress bars use consistent Daybreak theme colors
+         - Teal for progress, cream/gray for remaining
+         - Clear labels and amounts visible
+         - Mobile-responsive layout (stacked on mobile, side-by-side on desktop)
+
+    5. Data Source Integration
+       - Given the backend provides insurance verification data
+       - When the component loads
+       - Then:
+         - Data comes from getCostEstimate query or similar endpoint
+         - Loading state shows skeleton UI while fetching
+         - Error state displays with retry option
+         - Cached data persists in Apollo cache for session
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Project Structure</section>
+        <snippet>Features organized under features/cost/ directory. Components co-located with GraphQL operations. shadcn/ui components in components/ui/. Graceful degradation required when AI or real-time features encounter issues.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Fundamental Truths</section>
+        <snippet>Insurance is a friction point - must handle missing data gracefully. PHI must be protected - no PHI in frontend state, logs, or URLs. Parents are emotionally stressed - UX must be warm and forgiving.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Technology Stack Details</section>
+        <snippet>React 19.x with TypeScript 5.x. Tailwind CSS 4.0 for styling. shadcn/ui for component library. Apollo Client 4.x for GraphQL. React Hook Form 7.x for forms. Zod 3.x for validation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture: Daybreak Health Parent Onboarding AI</title>
+        <section>Naming Patterns</section>
+        <snippet>Components: PascalCase (DeductibleTracker.tsx). Hooks: camelCase with use prefix. GraphQL files: kebab-case. CSS classes: Tailwind utilities.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/api_schema.graphql</path>
+        <title>GraphQL API Schema</title>
+        <section>Type Definitions</section>
+        <snippet>Insurance type includes verificationStatus and verificationResult fields. Session includes insurance relationship. Need to extend schema for deductible/OOP tracking fields.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>components/ui/card.tsx</path>
+        <kind>component</kind>
+        <symbol>Card, CardHeader, CardContent, CardFooter</symbol>
+        <lines>1-93</lines>
+        <reason>shadcn/ui Card components for wrapping tracker UI. Uses data-slot pattern and Tailwind classes. Reference for consistent styling patterns.</reason>
+      </artifact>
+      <artifact>
+        <path>features/matching/TherapistCard.tsx</path>
+        <kind>component</kind>
+        <symbol>TherapistCard</symbol>
+        <lines>1-239</lines>
+        <reason>Example of well-structured feature component with TypeScript types, accessibility, responsive design, and proper documentation. Pattern to follow for DeductibleTracker and OutOfPocketTracker.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/utils/formatters.ts</path>
+        <kind>utility</kind>
+        <symbol>formatRelativeTime, formatPhoneNumber</symbol>
+        <lines>1-123</lines>
+        <reason>Formatting utilities for display. May need similar currency/number formatters for deductible amounts (e.g., $1,500.00 format).</reason>
+      </artifact>
+      <artifact>
+        <path>features/assessment/ChatBubble.tsx</path>
+        <kind>component</kind>
+        <symbol>ChatBubble</symbol>
+        <lines>1-239</lines>
+        <reason>Example component using Daybreak theme colors (bg-daybreak-teal, text-white). Shows proper TypeScript interfaces, React.memo optimization, and displayName pattern.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/apollo/client.ts</path>
+        <kind>config</kind>
+        <symbol>Apollo Client setup</symbol>
+        <lines>1-end</lines>
+        <reason>Apollo Client configuration with cache normalization. Relevant for understanding how GraphQL data flows and is cached for cost estimation queries.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <lines>1-end</lines>
+        <reason>shadcn/ui Button component for "Contact your insurance" action in unavailable state. Uses CVA for variants and Tailwind classes.</reason>
+      </artifact>
+      <artifact>
+        <path>features/insurance/InsuranceForm.tsx</path>
+        <kind>component</kind>
+        <symbol>InsuranceForm</symbol>
+        <lines>1-end</lines>
+        <reason>Insurance-related form component. May provide context for insurance data structures and validation patterns used in the codebase.</reason>
+      </artifact>
+      <artifact>
+        <path>hooks/useAutoSave.ts</path>
+        <kind>hook</kind>
+        <symbol>useAutoSave</symbol>
+        <lines>1-end</lines>
+        <reason>Auto-save hook pattern used in other features. May be relevant for persisting cost estimation preferences or state.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>react</package>
+        <version>19.2.0</version>
+        <usage>Core UI library for building components</usage>
+      </node>
+      <node>
+        <package>@apollo/client</package>
+        <version>4.0.9</version>
+        <usage>GraphQL client for cost estimation queries</usage>
+      </node>
+      <node>
+        <package>tailwindcss</package>
+        <version>^4</version>
+        <usage>Utility-first CSS for styling progress bars and layout</usage>
+      </node>
+      <node>
+        <package>lucide-react</package>
+        <version>^0.555.0</version>
+        <usage>Icon library for info/help icons in unavailable states</usage>
+      </node>
+      <node>
+        <package>class-variance-authority</package>
+        <version>^0.7.1</version>
+        <usage>For component variants if needed for progress bar states</usage>
+      </node>
+      <node>
+        <package>clsx</package>
+        <version>^2.1.1</version>
+        <usage>Utility for conditional class names</usage>
+      </node>
+      <node>
+        <package>tailwind-merge</package>
+        <version>^3.4.0</version>
+        <usage>For merging Tailwind classes in cn() utility</usage>
+      </node>
+      <node>
+        <package>zod</package>
+        <version>^3.25.76</version>
+        <usage>Schema validation for GraphQL response data (if needed)</usage>
+      </node>
+      <dev>
+        <package>vitest</package>
+        <version>^4.0.14</version>
+        <usage>Unit testing framework for component tests</usage>
+      </dev>
+      <dev>
+        <package>@testing-library/react</package>
+        <version>^16.3.0</version>
+        <usage>React testing utilities for component tests</usage>
+      </dev>
+      <dev>
+        <package>@playwright/test</package>
+        <version>^1.57.0</version>
+        <usage>E2E testing for cost estimation screen</usage>
+      </dev>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <category>Architecture</category>
+      <rule>Components must be organized under features/cost/ directory</rule>
+      <rationale>Project structure convention from architecture.md - feature-based organization</rationale>
+    </constraint>
+    <constraint>
+      <category>Architecture</category>
+      <rule>Co-locate GraphQL operations with components (features/cost/cost.graphql)</rule>
+      <rationale>Architecture pattern for maintaining GraphQL operations near their consumers</rationale>
+    </constraint>
+    <constraint>
+      <category>Architecture</category>
+      <rule>Use shadcn/ui components as base (Progress component for progress bars)</rule>
+      <rationale>Established component library for consistent, accessible UI components</rationale>
+    </constraint>
+    <constraint>
+      <category>Styling</category>
+      <rule>Use Daybreak theme colors: daybreak-teal (#2A9D8F) for progress, gray for remaining</rule>
+      <rationale>Brand consistency requirement from story Dev Notes and architecture</rationale>
+    </constraint>
+    <constraint>
+      <category>Styling</category>
+      <rule>Apply responsive design: stacked on mobile (&lt;640px), side-by-side on desktop (1024px+)</rule>
+      <rationale>Mobile-first architecture principle - mobile is primary device</rationale>
+    </constraint>
+    <constraint>
+      <category>Styling</category>
+      <rule>Maintain 4px spacing unit (Tailwind: xs:4, sm:8, md:16, lg:24)</rule>
+      <rationale>Design system consistency from Dev Notes</rationale>
+    </constraint>
+    <constraint>
+      <category>Styling</category>
+      <rule>Border radius: sm:8px, md:12px, lg:16px</rule>
+      <rationale>Design system consistency from Dev Notes</rationale>
+    </constraint>
+    <constraint>
+      <category>TypeScript</category>
+      <rule>Define explicit interfaces for all component props with JSDoc comments</rule>
+      <rationale>Code style from CLAUDE.md - all functions decorated with descriptive block comments</rationale>
+    </constraint>
+    <constraint>
+      <category>TypeScript</category>
+      <rule>Use generated GraphQL types from types/graphql.ts after running codegen</rule>
+      <rationale>Type safety architecture pattern - end-to-end types from schema to components</rationale>
+    </constraint>
+    <constraint>
+      <category>Component Pattern</category>
+      <rule>Components should not exceed 500 lines - split if larger</rule>
+      <rationale>AI-first codebase requirement from CLAUDE.md for better comprehension</rationale>
+    </constraint>
+    <constraint>
+      <category>Component Pattern</category>
+      <rule>Use React.memo for components displaying dynamic data with displayName set</rule>
+      <rationale>Performance optimization pattern seen in ChatBubble.tsx and TherapistCard.tsx</rationale>
+    </constraint>
+    <constraint>
+      <category>Error Handling</category>
+      <rule>Graceful degradation for unavailable data - show helpful message, not error state</rule>
+      <rationale>Fundamental truth from architecture: Insurance is friction point - must handle missing data gracefully</rationale>
+    </constraint>
+    <constraint>
+      <category>Error Handling</category>
+      <rule>Provide clear path to manual verification (contact insurance) when data unavailable</rule>
+      <rationale>Pre-mortem risk mitigation - parents feel trapped without alternative paths</rationale>
+    </constraint>
+    <constraint>
+      <category>Security</category>
+      <rule>Deductible/OOP amounts are not PHI but insurance plan details must not be logged</rule>
+      <rationale>PHI protection checklist - no insurance details in console.log or error tracking</rationale>
+    </constraint>
+    <constraint>
+      <category>Accessibility</category>
+      <rule>Progress bars must have ARIA labels and percentage announced to screen readers</rule>
+      <rationale>WCAG compliance and accessibility requirements from testing standards</rationale>
+    </constraint>
+    <constraint>
+      <category>Accessibility</category>
+      <rule>Touch targets minimum 44x44px for mobile interactions</rule>
+      <rationale>Mobile-first + accessibility requirements from architecture</rationale>
+    </constraint>
+    <constraint>
+      <category>Accessibility</category>
+      <rule>Color contrast must meet WCAG AA (4.5:1 for text)</rule>
+      <rationale>Accessibility requirement from story Dev Notes</rationale>
+    </constraint>
+    <constraint>
+      <category>Testing</category>
+      <rule>Write unit tests with Vitest for each component (DeductibleTracker, OutOfPocketTracker)</rule>
+      <rationale>Testing standards - see tests/unit/components/ for patterns</rationale>
+    </constraint>
+    <constraint>
+      <category>Testing</category>
+      <rule>Mock GraphQL queries using Apollo MockedProvider in tests</rule>
+      <rationale>Testing pattern from existing tests - see lib/apollo tests</rationale>
+    </constraint>
+    <constraint>
+      <category>Data Flow</category>
+      <rule>Apollo Client cache normalized by typename and id fields</rule>
+      <rationale>Cache configuration from lib/apollo/client.ts for session persistence</rationale>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>DeductibleTrackerProps</name>
+      <kind>Component Props Interface</kind>
+      <signature>
+        interface DeductibleTrackerProps {
+          deductibleMet: number | null;
+          deductibleTotal: number | null;
+          isLoading: boolean;
+          isAvailable: boolean;
+          className?: string;
+        }
+      </signature>
+      <path>features/cost/DeductibleTracker.tsx</path>
+    </interface>
+    <interface>
+      <name>OutOfPocketTrackerProps</name>
+      <kind>Component Props Interface</kind>
+      <signature>
+        interface OutOfPocketTrackerProps {
+          oopMet: number | null;
+          oopMax: number | null;
+          isLoading: boolean;
+          isAvailable: boolean;
+          className?: string;
+        }
+      </signature>
+      <path>features/cost/OutOfPocketTracker.tsx</path>
+    </interface>
+    <interface>
+      <name>getCostEstimate GraphQL Query</name>
+      <kind>GraphQL Query</kind>
+      <signature>
+        query GetCostEstimate($sessionId: ID!) {
+          session(id: $sessionId) {
+            insurance {
+              verificationStatus
+              verificationResult {
+                deductibleMet
+                deductibleTotal
+                deductibleAvailable
+                outOfPocketMet
+                outOfPocketMax
+                oopAvailable
+              }
+            }
+          }
+        }
+      </signature>
+      <path>features/cost/cost.graphql</path>
+    </interface>
+    <interface>
+      <name>Progress Component (shadcn/ui)</name>
+      <kind>UI Component API</kind>
+      <signature>
+        function Progress({
+          value: number,
+          className?: string,
+          ...props
+        }): JSX.Element
+      </signature>
+      <path>components/ui/progress.tsx (to be installed via shadcn CLI)</path>
+    </interface>
+    <interface>
+      <name>formatCurrency Utility</name>
+      <kind>Utility Function</kind>
+      <signature>
+        function formatCurrency(
+          cents: number,
+          showCents?: boolean
+        ): string
+        // Example: formatCurrency(150000) => "$1,500.00"
+      </signature>
+      <path>lib/utils/formatters.ts (to be added)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit tests use Vitest with React Testing Library. Tests located in tests/unit/components/ following source structure. Each component has corresponding test file with descriptive test names. Test patterns from ChatBubble.test.tsx: render checks, style validation, accessibility attributes, variant logic, and React.memo optimization. Mock GraphQL with Apollo MockedProvider. E2E tests use Playwright for critical user flows. Accessibility tested with automated tools (axe, Lighthouse). Visual regression via snapshot tests. Target: 80%+ coverage for new components.
+    </standards>
+    <locations>
+      - tests/unit/features/cost/DeductibleTracker.test.tsx
+      - tests/unit/features/cost/OutOfPocketTracker.test.tsx
+      - tests/unit/features/cost/CostEstimationCard.test.tsx (update existing)
+      - tests/e2e/cost-estimation.spec.ts
+      - Component snapshot tests in respective test files
+    </locations>
+    <ideas>
+      <idea ac="1">
+        Test DeductibleTracker renders with partial deductible met (e.g., $500 of $1500)
+        - Verify progress bar shows 33% fill
+        - Check "remaining" text displays "$1,000 remaining of $1,500"
+        - Ensure note "Costs may decrease after deductible is met" is visible
+        - Validate Daybreak teal color applied to progress
+      </idea>
+      <idea ac="1">
+        Test DeductibleTracker with completed deductible (100%)
+        - Progress bar shows full fill
+        - Text shows "$1,500 of $1,500"
+        - Messaging indicates deductible is met
+      </idea>
+      <idea ac="2">
+        Test OutOfPocketTracker with partial progress toward max
+        - Progress bar shows correct percentage (e.g., 60% for $3,000 of $5,000)
+        - Amount and max displayed clearly
+        - No "reached max" indicator shown
+      </idea>
+      <idea ac="2">
+        Test OutOfPocketTracker when max is reached (100%)
+        - Progress bar shows 100%
+        - "You've reached your max" indicator visible
+        - Clear messaging about cost implications
+      </idea>
+      <idea ac="3">
+        Test unavailable state for both trackers
+        - isAvailable=false renders "Unable to determine" message
+        - "Contact your insurance" link present and functional
+        - No progress bar shown when data unavailable
+        - No broken UI or empty state errors
+      </idea>
+      <idea ac="4">
+        Test responsive layout on mobile (320px, 375px, 640px viewports)
+        - Trackers stack vertically on mobile
+        - Progress bars maintain readability
+        - Text sizes appropriate for mobile
+      </idea>
+      <idea ac="4">
+        Test responsive layout on desktop (1024px, 1440px viewports)
+        - Trackers display side-by-side or in grid
+        - Consistent spacing and alignment
+        - Visual consistency between components
+      </idea>
+      <idea ac="5">
+        Test GraphQL integration with mocked getCostEstimate query
+        - Loading state shows skeleton UI
+        - Success state populates tracker data
+        - Error state displays with retry option
+        - Cache persistence across component re-renders
+      </idea>
+      <idea ac="all">
+        Test accessibility with axe-core
+        - Progress bars have proper ARIA labels
+        - Screen reader announcements for percentages
+        - Keyboard navigation works for links
+        - Color contrast meets WCAG AA
+        - Touch targets meet 44x44px minimum
+      </idea>
+      <idea ac="all">
+        E2E test: Complete onboarding flow with insurance
+        - Navigate to cost estimation after insurance submission
+        - Verify deductible tracker displays with backend data
+        - Verify OOP tracker displays
+        - Test "Contact insurance" flow from unavailable state
+        - Verify responsive behavior on mobile device emulation
+      </idea>
+    </ideas>
+  </tests>
+</story-context>

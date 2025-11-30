@@ -19,15 +19,14 @@ import { createClient, type Client } from "graphql-ws";
 /**
  * Determines the GraphQL HTTP endpoint based on environment configuration.
  * In production (NODE_ENV === 'production'), always uses Aptible.
- * In development, uses NEXT_PUBLIC_API_TARGET to switch between local and Aptible.
+ * In development, uses Next.js proxy (/api/graphql) to avoid CORS issues.
  *
  * @returns GraphQL HTTP endpoint URL
  */
 export function getGraphQLEndpoint(): string {
   const isProduction = process.env.NODE_ENV === "production";
-  const apiTarget = process.env.NEXT_PUBLIC_API_TARGET || "local";
 
-  // Production always uses Aptible
+  // Production always uses Aptible directly
   if (isProduction) {
     return (
       process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT_APTIBLE ||
@@ -35,18 +34,9 @@ export function getGraphQLEndpoint(): string {
     );
   }
 
-  // Development: switch based on API_TARGET
-  if (apiTarget === "aptible") {
-    return (
-      process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT_APTIBLE ||
-      "https://app-98507.on-aptible.com/graphql"
-    );
-  }
-
-  return (
-    process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT_LOCAL ||
-    "http://localhost:3000/graphql"
-  );
+  // Development: use Next.js proxy to avoid CORS issues
+  // The proxy is configured in next.config.ts to forward to the backend
+  return "/api/graphql";
 }
 
 /**
@@ -82,25 +72,64 @@ export function getWebSocketEndpoint(): string {
 }
 
 /**
- * In-memory token storage for secure JWT handling.
- * Tokens should NOT be stored in localStorage/sessionStorage.
+ * In-memory token cache for fast access.
+ * Token is also persisted in localStorage for recovery after page refresh.
  */
 let authToken: string | null = null;
 
 /**
- * Sets the authentication token for API requests
+ * localStorage key for persisting auth token
+ */
+const AUTH_TOKEN_KEY = "daybreak_auth_token";
+
+/**
+ * Sets the authentication token for API requests.
+ * Stores in both memory (for fast access) and localStorage (for persistence).
  * @param token - JWT token or null to clear
  */
 export function setAuthToken(token: string | null): void {
   authToken = token;
+
+  // Persist to localStorage for recovery after page refresh
+  if (typeof window !== "undefined") {
+    try {
+      if (token) {
+        localStorage.setItem(AUTH_TOKEN_KEY, token);
+      } else {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+      }
+    } catch (err) {
+      console.warn("Failed to persist auth token to localStorage:", err);
+    }
+  }
 }
 
 /**
- * Gets the current authentication token
+ * Gets the current authentication token.
+ * First checks in-memory cache, then falls back to localStorage.
  * @returns Current JWT token or null
  */
 export function getAuthToken(): string | null {
-  return authToken;
+  // Return cached token if available
+  if (authToken) {
+    return authToken;
+  }
+
+  // Try to recover from localStorage
+  if (typeof window !== "undefined") {
+    try {
+      const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (storedToken) {
+        // Cache it in memory for future calls
+        authToken = storedToken;
+        return storedToken;
+      }
+    } catch (err) {
+      console.warn("Failed to retrieve auth token from localStorage:", err);
+    }
+  }
+
+  return null;
 }
 
 /**

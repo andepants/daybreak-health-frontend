@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context>
+  <metadata>
+    <story-id>5-3-appointment-calendar-and-time-selection</story-id>
+    <story-title>Appointment Calendar and Time Selection</story-title>
+    <epic>Epic 5: Therapist Matching &amp; Booking</epic>
+    <status>ready-for-dev</status>
+    <created>2025-11-29</created>
+    <dependencies>
+      <dependency type="story">5-1-therapist-matching-results-display</dependency>
+      <dependency type="story">5-2-therapist-profile-detail-view</dependency>
+      <dependency type="epic">Epic 1 (Foundation)</dependency>
+    </dependencies>
+  </metadata>
+
+  <story-overview>
+    <user-story>
+      As a parent,
+      I want to see available appointment times and select one,
+      So that I can book when it works for our family's schedule.
+    </user-story>
+
+    <value-proposition>
+      Parents can view available appointment slots in a calendar interface, select a convenient time in their local timezone, and proceed to book their first session with their matched therapist.
+    </value-proposition>
+
+    <scope>
+      This story implements the scheduling/booking interface that appears after therapist selection.
+      It includes a calendar component for date selection, time slot picker, timezone handling,
+      session details display, and the "Confirm Booking" button. Real-time slot updates are optional for MVP.
+    </scope>
+  </story-overview>
+
+  <acceptance-criteria>
+    <criterion id="AC-5.3.1">
+      <description>Calendar displays month view with available dates</description>
+      <testable-assertion>Month calendar renders with highlighted available dates</testable-assertion>
+    </criterion>
+
+    <criterion id="AC-5.3.2">
+      <description>Selected date is visually highlighted in teal</description>
+      <testable-assertion>Date selection applies teal highlight styling</testable-assertion>
+    </criterion>
+
+    <criterion id="AC-5.3.3">
+      <description>Time slots appear after date selection</description>
+      <testable-assertion>Selecting date triggers time slot display</testable-assertion>
+    </criterion>
+
+    <criterion id="AC-5.3.4">
+      <description>Time slots show in user's local timezone</description>
+      <testable-assertion>Displayed times match browser timezone</testable-assertion>
+    </criterion>
+
+    <criterion id="AC-5.3.5">
+      <description>Available times are selectable, unavailable are disabled</description>
+      <testable-assertion>Available slots are clickable, unavailable are grayed out</testable-assertion>
+    </criterion>
+
+    <criterion id="AC-5.3.6">
+      <description>Selected time slot shows checkmark and teal fill</description>
+      <testable-assertion>Selected slot has visual confirmation</testable-assertion>
+    </criterion>
+
+    <criterion id="AC-5.3.7">
+      <description>Session details show therapist name and duration</description>
+      <testable-assertion>"First session with [therapist]" and "50 minutes" displayed</testable-assertion>
+    </criterion>
+
+    <criterion id="AC-5.3.8">
+      <description>Timezone is displayed and editable</description>
+      <testable-assertion>Timezone selector present and functional</testable-assertion>
+    </criterion>
+
+    <criterion id="AC-5.3.9">
+      <description>"Confirm Booking" button enabled after time selection</description>
+      <testable-assertion>Button state changes from disabled to enabled</testable-assertion>
+    </criterion>
+
+    <criterion id="AC-5.3.10">
+      <description>User can navigate back to change therapist</description>
+      <testable-assertion>Back navigation maintains previous selections</testable-assertion>
+    </criterion>
+
+    <criterion id="AC-5.3.11">
+      <description>Slots update in real-time if booked by another user (optional for MVP)</description>
+      <testable-assertion>Real-time slot availability via subscription</testable-assertion>
+    </criterion>
+  </acceptance-criteria>
+
+  <documentation-artifacts>
+    <architecture-reference source="docs/architecture.md">
+      <section name="Project Structure">
+        <key-points>
+          - Place components in features/scheduling/ per architecture
+          - Use app/onboarding/[sessionId]/schedule/page.tsx for route
+          - Follow existing patterns from demographics and assessment pages
+          - Reuse layout components (Header, OnboardingProgress, Footer)
+        </key-points>
+      </section>
+
+      <section name="Technology Stack">
+        <key-points>
+          - Next.js 15 with App Router
+          - React 19 with TypeScript
+          - Apollo Client 4 for GraphQL
+          - shadcn/ui components (Calendar, Select, Button)
+          - Tailwind CSS 4 for styling
+          - date-fns or date-fns-tz for timezone handling
+        </key-points>
+      </section>
+
+      <section name="Implementation Patterns">
+        <key-points>
+          - Use React Hook Form for form elements (timezone selector)
+          - Store selected date/time in local state until confirmation
+          - Follow mobile-first design principles (single column layout)
+          - Use Tailwind CSS classes for styling with Daybreak theme
+          - Implement error boundaries at route level
+          - Use Apollo mutations with optimistic updates
+        </key-points>
+      </section>
+    </architecture-reference>
+
+    <ux-design-reference source="docs/ux-design-specification.md">
+      <section name="Visual Design Specifications">
+        <design-tokens>
+          - Teal highlight color: #2A9D8F (daybreak-teal)
+          - Selected state: solid teal fill with white checkmark
+          - Unavailable dates: grayed out (opacity 0.5)
+          - Today marker: subtle border or badge
+          - Touch targets: minimum 44x44px for mobile
+        </design-tokens>
+      </section>
+
+      <section name="Component Patterns">
+        <key-points>
+          - Calendar should be scrollable on small screens
+          - Time slots in vertical list (not grid) on mobile
+          - Month navigation easily tappable
+          - Timezone selector accessible but not intrusive
+          - Single-column layout, max-width 640px
+          - Generous border radius (xl: 24px) for warmth
+        </key-points>
+      </section>
+
+      <section name="Responsive Design">
+        <breakpoints>
+          - Mobile: &lt; 640px (single column, bottom nav)
+          - Tablet: 640-1024px (single column, larger touch targets)
+          - Desktop: &gt; 1024px (centered content, max-width 640px)
+        </breakpoints>
+      </section>
+    </ux-design-reference>
+
+    <epic-context source="docs/epics.md">
+      <epic-5-overview>
+        Goal: Show matched therapists with transparent reasoning and enable appointment booking with confirmation.
+        User Value: Parents can understand why therapists were matched, choose with confidence, and book immediately with clear next steps.
+        FRs Covered: FR-011, FR-012, FR-013, FR-015
+      </epic-5-overview>
+
+      <story-sequence>
+        - Story 5.1: Therapist Matching Results Display (prerequisite)
+        - Story 5.2: Therapist Profile Detail View (prerequisite)
+        - Story 5.3: Appointment Calendar and Time Selection (current)
+        - Story 5.4: Booking Confirmation and Success (next)
+        - Story 5.5: Email Confirmation and Reminders (after 5.4)
+      </story-sequence>
+
+      <navigation-flow>
+        Previous: /onboarding/[sessionId]/matching (therapist selection)
+        Current:  /onboarding/[sessionId]/schedule
+        Next:     /onboarding/[sessionId]/confirmation (Story 5.4)
+      </navigation-flow>
+    </epic-context>
+
+    <graphql-schema-reference source="docs/sprint-artifacts/api_schema.graphql">
+      <relevant-types>
+        Query: getTherapistAvailability(therapistId: ID!, startDate: Date!, endDate: Date!): [AvailableSlot]
+        Type: AvailableSlot { date: Date!, startTime: Time!, endTime: Time!, available: Boolean! }
+
+        Note: This is from story dev notes. Actual schema may need to be created or verified during implementation.
+      </relevant-types>
+    </graphql-schema-reference>
+  </documentation-artifacts>
+
+  <code-artifacts>
+    <existing-patterns>
+      <pattern name="Form Components with Auto-Save" source="features/demographics/ParentInfoForm.tsx">
+        <description>
+          Demonstrates React Hook Form + Zod validation pattern with auto-save on blur.
+          Shows checkmark indicators for valid fields, error messages below fields,
+          and disabled submit button until valid.
+        </description>
+        <key-elements>
+          - useForm with zodResolver
+          - mode: "onBlur" for validation timing
+          - useAutoSave hook integration
+          - handleFieldBlur for auto-save trigger
+          - isFieldValid helper for checkmark display
+          - Error color: #E85D5D, Success color: #10B981
+          - Mobile-first responsive layout
+        </key-elements>
+        <code-snippet>
+          const { save, saveStatus } = useAutoSave({
+            sessionId,
+            onSaveSuccess: () => {
+              // Optional: show toast notification
+            },
+          });
+
+          const handleFieldBlur = React.useCallback(
+            async (fieldName: keyof FormInput) => {
+              await trigger(fieldName);
+              save(formValues);
+            },
+            [trigger, save, formValues]
+          );
+        </code-snippet>
+      </pattern>
+
+      <pattern name="Date Picker with Calendar" source="features/demographics/ChildInfoForm.tsx">
+        <description>
+          Shows shadcn/ui Calendar integration with Popover for date selection.
+          Includes date constraints, formatting, and validation.
+        </description>
+        <key-elements>
+          - Popover + Calendar components from shadcn/ui
+          - Controller from React Hook Form for integration
+          - date-fns format() for display formatting
+          - disabled prop for date constraints
+          - captionLayout="dropdown" for year/month selection
+          - Auto-close on selection
+          - Validation and auto-save on date change
+        </key-elements>
+        <code-snippet>
+          &lt;Controller
+            name="dateOfBirth"
+            control={control}
+            render={({ field }) =&gt; (
+              &lt;Popover open={calendarOpen} onOpenChange={setCalendarOpen}&gt;
+                &lt;PopoverTrigger asChild&gt;
+                  &lt;Button variant="outline"&gt;
+                    {field.value ? format(field.value, "MM/dd/yyyy") : "Select date"}
+                  &lt;/Button&gt;
+                &lt;/PopoverTrigger&gt;
+                &lt;PopoverContent&gt;
+                  &lt;Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={(date) =&gt; {
+                      field.onChange(date);
+                      setCalendarOpen(false);
+                    }}
+                  /&gt;
+                &lt;/PopoverContent&gt;
+              &lt;/Popover&gt;
+            )}
+          /&gt;
+        </code-snippet>
+      </pattern>
+
+      <pattern name="Select Components" source="features/demographics/ParentInfoForm.tsx">
+        <description>
+          Shows shadcn/ui Select component integration with React Hook Form Controller.
+        </description>
+        <key-elements>
+          - Controller for controlled component
+          - Select, SelectTrigger, SelectValue, SelectContent, SelectItem
+          - onValueChange handler
+          - Auto-save on selection change
+          - Error state styling
+        </key-elements>
+        <code-snippet>
+          &lt;Controller
+            name="relationship"
+            control={control}
+            render={({ field }) =&gt; (
+              &lt;Select
+                value={field.value}
+                onValueChange={(value) =&gt; {
+                  field.onChange(value);
+                  setTimeout(() =&gt; handleFieldBlur("relationship"), 0);
+                }}
+              &gt;
+                &lt;SelectTrigger&gt;
+                  &lt;SelectValue placeholder="Select option" /&gt;
+                &lt;/SelectTrigger&gt;
+                &lt;SelectContent&gt;
+                  {OPTIONS.map((opt) =&gt; (
+                    &lt;SelectItem key={opt} value={opt}&gt;{opt}&lt;/SelectItem&gt;
+                  ))}
+                &lt;/SelectContent&gt;
+              &lt;/Select&gt;
+            )}
+          /&gt;
+        </code-snippet>
+      </pattern>
+
+      <pattern name="Custom Hooks Pattern" source="features/assessment/useAssessmentChat.ts">
+        <description>
+          Shows custom hook structure for managing complex state and mutations.
+          Demonstrates optimistic updates, error handling, and session persistence.
+        </description>
+        <key-elements>
+          - Multiple useState hooks for different state concerns
+          - React.useCallback for memoized functions
+          - useAutoSave integration
+          - Error state management
+          - Return type interface for type safety
+          - Mock mutations until backend ready
+        </key-elements>
+        <code-snippet>
+          export interface UseSchedulingReturn {
+            selectedDate: Date | null;
+            selectedSlot: TimeSlot | null;
+            availableSlots: TimeSlot[];
+            timezone: string;
+            isLoading: boolean;
+            error: Error | null;
+            selectDate: (date: Date) => Promise&lt;void&gt;;
+            selectSlot: (slot: TimeSlot) => void;
+            changeTimezone: (tz: string) => void;
+          }
+
+          export function useScheduling(sessionId: string, therapistId: string): UseSchedulingReturn {
+            const [selectedDate, setSelectedDate] = React.useState&lt;Date | null&gt;(null);
+            // ... other state
+
+            const selectDate = React.useCallback(async (date: Date) => {
+              // Fetch available slots for this date
+              // Update state
+            }, [therapistId]);
+
+            return { selectedDate, selectSlot, /* ... */ };
+          }
+        </code-snippet>
+      </pattern>
+
+      <pattern name="Auto-Save Hook" source="hooks/useAutoSave.ts">
+        <description>
+          Reusable auto-save hook for session persistence.
+          Provides save status, retry logic, and localStorage backup.
+        </description>
+        <key-elements>
+          - SaveStatus type: "idle" | "saving" | "saved" | "error"
+          - Immediate save on changes (not debounced)
+          - localStorage backup for session data
+          - Retry function for failed saves
+          - onSaveSuccess and onSaveError callbacks
+        </key-elements>
+        <code-snippet>
+          const { save, saveStatus, retry } = useAutoSave({
+            sessionId,
+            onSaveSuccess: () => toast.success("Saved"),
+            onSaveError: (err) => toast.error(err.message),
+          });
+
+          // Call save with any data
+          await save({ selectedDate, selectedSlot });
+        </code-snippet>
+      </pattern>
+    </existing-patterns>
+
+    <component-structure>
+      <directory>features/scheduling/</directory>
+      <files>
+        - Calendar.tsx          # Month view calendar component
+        - TimeSlotPicker.tsx    # Time slot selection component
+        - SessionDetails.tsx    # Therapist info and session details (optional extraction)
+        - useScheduling.ts      # Scheduling state and queries hook
+        - scheduling.graphql    # GraphQL operations
+      </files>
+      <route>app/onboarding/[sessionId]/schedule/page.tsx</route>
+    </component-structure>
+
+    <data-structures>
+      <typescript>
+        interface TimeSlot {
+          id: string;
+          startTime: string;      // ISO 8601 format
+          endTime: string;        // ISO 8601 format
+          available: boolean;
+          therapistId: string;
+        }
+
+        interface SchedulingState {
+          selectedDate: Date | null;
+          selectedSlot: TimeSlot | null;
+          timezone: string;
+          availableSlots: TimeSlot[];
+        }
+      </typescript>
+    </data-structures>
+  </code-artifacts>
+
+  <development-constraints>
+    <technical-constraints>
+      - Must use shadcn/ui Calendar component or custom implementation
+      - Calendar must be accessible (ARIA labels, keyboard navigation)
+      - Times must be displayed in user's detected timezone (Intl.DateTimeFormat)
+      - Timezone conversion using date-fns-tz or native Date APIs
+      - Touch targets minimum 44x44px per WCAG
+      - No PHI in console logs or URLs
+      - Mobile-first responsive design
+    </technical-constraints>
+
+    <performance-constraints>
+      - Load next 30 days of availability initially
+      - Lazy load additional months on navigation
+      - Debounce timezone changes
+      - Optimize calendar re-renders (React.memo for date cells)
+      - Consider virtualization for long time slot lists
+    </performance-constraints>
+
+    <accessibility-requirements>
+      - WCAG 2.1 Level AA compliance
+      - Keyboard navigation (arrow keys for calendar)
+      - Screen reader announcements for date selection
+      - Focus indicators on all interactive elements
+      - Proper ARIA labels (aria-label, aria-selected, aria-disabled)
+      - Color contrast 4.5:1 for text, 3:1 for large text
+    </accessibility-requirements>
+
+    <error-handling>
+      - No availability found: "No appointments available in the next 30 days. Contact support."
+      - Network error: Show retry button with error message
+      - Invalid date selection: Prevent selection of past dates
+      - Slot unavailable on confirmation: Alert user and refresh availability
+      - GraphQL errors: Check error codes and show appropriate messages
+    </error-handling>
+  </development-constraints>
+
+  <interface-signatures>
+    <component name="Calendar">
+      <props>
+        selectedDate: Date | null
+        availableDates: Date[]
+        onSelectDate: (date: Date) =&gt; void
+        minDate?: Date
+        maxDate?: Date
+        className?: string
+      </props>
+      <description>
+        Month view calendar with available dates highlighted.
+        Uses shadcn/ui Calendar as base, extended with availability highlighting.
+      </description>
+    </component>
+
+    <component name="TimeSlotPicker">
+      <props>
+        selectedDate: Date
+        slots: TimeSlot[]
+        selectedSlot: TimeSlot | null
+        onSelectSlot: (slot: TimeSlot) =&gt; void
+        timezone: string
+        isLoading?: boolean
+        className?: string
+      </props>
+      <description>
+        Displays available time slots for selected date.
+        Formats times in user's timezone with AM/PM.
+      </description>
+    </component>
+
+    <component name="SessionDetails">
+      <props>
+        therapistName: string
+        duration: number
+        timezone: string
+        onTimezoneChange: (tz: string) =&gt; void
+        className?: string
+      </props>
+      <description>
+        Shows session information and timezone selector.
+      </description>
+    </component>
+
+    <hook name="useScheduling">
+      <params>
+        sessionId: string
+        therapistId: string
+      </params>
+      <returns>
+        {
+          selectedDate: Date | null,
+          selectedSlot: TimeSlot | null,
+          availableSlots: TimeSlot[],
+          availableDates: Date[],
+          timezone: string,
+          isLoading: boolean,
+          error: Error | null,
+          selectDate: (date: Date) =&gt; Promise&lt;void&gt;,
+          selectSlot: (slot: TimeSlot) =&gt; void,
+          changeTimezone: (tz: string) =&gt; void,
+        }
+      </returns>
+      <description>
+        Manages scheduling state and availability queries.
+        Integrates with Apollo Client for GraphQL operations.
+      </description>
+    </hook>
+
+    <graphql-operation name="GetTherapistAvailability">
+      <type>Query</type>
+      <variables>
+        therapistId: ID!
+        startDate: Date!
+        endDate: Date!
+      </variables>
+      <returns>
+        [AvailableSlot]
+      </returns>
+      <file>graphql/queries/GetTherapistAvailability.graphql</file>
+    </graphql-operation>
+  </interface-signatures>
+
+  <test-strategy>
+    <unit-tests>
+      - Calendar rendering with available/unavailable dates
+      - Date selection updates state correctly
+      - Time slot selection updates state correctly
+      - Timezone conversion displays correct times
+      - Button enabled/disabled state based on selection
+      - Error states render correctly
+      - Loading states display properly
+    </unit-tests>
+
+    <integration-tests>
+      - Full scheduling flow: select date → select time → enable button
+      - GraphQL query integration for availability
+      - Auto-save triggers on selection changes
+      - Timezone change updates all displayed times
+      - Back navigation preserves previous state
+      - Error recovery on failed API calls
+    </integration-tests>
+
+    <e2e-tests>
+      - Complete user journey: matching → schedule → confirmation
+      - Mobile responsive behavior
+      - Keyboard navigation through calendar and slots
+      - Screen reader compatibility
+    </e2e-tests>
+
+    <accessibility-tests>
+      - Keyboard-only navigation
+      - Screen reader announcements (VoiceOver, NVDA)
+      - Color contrast validation
+      - Touch target size verification
+      - ARIA attribute correctness
+    </accessibility-tests>
+  </test-strategy>
+
+  <implementation-notes>
+    <calendar-options>
+      1. **shadcn/ui Calendar** (Recommended): Pre-built, accessible, customizable
+         - Pros: Built-in accessibility, consistent with design system
+         - Cons: May need customization for availability highlighting
+
+      2. **Custom Calendar**: Full control, implement from scratch with date-fns
+         - Pros: Complete control over behavior and styling
+         - Cons: More work, need to ensure accessibility
+
+      3. **react-day-picker**: Popular library, good accessibility
+         - Pros: Well-tested, feature-rich
+         - Cons: Additional dependency, may conflict with shadcn/ui
+    </calendar-options>
+
+    <timezone-handling>
+      - Use Intl.DateTimeFormat().resolvedOptions().timeZone to detect user timezone
+      - Use date-fns-tz for timezone conversions if needed
+      - Display timezone abbreviation (PST, EST, etc.) next to times
+      - Allow manual timezone selection via dropdown (common US timezones)
+      - Convert all API times (assumed UTC) to selected timezone for display
+    </timezone-handling>
+
+    <real-time-updates>
+      - Optional for MVP per AC-5.3.11
+      - If implemented: Use GraphQL subscription for slot availability changes
+      - Update UI when another user books a slot
+      - Show "Just booked" notification briefly
+      - Fallback to polling if WebSocket unavailable
+      - Reconnection logic in Apollo WebSocket Link
+    </real-time-updates>
+
+    <session-details-display>
+      Required elements per Epic 5 Story 5.3 AC:
+      - "First session with [therapist name]"
+      - "50 minutes"
+      - "Video call" badge
+      - Timezone displayed and editable
+    </session-details-display>
+
+    <mobile-considerations>
+      - Calendar should be scrollable on small screens
+      - Time slots in vertical list (not grid) on mobile
+      - Month navigation easily tappable (44x44px minimum)
+      - Timezone selector accessible but not intrusive
+      - Consider bottom sheet for time slot picker on mobile
+    </mobile-considerations>
+
+    <learnings-from-previous-stories>
+      Expected inputs from previous stories:
+      - Selected therapist ID from Story 5.1/5.2
+      - Therapist name and photo from matching results
+      - Session context (assessment data, demographics)
+
+      Key patterns to follow:
+      - Auto-save pattern from Epic 2 and 3 stories
+      - Error boundary wrapping from layout
+      - Optimistic UI updates from previous mutation patterns
+      - Mobile-first responsive design from all previous stories
+    </learnings-from-previous-stories>
+  </implementation-notes>
+
+  <definition-of-done>
+    <checklist>
+      - [ ] All acceptance criteria (AC-5.3.1 through AC-5.3.11) are met
+      - [ ] Calendar component renders month view with available dates highlighted
+      - [ ] Date selection triggers time slot display
+      - [ ] Time slots displayed in user's local timezone
+      - [ ] Selected date and slot visually highlighted in teal (#2A9D8F)
+      - [ ] Unavailable slots are grayed out and disabled
+      - [ ] Session details show therapist name, duration, and video call badge
+      - [ ] Timezone is displayed and can be changed via selector
+      - [ ] Confirm Booking button enabled only when slot selected
+      - [ ] Back navigation to therapist selection works
+      - [ ] GraphQL query created for GetTherapistAvailability
+      - [ ] GraphQL codegen generates types and hooks
+      - [ ] Components follow existing patterns (auto-save, validation, styling)
+      - [ ] Mobile-first responsive design implemented
+      - [ ] Touch targets meet 44x44px minimum
+      - [ ] Accessibility requirements met (WCAG AA)
+      - [ ] Keyboard navigation works (arrow keys for calendar)
+      - [ ] Screen reader compatibility verified
+      - [ ] Unit tests written for components and hook
+      - [ ] Integration tests for complete flow
+      - [ ] Error states handled gracefully
+      - [ ] Loading states display properly
+      - [ ] No PHI in console logs or error messages
+      - [ ] Code follows project conventions (naming, structure, comments)
+      - [ ] No linting errors
+      - [ ] Story file updated with completion notes
+      - [ ] Sprint status YAML updated to mark story as done
+    </checklist>
+  </definition-of-done>
+</story-context>
