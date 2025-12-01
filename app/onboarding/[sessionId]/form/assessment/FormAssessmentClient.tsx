@@ -18,8 +18,10 @@ import {
   Page1AboutYourChild,
   Page2DailyLifeImpact,
   Page3AdditionalContext,
+  AssessmentCompletionSummary,
   useFormAutoSave,
   useFormNavigation,
+  useAssessmentFieldStatus,
   formToSummary,
   formatSummaryForDisplay,
   chatToFormMapper,
@@ -27,6 +29,7 @@ import {
   loadChatDataFromStorage,
   type AssessmentSummary,
 } from "@/features/assessment/form";
+import { notifyCompletionUpdate } from "@/lib/completion";
 import {
   page1Schema,
   page1Defaults,
@@ -133,6 +136,13 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
     mode: "onBlur",
   });
 
+  // Track field completion status for summary and inline indicators
+  const fieldStatus = useAssessmentFieldStatus({
+    page1Form,
+    page2Form,
+    page3Form,
+  });
+
   // Apply initial data to forms once loaded
   React.useEffect(() => {
     if (dataLoaded && Object.keys(initialData).length > 0) {
@@ -188,6 +198,8 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
   const handlePage1Blur = React.useCallback(
     (fieldName: keyof Page1Input) => {
       saveField(fieldName, page1Form.getValues());
+      // Notify completion status listeners
+      notifyCompletionUpdate();
     },
     [saveField, page1Form]
   );
@@ -198,6 +210,7 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
   const handlePage2Blur = React.useCallback(
     (fieldName: keyof Page2Input) => {
       saveField(fieldName, page2Form.getValues());
+      notifyCompletionUpdate();
     },
     [saveField, page2Form]
   );
@@ -208,8 +221,28 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
   const handlePage3Blur = React.useCallback(
     (fieldName: keyof Page3Input) => {
       saveField(fieldName, page3Form.getValues());
+      notifyCompletionUpdate();
     },
     [saveField, page3Form]
+  );
+
+  /**
+   * Handle click on a field in the completion summary
+   * Navigates to the correct page and focuses the field
+   */
+  const handleFieldClick = React.useCallback(
+    (fieldName: string, page: number) => {
+      goToPage(page);
+      // Focus field after navigation (allow DOM to update)
+      setTimeout(() => {
+        const element = document.getElementById(fieldName);
+        if (element) {
+          element.focus();
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 100);
+    },
+    [goToPage]
   );
 
   /**
@@ -239,8 +272,8 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
         await handleSubmit();
       }
     }
-  // Note: handleSubmit is defined below but referenced here - React handles this correctly
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Note: handleSubmit is defined below but referenced here - React handles this correctly
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, page1Form, page3Form, saveAll, getAllFormData, markPageComplete, goNext]);
 
   /**
@@ -386,65 +419,80 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
         : page3Form.formState.isValid;
 
   return (
-    <div className="w-full max-w-[640px] mx-auto space-y-6 p-4">
-      {/* Progress indicator (AC-3.4.7) */}
+    <div className="w-full max-w-5xl mx-auto p-4 md:p-8 flex flex-col md:flex-row gap-8 md:gap-16">
+      {/* Progress Sidebar */}
       <FormProgress
         currentPage={currentPage}
         completedPages={completedPages}
         onPageClick={goToPage}
       />
 
-      {/* Mode switch link (AC-3.4.10) */}
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={handleSwitchToChat}
-          className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-        >
-          <MessageCircle className="h-4 w-4" />
-          Switch to AI chat
-        </button>
-      </div>
-
-      {/* Page content */}
-      <div className="min-h-[400px]">
-        {currentPage === 1 && (
-          <Page1AboutYourChild form={page1Form} onFieldBlur={handlePage1Blur} />
-        )}
-        {currentPage === 2 && (
-          <Page2DailyLifeImpact form={page2Form} onFieldBlur={handlePage2Blur} />
-        )}
-        {currentPage === 3 && (
-          <Page3AdditionalContext form={page3Form} onFieldBlur={handlePage3Blur} />
-        )}
-      </div>
-
-      {/* Save status indicator (AC-3.4.6) */}
-      <SaveIndicator status={saveStatus} />
-
-      {/* Submit error display */}
-      {submitError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-800">{submitError}</p>
+      {/* Main Content Area */}
+      <div className="flex-1 max-w-2xl">
+        {/* Mode switch link (AC-3.4.10) */}
+        <div className="flex justify-end mb-6">
           <button
             type="button"
-            onClick={() => setSubmitError(null)}
-            className="mt-2 text-xs text-red-600 hover:text-red-800 underline"
+            onClick={handleSwitchToChat}
+            className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
           >
-            Dismiss
+            <MessageCircle className="h-4 w-4" />
+            Switch to AI chat
           </button>
         </div>
-      )}
 
-      {/* Navigation buttons */}
-      <FormNavigation
-        currentPage={currentPage}
-        totalPages={3}
-        isValid={currentFormValid}
-        isSubmitting={isSubmitting}
-        onBack={handleBack}
-        onNext={handleNext}
-      />
+        {/* Completion summary checklist */}
+        <AssessmentCompletionSummary
+          fields={fieldStatus.fields}
+          requiredComplete={fieldStatus.requiredComplete}
+          requiredTotal={fieldStatus.requiredTotal}
+          percentage={fieldStatus.overallPercentage}
+          onFieldClick={handleFieldClick}
+          currentPage={currentPage}
+        />
+
+        {/* Page content */}
+        <div className="min-h-[400px] bg-card rounded-xl border shadow-sm p-6 md:p-8">
+          {currentPage === 1 && (
+            <Page1AboutYourChild form={page1Form} onFieldBlur={handlePage1Blur} />
+          )}
+          {currentPage === 2 && (
+            <Page2DailyLifeImpact form={page2Form} onFieldBlur={handlePage2Blur} />
+          )}
+          {currentPage === 3 && (
+            <Page3AdditionalContext form={page3Form} onFieldBlur={handlePage3Blur} />
+          )}
+
+          {/* Save status indicator (AC-3.4.6) */}
+          <div className="mt-6 mb-4">
+            <SaveIndicator status={saveStatus} />
+          </div>
+
+          {/* Submit error display */}
+          {submitError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 mb-4">
+              <p className="text-sm text-red-800">{submitError}</p>
+              <button
+                type="button"
+                onClick={() => setSubmitError(null)}
+                className="mt-2 text-xs text-red-600 hover:text-red-800 underline"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {/* Navigation buttons */}
+          <FormNavigation
+            currentPage={currentPage}
+            totalPages={3}
+            isValid={currentFormValid}
+            isSubmitting={isSubmitting}
+            onBack={handleBack}
+            onNext={handleNext}
+          />
+        </div>
+      </div>
     </div>
   );
 }

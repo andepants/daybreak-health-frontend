@@ -1,32 +1,25 @@
 # BookAppointment Mutation
 # Books a therapy appointment for a matched therapist
 # Creates appointment record and triggers confirmation email
-#
-# TODO: Backend needs to add email status fields to BookAppointmentPayload:
-#   - emailSent: Boolean (indicates if confirmation email was sent)
-#   - emailStatus: String (status message: "sent", "pending", "failed")
-#   - recipientEmail: String (email address where confirmation was sent)
-# See Story 5.5 for requirements
 
 mutation BookAppointment($input: BookAppointmentInput!) {
   bookAppointment(input: $input) {
     appointment {
       id
-      sessionId
-      therapistId
-      startTime
-      endTime
-      duration
+      onboardingSessionId
+      scheduledAt
+      durationMinutes
       status
-      meetingUrl
+      virtualLink
+      confirmationNumber
       therapist {
         id
-        name
-        credentials
+        fullName
+        licenseType
         photoUrl
       }
     }
     success
-    message
+    errors
   }
 }

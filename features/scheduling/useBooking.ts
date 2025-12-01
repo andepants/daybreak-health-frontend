@@ -3,12 +3,14 @@
  *
  * Custom hook for managing appointment booking via GraphQL mutation.
  * Handles mutation state, optimistic responses, and error management.
+ * Maps between component interface and GraphQL types.
  *
  * Features:
  * - Apollo Client useMutation wrapper
  * - Optimistic UI updates
  * - Error handling
  * - Type-safe mutation interface
+ * - Field mapping between component/GraphQL types
  *
  * @module features/scheduling/useBooking
  */
@@ -16,43 +18,12 @@
 "use client";
 
 import type { ErrorLike } from "@apollo/client";
-import * as ApolloReactHooks from "@apollo/client/react";
-import { gql } from "@apollo/client";
 import type { AppointmentData } from "./BookingSuccess";
-
-// TODO: Replace with generated hook after running codegen
-// This is a temporary stub until useBookAppointmentMutation is generated
-// Run: npm run codegen
-// import { useBookAppointmentMutation } from "@/types/graphql";
+import { useBookAppointmentMutation } from "@/types/graphql";
 
 /**
- * Temporary stub for useBookAppointmentMutation
- * This provides type-safe mutation interface until GraphQL codegen is run
- */
-function useBookAppointmentMutation() {
-  // This is a stub that returns the expected mutation hook shape
-  // In production, this will be replaced by the generated hook
-  type MutationResult = {
-    loading: boolean;
-    error: ErrorLike | undefined;
-    data: BookAppointmentResponse | undefined;
-  };
-
-  type MutationFunction = (options: {
-    variables: BookAppointmentVariables;
-    optimisticResponse?: any;
-  }) => Promise<any>;
-
-  const result: [MutationFunction, MutationResult] = [
-    async () => ({ data: null }),
-    { loading: false, error: undefined, data: undefined }
-  ];
-
-  return result;
-}
-
-/**
- * Input variables for booking mutation
+ * Input variables for booking (component interface)
+ * These are mapped to GraphQL input types internally
  */
 export interface BookAppointmentInput {
   /** Session ID from matching flow */
@@ -67,46 +38,6 @@ export interface BookAppointmentInput {
   duration?: number;
   /** User's timezone (optional) */
   timezone?: string;
-}
-
-/**
- * GraphQL mutation response structure
- *
- * Note: Email status fields (emailSent, emailStatus, recipientEmail) are pending
- * backend implementation. See BookAppointment.graphql for details.
- */
-interface BookAppointmentResponse {
-  bookAppointment: {
-    appointment: {
-      id: string;
-      sessionId: string;
-      therapistId: string;
-      startTime: string;
-      endTime: string;
-      duration: number;
-      status: string;
-      meetingUrl?: string | null;
-      therapist: {
-        id: string;
-        name: string;
-        credentials: string;
-        photoUrl?: string | null;
-      };
-    };
-    success: boolean;
-    message?: string | null;
-    // TODO: Backend to implement these fields (Story 5.5)
-    emailSent?: boolean;
-    emailStatus?: string | null;
-    recipientEmail?: string | null;
-  };
-}
-
-/**
- * GraphQL mutation variables structure
- */
-interface BookAppointmentVariables {
-  input: BookAppointmentInput;
 }
 
 /**
@@ -129,7 +60,7 @@ export interface UseBookingResult {
   bookAppointment: (input: BookAppointmentInput) => Promise<void>;
   /** Loading state */
   loading: boolean;
-  /** Error state (ErrorLike type from Apollo Client mutation) */
+  /** Error state from Apollo Client mutation */
   error: ErrorLike | undefined;
   /** Booked appointment data (null if not yet booked) */
   appointment: AppointmentData | null;
@@ -138,10 +69,30 @@ export interface UseBookingResult {
 }
 
 /**
+ * Calculates end time from start time and duration
+ *
+ * @param startTime - ISO date string for start time
+ * @param durationMinutes - Duration in minutes
+ * @returns ISO date string for end time
+ */
+function calculateEndTime(startTime: string, durationMinutes: number): string {
+  const start = new Date(startTime);
+  const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+  return end.toISOString();
+}
+
+/**
  * Custom hook for booking appointments
  *
  * Manages the GraphQL mutation for creating appointment bookings.
  * Provides loading, error, and success states with type safety.
+ *
+ * Field Mapping:
+ * - Component `startTime` → GraphQL `scheduledAt`
+ * - Component `duration` → GraphQL `durationMinutes`
+ * - GraphQL `virtualLink` → Component `meetingUrl`
+ * - GraphQL `fullName` → Component `name`
+ * - GraphQL `licenseType` → Component `credentials`
  *
  * Optimistic Response:
  * - Immediately returns expected data structure
@@ -175,37 +126,45 @@ export function useBooking(): UseBookingResult {
 
   /**
    * Executes the booking mutation with optimistic response
+   * Maps component input fields to GraphQL input types
    *
-   * @param input - Booking details
+   * @param input - Booking details (component format)
    * @throws Error if mutation fails
    */
   async function bookAppointment(input: BookAppointmentInput): Promise<void> {
+    const durationMinutes = input.duration || 50;
+
     await mutate({
-      variables: { input },
-      // Optimistic response for instant UI feedback
+      variables: {
+        input: {
+          sessionId: input.sessionId,
+          therapistId: input.therapistId,
+          scheduledAt: input.startTime,
+          durationMinutes,
+        },
+      },
       optimisticResponse: {
         bookAppointment: {
           __typename: "BookAppointmentPayload",
           appointment: {
             __typename: "Appointment",
             id: "temp-id-" + Date.now(),
-            sessionId: input.sessionId,
-            therapistId: input.therapistId,
-            startTime: input.startTime,
-            endTime: input.endTime,
-            duration: input.duration || 50,
+            onboardingSessionId: input.sessionId,
+            scheduledAt: input.startTime,
+            durationMinutes,
             status: "confirmed",
-            meetingUrl: null,
+            virtualLink: null,
+            confirmationNumber: "TEMP-" + Date.now(),
             therapist: {
               __typename: "Therapist",
               id: input.therapistId,
-              name: "Loading...",
-              credentials: "",
+              fullName: "Loading...",
+              licenseType: null,
               photoUrl: null,
             },
           },
           success: true,
-          message: null,
+          errors: [],
         },
       },
     });
@@ -213,36 +172,39 @@ export function useBooking(): UseBookingResult {
 
   /**
    * Transform GraphQL response to AppointmentData format
+   * Maps GraphQL field names to component field names
    */
   const appointment: AppointmentData | null = data?.bookAppointment?.appointment
     ? {
         id: data.bookAppointment.appointment.id,
         therapist: {
           id: data.bookAppointment.appointment.therapist.id,
-          name: data.bookAppointment.appointment.therapist.name,
-          credentials: data.bookAppointment.appointment.therapist.credentials,
+          name: data.bookAppointment.appointment.therapist.fullName,
+          credentials: data.bookAppointment.appointment.therapist.licenseType || "",
           photoUrl: data.bookAppointment.appointment.therapist.photoUrl,
         },
-        startTime: data.bookAppointment.appointment.startTime,
-        endTime: data.bookAppointment.appointment.endTime,
-        duration: data.bookAppointment.appointment.duration,
-        meetingUrl: data.bookAppointment.appointment.meetingUrl || undefined,
+        startTime: data.bookAppointment.appointment.scheduledAt,
+        endTime: calculateEndTime(
+          data.bookAppointment.appointment.scheduledAt,
+          data.bookAppointment.appointment.durationMinutes
+        ),
+        duration: data.bookAppointment.appointment.durationMinutes,
+        meetingUrl: data.bookAppointment.appointment.virtualLink || undefined,
       }
     : null;
 
   /**
    * Extract email confirmation status from mutation response
    *
-   * Default behavior (until backend implements):
+   * Default behavior (until backend implements email fields):
    * - Assumes email was sent successfully if booking succeeded
-   * - Uses "sent" status when backend doesn't provide emailStatus
-   * - Falls back gracefully when email fields are missing
+   * - Uses "sent" status by default
    */
   const emailConfirmation: EmailConfirmationStatus | null = data?.bookAppointment
     ? {
-        emailSent: data.bookAppointment.emailSent ?? true,
-        emailStatus: data.bookAppointment.emailStatus ?? "sent",
-        recipientEmail: data.bookAppointment.recipientEmail ?? undefined,
+        emailSent: true,
+        emailStatus: "sent",
+        recipientEmail: undefined,
       }
     : null;
 

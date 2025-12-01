@@ -2,8 +2,8 @@
 # Updates session progress with deep merge and extends expiration by 1 hour
 # Auto-transitions from STARTED to IN_PROGRESS on first update
 
-mutation UpdateSessionProgress($sessionId: ID!, $progress: JSON!) {
-  updateSessionProgress(sessionId: $sessionId, progress: $progress) {
+mutation UpdateSessionProgress($input: UpdateSessionProgressInput!) {
+  updateSessionProgress(input: $input) {
     session {
       id
       status

@@ -1,5 +1,6 @@
 # GetTherapistProfile Query
 # Fetches detailed therapist profile information for the profile sheet view
+# Uses therapistProfile query from backend Epic 5 (Story 5.1)
 # Extends basic therapist data with education, certifications, approach, and availability slots
 # Requires valid JWT token - user can only access therapist profiles for their session matches
 
@@ -34,8 +35,10 @@ query GetTherapistProfile($therapistId: ID!, $sessionId: ID!) {
     availabilityStatus
     availabilityText
     availableSlots(limit: 3) {
-      id
-      datetime
+      startTime
+      endTime
+      therapistId
+      durationMinutes
     }
   }
 }

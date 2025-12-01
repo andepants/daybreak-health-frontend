@@ -133,7 +133,8 @@ export function ClinicalIntakeForm({
   const handleFieldBlur = React.useCallback(
     async (fieldName: keyof ClinicalIntakeInput) => {
       await trigger(fieldName);
-      save({ clinicalIntake: formValues });
+      // Save nested under 'clinical' key to match demographics page expectations
+      save({ clinical: formValues });
     },
     [trigger, save, formValues]
   );
@@ -144,7 +145,7 @@ export function ClinicalIntakeForm({
    */
   const onSubmit = (data: ClinicalIntakeInput) => {
     // Final save before navigation
-    save({ clinicalIntake: data });
+    save({ clinical: data });
     onContinue?.(data);
   };
 

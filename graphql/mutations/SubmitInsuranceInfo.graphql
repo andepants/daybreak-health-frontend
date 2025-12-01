@@ -2,19 +2,34 @@
 # Submits insurance information for verification
 # Links insurance to the current onboarding session
 
-mutation SubmitInsuranceInfo($input: SubmitInsuranceInfoInput!) {
-  submitInsuranceInfo(input: $input) {
-    session {
+mutation SubmitInsuranceInfo(
+  $sessionId: ID!
+  $payerName: String
+  $subscriberName: String
+  $memberId: String
+  $groupNumber: String
+  $subscriberDob: String
+) {
+  submitInsuranceInfo(
+    sessionId: $sessionId
+    payerName: $payerName
+    subscriberName: $subscriberName
+    memberId: $memberId
+    groupNumber: $groupNumber
+    subscriberDob: $subscriberDob
+  ) {
+    insurance {
       id
-      status
-      insurance {
-        id
-        payerName
-        subscriberName
-        memberId
-        groupNumber
-        verificationStatus
-      }
+      payerName
+      subscriberName
+      memberId
+      groupNumber
+      verificationStatus
     }
+    errors {
+      field
+      message
+    }
+    prePopulatedFromOcr
   }
 }

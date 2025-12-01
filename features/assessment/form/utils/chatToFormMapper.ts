@@ -560,6 +560,9 @@ function extractTherapyGoals(
 /**
  * Loads existing form assessment data from storage
  *
+ * Uses unified storage key `onboarding_session_${sessionId}`.
+ * Falls back to legacy key `form_assessment_${sessionId}` for migration.
+ *
  * @param sessionId - Session ID to load data for
  * @returns Stored form data or empty object
  */
@@ -567,17 +570,66 @@ export function loadFormDataFromStorage(
   sessionId: string
 ): Partial<FormAssessmentInput> & { currentPage?: number } {
   try {
-    const stored = localStorage.getItem(`form_assessment_${sessionId}`);
+    // First, check unified storage key
+    const unifiedKey = `onboarding_session_${sessionId}`;
+    const stored = localStorage.getItem(unifiedKey);
+
     if (stored) {
       const parsed = JSON.parse(stored);
-      return {
+
+      // Check multiple possible locations for assessment data
+      const formAssessment = parsed.data?.formAssessment;
+      const extractedData = parsed.data?.extractedData;
+      const assessment = parsed.data?.assessment;
+
+      // Merge from all sources (formAssessment takes priority)
+      const mergedData = {
+        ...assessment,
+        ...extractedData,
+        ...formAssessment,
+      };
+
+      if (Object.keys(mergedData).length > 0) {
+        return mergedData;
+      }
+    }
+
+    // Fallback: check legacy key for migration
+    const legacyKey = `form_assessment_${sessionId}`;
+    const legacyStored = localStorage.getItem(legacyKey);
+
+    if (legacyStored) {
+      const parsed = JSON.parse(legacyStored);
+      const legacyData = {
         ...parsed.data,
         currentPage: parsed.currentPage,
       };
+
+      // Migrate legacy data to unified storage
+      try {
+        const existingUnified = localStorage.getItem(unifiedKey);
+        const unifiedData = existingUnified ? JSON.parse(existingUnified) : { data: {} };
+
+        unifiedData.data = {
+          ...unifiedData.data,
+          formAssessment: parsed.data,
+        };
+        unifiedData.savedAt = new Date().toISOString();
+
+        localStorage.setItem(unifiedKey, JSON.stringify(unifiedData));
+        localStorage.removeItem(legacyKey); // Clean up legacy key
+
+        console.info("[migration] Moved form_assessment data to unified key");
+      } catch (migrationError) {
+        console.warn("[migration] Failed to migrate form assessment data:", migrationError);
+      }
+
+      return legacyData;
     }
   } catch (e) {
     console.warn("Failed to load form data from storage:", e);
   }
+
   return {};
 }
 

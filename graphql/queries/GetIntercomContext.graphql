@@ -1,0 +1,23 @@
+# GetIntercomContext Query
+# Fetches PHI-safe session context for Intercom support agents
+# Uses generateIntercomContext query from backend Epic 7 (Story 7.2)
+#
+# HIPAA Compliance:
+# - Only PHI-safe data is transmitted (session IDs, first names, ages, status enums)
+# - No last names, DOB, emails, phones, addresses, SSN, or member IDs
+# - Safe to pass to Intercom as custom attributes
+#
+# Usage: Call when updating Intercom with session context after major state changes
+
+query GetIntercomContext($sessionId: ID!) {
+  generateIntercomContext(sessionId: $sessionId) {
+    sessionId
+    onboardingPhase
+    parentFirstName
+    childAge
+    insuranceStatus
+    hasErrors
+    errorType
+    adminLink
+  }
+}

@@ -1,16 +1,20 @@
-# SetPaymentPreference Mutation
-# Updates the payment preference for a given session
-# Accepts preference type (insurance/self_pay) and optional payment plan ID
+# SavePaymentPlanSelection Mutation
+# Saves the selected payment plan for a session
+# Uses savePaymentPlanSelection mutation from backend Epic 6 (Story 6.5)
+# NOTE: Actual payment processing is post-MVP, this only stores the selection
 
-mutation SetPaymentPreference($sessionId: ID!, $input: PaymentPreferenceInput!) {
-  setPaymentPreference(sessionId: $sessionId, input: $input) {
+mutation SavePaymentPlanSelection($input: SavePaymentPlanSelectionInput!) {
+  savePaymentPlanSelection(input: $input) {
     success
-    session {
+    paymentPlan {
       id
-      paymentPreference {
-        preferenceType
-        paymentPlanId
-      }
+      planDurationMonths
+      monthlyAmount
+      totalAmount
+      discountApplied
+      paymentMethodPreference
+      status
+      description
     }
   }
 }

@@ -11,6 +11,9 @@ export type { InsuranceFormProps } from "./InsuranceForm";
 export { InsuranceCardUpload } from "./InsuranceCardUpload";
 export type { InsuranceCardUploadProps } from "./InsuranceCardUpload";
 
+export { CameraCapture } from "./CameraCapture";
+export type { CameraCaptureProps } from "./CameraCapture";
+
 export { InsuranceConfirmation } from "./InsuranceConfirmation";
 export type { InsuranceConfirmationProps } from "./InsuranceConfirmation";
 

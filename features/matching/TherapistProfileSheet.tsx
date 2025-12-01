@@ -49,7 +49,15 @@ import type { Therapist } from "@/types/graphql";
  * Extended therapist data for profile sheet
  * Includes fields not necessarily available in card view
  */
-export interface TherapistProfileData extends Therapist {
+export interface TherapistProfileData {
+  id: string;
+  name: string;
+  credentials: string;
+  photoUrl?: string | null;
+  bio?: string;
+  yearsOfExperience?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  matchReasons?: any[];
   /** Detailed approach to therapy (e.g., "CBT-focused, warm and collaborative") */
   approach?: string;
   /** Languages spoken by therapist */
@@ -60,6 +68,8 @@ export interface TherapistProfileData extends Therapist {
   certifications?: string[];
   /** Next available appointment slots */
   availableSlots?: AvailabilitySlot[];
+  /** Therapist specialties */
+  specialties?: string[];
 }
 
 /**
@@ -207,7 +217,7 @@ export function TherapistProfileSheet({
                 Specialties
               </h3>
               <div className="flex flex-wrap gap-2">
-                {therapist.specialties.map((specialty) => (
+                {therapist.specialties.map((specialty: string) => (
                   <Badge
                     key={specialty}
                     variant="outline"

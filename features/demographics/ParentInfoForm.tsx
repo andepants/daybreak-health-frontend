@@ -133,10 +133,13 @@ export function ParentInfoForm({
       await trigger(fieldName);
 
       // Auto-save current form state (even partial data)
+      // Save nested under 'parent' key to match useStorageSync expectations
       save({
-        ...formValues,
-        // Convert phone to E.164 format for storage
-        phone: formValues.phone ? toE164(formValues.phone) : "",
+        parent: {
+          ...formValues,
+          // Convert phone to E.164 format for storage
+          phone: formValues.phone ? toE164(formValues.phone) : "",
+        },
       });
     },
     [trigger, save, formValues]

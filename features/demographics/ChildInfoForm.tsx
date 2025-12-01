@@ -152,9 +152,12 @@ export function ChildInfoForm({
       await trigger(fieldName);
 
       // Auto-save current form state
+      // Save nested under 'child' key to match useStorageSync expectations
       save({
-        ...formValues,
-        dateOfBirth: formValues.dateOfBirth?.toISOString(),
+        child: {
+          ...formValues,
+          dateOfBirth: formValues.dateOfBirth?.toISOString(),
+        },
       });
     },
     [trigger, save, formValues]

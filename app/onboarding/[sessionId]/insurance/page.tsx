@@ -11,10 +11,11 @@
  */
 "use client";
 
-import { use, useCallback } from "react";
+import { use, useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { InsuranceForm } from "@/features/insurance";
+import { useStorageSync } from "@/hooks";
 import type { InsuranceFormData } from "@/lib/validations/insurance";
 
 /**
@@ -48,26 +49,57 @@ interface InsurancePageProps {
 export default function InsurancePage({ params }: InsurancePageProps) {
   const { sessionId } = use(params);
   const router = useRouter();
+  const [initialData, setInitialData] = useState<Partial<InsuranceFormData> | undefined>(undefined);
+  const [parentName, setParentName] = useState("");
+
+  // Use storage sync for reactive updates
+  const { extractedData } = useStorageSync({
+    sessionId,
+    formType: "insurance",
+  });
 
   /**
-   * Get parent name from session storage for subscriber auto-fill (AC-4.1.4)
+   * Load initial data from localStorage on mount
    */
-  const getParentName = useCallback((): string => {
+  useEffect(() => {
     try {
       const stored = localStorage.getItem(`onboarding_session_${sessionId}`);
       if (stored) {
         const parsed = JSON.parse(stored);
-        const firstName = parsed?.data?.firstName || "";
-        const lastName = parsed?.data?.lastName || "";
+
+        // Load parent name for subscriber auto-fill
+        const firstName = parsed?.data?.parent?.firstName || parsed?.data?.firstName || "";
+        const lastName = parsed?.data?.parent?.lastName || parsed?.data?.lastName || "";
         if (firstName && lastName) {
-          return `${firstName} ${lastName}`;
+          setParentName(`${firstName} ${lastName}`);
+        }
+
+        // Load insurance data if available
+        if (parsed?.data?.insurance) {
+          setInitialData(parsed.data.insurance);
         }
       }
     } catch (e) {
-      console.warn("Failed to get parent name from storage:", e);
+      console.warn("Failed to load data from storage:", e);
     }
-    return "";
   }, [sessionId]);
+
+  /**
+   * Update initial data when storage changes (from useStorageSync)
+   */
+  useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      setInitialData(extractedData as Partial<InsuranceFormData>);
+    }
+  }, [extractedData]);
+
+  /**
+   * Get parent name from session storage for subscriber auto-fill (AC-4.1.4)
+   * @deprecated Use parentName state instead
+   */
+  const getParentName = useCallback((): string => {
+    return parentName;
+  }, [parentName]);
 
   /**
    * Handles insurance form submission
@@ -114,7 +146,8 @@ export default function InsurancePage({ params }: InsurancePageProps) {
 
       <InsuranceForm
         sessionId={sessionId}
-        parentName={getParentName()}
+        parentName={parentName}
+        initialData={initialData}
         onContinue={handleContinue}
         onBack={handleBack}
         onSelfPay={handleSelfPay}

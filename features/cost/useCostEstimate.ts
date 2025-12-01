@@ -16,7 +16,7 @@
  * - Session-based data isolation
  */
 
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { useMemo } from "react";
 import type { CostEstimate } from "@/lib/validations/cost";
 
@@ -75,11 +75,13 @@ export function useCostEstimate(sessionId: string): UseCostEstimateResult {
    * Ensures type safety and handles missing data gracefully
    */
   const costEstimate = useMemo<CostEstimate | null>(() => {
-    if (!data?.getCostEstimate) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!(data as any)?.getCostEstimate) {
       return null;
     }
 
-    return data.getCostEstimate as CostEstimate;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data as any).getCostEstimate as CostEstimate;
   }, [data]);
 
   /**

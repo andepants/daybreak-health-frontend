@@ -1,9 +1,11 @@
-# SetSelfPay Mutation
+# SelectSelfPay Mutation
 # Marks session as self-pay (no insurance)
+# Uses selectSelfPay mutation from backend Epic 6 (Story 6.3)
 # Skips insurance verification step
 
-mutation SetSelfPay($sessionId: ID!) {
-  setSelfPay(sessionId: $sessionId) {
+mutation SelectSelfPay($input: SelectSelfPayInput!) {
+  selectSelfPay(input: $input) {
+    success
     session {
       id
       status

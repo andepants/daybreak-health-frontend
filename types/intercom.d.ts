@@ -11,8 +11,8 @@
  * Configuration settings for Intercom initialization
  */
 interface IntercomSettings {
-  /** Your Intercom app ID (required) */
-  app_id: string;
+  /** Your Intercom app ID (optional during delayed boot, required at boot time) */
+  app_id?: string;
 
   /** Widget alignment - left or right side of screen */
   alignment?: 'left' | 'right';

@@ -6,12 +6,12 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { useCostEstimate } from "@/features/cost/useCostEstimate";
 import type { CostEstimate } from "@/lib/validations/cost";
 
 // Mock Apollo Client
-vi.mock("@apollo/client", () => ({
+vi.mock("@apollo/client/react", () => ({
   useQuery: vi.fn(),
 }));
 

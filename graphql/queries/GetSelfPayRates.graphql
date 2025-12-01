@@ -1,28 +1,42 @@
 # Query to fetch self-pay rate information including package discounts
 #
-# Returns the base per-session self-pay rate and available package
-# discount options. This data is used to display self-pay pricing
-# to users who prefer not to use insurance or want to compare costs.
-#
-# Response includes:
-# - perSessionRate: Base rate in cents for single session
-# - packages: Array of bulk session packages with discounts
-# - financialAssistanceAvailable: Whether assistance programs exist
+# Uses costComparison query from backend Epic 6 (Story 6.3)
+# Returns self-pay estimate from the cost comparison which includes:
+# - baseRate: Per session rate (e.g., "$50 per session")
+# - packageOptions: Array of bulk session packages with discounts
+# - financialAssistanceInfo: Whether assistance programs exist
 #
 # Usage: Called when displaying cost estimation screen to show
 # self-pay options alongside or instead of insurance estimates.
+#
+# NOTE: For standalone self-pay rates, this query gets the selfPayEstimate
+# from costComparison. Use GetCostEstimate for full comparison data.
 
-query GetSelfPayRates {
-  getSelfPayRates {
-    perSessionRate
-    packages {
-      id
-      name
-      sessionCount
-      totalPrice
-      pricePerSession
-      savingsPercentage
+query GetSelfPayRates($sessionId: ID!) {
+  costComparison(sessionId: $sessionId) {
+    selfPayEstimate {
+      baseRate
+      totalForTypicalTreatment
+      slidingScaleInfo
+      packageOptions {
+        sessions
+        totalPrice
+        perSessionCost
+        savings
+        description
+      }
+      transparentPricingMessage
+      whatIsIncluded
+      whatIsNotIncluded
     }
-    financialAssistanceAvailable
+    highlightSelfPay
+  }
+  financialAssistanceInfo {
+    available
+    eligibilityCriteria
+    applicationUrl
+    description
+    slidingScaleAvailable
+    discountRange
   }
 }

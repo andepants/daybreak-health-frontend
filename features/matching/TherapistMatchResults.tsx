@@ -16,7 +16,7 @@
  * - Responsive layout
  *
  * Navigation:
- * - Book Now → /onboarding/[sessionId]/schedule/[therapistId]
+ * - Book Now → /onboarding/[sessionId]/schedule?therapistId=[therapistId]
  * - View Profile → Opens TherapistProfileSheet
  * - None feel right → Contact support or view more
  */
@@ -31,7 +31,8 @@ import { Button } from "@/components/ui/button";
 import { TherapistCard } from "./TherapistCard";
 import { TherapistProfileSheet, type TherapistProfileData } from "./TherapistProfileSheet";
 import { MatchRationale } from "./MatchRationale";
-import type { TherapistMatchResults as TherapistMatchResultsType } from "@/types/graphql";
+import { createFallbackResults } from "./fallbackTherapists";
+// import type { TherapistMatchResults as TherapistMatchResultsType } from "@/types/graphql";
 
 /**
  * Props for TherapistMatchResults component
@@ -41,7 +42,8 @@ import type { TherapistMatchResults as TherapistMatchResultsType } from "@/types
  * @param className - Optional additional CSS classes
  */
 export interface TherapistMatchResultsProps {
-  results: TherapistMatchResultsType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  results: any;
   sessionId: string;
   childName?: string;
   className?: string;
@@ -88,13 +90,49 @@ export function TherapistMatchResults({
   const [selectedTherapist, setSelectedTherapist] = React.useState<TherapistProfileData | null>(null);
 
   /**
+   * Determine if we should show fallback data
+   * Triggered when backend returns empty therapists array
+   * Shows sample therapists as suggestions in production
+   */
+  const displayResults = React.useMemo(() => {
+    if (results.therapists && results.therapists.length > 0) {
+      return { ...results, isFallbackData: false };
+    }
+    return createFallbackResults();
+  }, [results]);
+
+  const isFallbackMode = displayResults.isFallbackData;
+
+  /**
    * Handles "Book Now" button click
-   * Navigates to scheduling page for selected therapist
+   * Saves selected therapist to localStorage and navigates to scheduling page
    *
    * @param therapistId - ID of the therapist to book
    */
   function handleBookNow(therapistId: string) {
-    router.push(`/onboarding/${sessionId}/schedule/${therapistId}`);
+    // Find therapist details and save to localStorage for schedule page
+    const therapist = displayResults.therapists.find((t: any) => t.id === therapistId);
+    if (therapist) {
+      try {
+        const storageKey = `onboarding_session_${sessionId}`;
+        const stored = localStorage.getItem(storageKey);
+        const sessionData = stored ? JSON.parse(stored) : { data: {} };
+
+        // Save selected therapist details
+        sessionData.data.selectedTherapist = {
+          id: therapist.id,
+          name: therapist.name,
+          photoUrl: therapist.photoUrl,
+          credentials: therapist.credentials,
+        };
+
+        localStorage.setItem(storageKey, JSON.stringify(sessionData));
+      } catch (error) {
+        console.error("Failed to save selected therapist:", error);
+      }
+    }
+
+    router.push(`/onboarding/${sessionId}/schedule?therapistId=${therapistId}`);
   }
 
   /**
@@ -104,8 +142,13 @@ export function TherapistMatchResults({
    * @param therapistId - ID of the therapist whose profile to view
    */
   function handleViewProfile(therapistId: string) {
-    // Find the therapist in results
-    const therapist = results.therapists.find((t) => t.id === therapistId);
+    console.log('[handleViewProfile] Called with therapistId:', therapistId);
+    console.log('[handleViewProfile] displayResults.therapists:', displayResults.therapists.map((t: any) => ({ id: t.id, name: t.name })));
+
+    // Find the therapist in displayResults (handles both real and fallback)
+    const therapist = displayResults.therapists.find((t: any) => t.id === therapistId);
+    console.log('[handleViewProfile] Found therapist:', therapist ? therapist.name : 'NOT FOUND');
+
     if (therapist) {
       // Extend therapist data with mock profile details
       // In production, this could fetch additional data or use existing data
@@ -132,8 +175,11 @@ export function TherapistMatchResults({
         ],
       };
 
+      console.log('[handleViewProfile] Setting selectedTherapist and opening sheet');
       setSelectedTherapist(profileData);
       setIsProfileOpen(true);
+    } else {
+      console.error('[handleViewProfile] Therapist not found! Check if IDs match.');
     }
   }
 
@@ -156,57 +202,23 @@ export function TherapistMatchResults({
    */
   function handleViewCalendar(therapistId: string) {
     setIsProfileOpen(false);
-    // For now, navigate to scheduling (could be separate calendar view)
-    router.push(`/onboarding/${sessionId}/schedule/${therapistId}`);
+    // Save therapist and navigate to scheduling (reuse handleBookNow logic)
+    handleBookNow(therapistId);
   }
 
   /**
    * Handles "None of these feel right?" click
-   * Shows support contact or additional options
+   * Opens Intercom chat widget for support assistance
    */
   function handleContactSupport() {
-    // TODO: Implement support contact flow
-    // Could show a modal with contact options or chat widget
-    // Placeholder for future implementation
-  }
-
-  // Empty state - no therapists matched
-  if (!results.therapists || results.therapists.length === 0) {
-    return (
-      <div
-        className={cn(
-          "flex flex-col items-center justify-center space-y-6 py-12",
-          className
-        )}
-      >
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-orange/10">
-          <AlertCircle className="h-8 w-8 text-warm-orange" />
-        </div>
-
-        <div className="space-y-2 text-center max-w-md">
-          <h2 className="text-2xl font-semibold font-serif text-deep-text">
-            We&apos;re having trouble finding matches
-          </h2>
-          <p className="text-muted-foreground">
-            Don&apos;t worry! Our team can help find the perfect therapist for
-            your needs. Let&apos;s connect you with someone who can assist.
-          </p>
-        </div>
-
-        <Button
-          onClick={handleContactSupport}
-          className="bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
-          size="lg"
-        >
-          <MessageCircle className="h-4 w-4 mr-2" />
-          Contact Support
-        </Button>
-      </div>
-    );
+    if (window.Intercom) {
+      window.Intercom('show');
+    }
   }
 
   // Sort therapists by match score (already sorted by backend, but ensure best match is first)
-  const sortedTherapists = [...results.therapists].sort((a, b) => {
+  // Uses displayResults which includes fallback data when no real matches exist
+  const sortedTherapists = [...displayResults.therapists].sort((a: any, b: any) => {
     if (a.isBestMatch) return -1;
     if (b.isBestMatch) return 1;
     return b.matchScore - a.matchScore;
@@ -217,21 +229,50 @@ export function TherapistMatchResults({
       <div
         className={cn("space-y-8 animate-in fade-in duration-700", className)}
       >
+        {/* Fallback Notice Banner - shown when displaying sample therapists */}
+        {isFallbackMode && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="flex flex-col sm:flex-row items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-amber-800">
+                  Suggested Therapists
+                </h3>
+                <p className="text-sm text-amber-700 mt-1">
+                  We&apos;re showing you sample therapist profiles while we work on finding
+                  your perfect match. Contact our team for personalized recommendations.
+                </p>
+                <Button
+                  onClick={handleContactSupport}
+                  variant="link"
+                  className="text-amber-800 hover:text-amber-900 p-0 h-auto mt-2 underline text-sm"
+                >
+                  Contact Support for Help
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Results Header */}
         <div className="space-y-2 text-center">
           <h2 className="text-2xl font-semibold font-serif text-deep-text">
-            We found {results.totalCount} great{" "}
-            {results.totalCount === 1 ? "match" : "matches"} for you
+            {isFallbackMode
+              ? "Meet Some of Our Therapists"
+              : `We found ${displayResults.totalCount} great ${displayResults.totalCount === 1 ? "match" : "matches"} for you`
+            }
           </h2>
           <p className="text-muted-foreground">
-            These therapists are selected based on your needs, preferences, and
-            availability.
+            {isFallbackMode
+              ? "Here are some example therapist profiles. Contact us for personalized matching."
+              : "These therapists are selected based on your needs, preferences, and availability."
+            }
           </p>
         </div>
 
         {/* Therapist Cards */}
         <div className="space-y-4 max-w-[640px] mx-auto">
-          {sortedTherapists.map((therapist, index) => (
+          {sortedTherapists.map((therapist: any, index: number) => (
             <div
               key={therapist.id}
               className="animate-in fade-in slide-in-from-bottom-4"
@@ -249,8 +290,10 @@ export function TherapistMatchResults({
           ))}
         </div>
 
-        {/* Match Rationale */}
-        <MatchRationale matchingCriteria={results.matchingCriteria} />
+        {/* Match Rationale - hide in fallback mode since criteria don't apply */}
+        {!isFallbackMode && displayResults.matchingCriteria && (
+          <MatchRationale matchingCriteria={displayResults.matchingCriteria} />
+        )}
 
         {/* Alternative Options */}
         <div className="text-center pt-4">
@@ -262,7 +305,7 @@ export function TherapistMatchResults({
           >
             <MessageCircle className="h-4 w-4 group-hover:text-daybreak-teal transition-colors" />
             <span className="underline underline-offset-2">
-              None of these feel right?
+              {isFallbackMode ? "Need help finding a therapist?" : "None of these feel right?"}
             </span>
           </Button>
           <p className="text-xs text-muted-foreground mt-2">

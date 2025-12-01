@@ -16,7 +16,8 @@ import { setContext } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createClient, type Client } from "graphql-ws";
-import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
+// apollo-upload-client v19 exports default
+import UploadHttpLink from "apollo-upload-client/UploadHttpLink.mjs";
 
 /**
  * Determines the GraphQL HTTP endpoint based on environment configuration.
@@ -136,7 +137,7 @@ export function getAuthToken(): string | null {
 
 /**
  * Creates an HTTP link for GraphQL queries and mutations.
- * Uses createUploadLink from apollo-upload-client to support file uploads.
+ * Uses UploadHttpLink from apollo-upload-client to support file uploads.
  * Uses getGraphQLEndpoint() to determine the correct endpoint based on environment.
  *
  * @returns Configured upload-enabled ApolloLink instance
@@ -144,9 +145,9 @@ export function getAuthToken(): string | null {
 export function createHttpLink(): ApolloLink {
   const uri = getGraphQLEndpoint();
 
-  // Use createUploadLink for multipart file upload support
+  // Use UploadHttpLink for multipart file upload support
   // This is backwards compatible with regular HTTP requests
-  return createUploadLink({
+  return new UploadHttpLink({
     uri,
     credentials: "include",
     headers: {

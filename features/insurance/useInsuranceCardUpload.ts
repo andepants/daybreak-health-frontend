@@ -7,7 +7,8 @@
 "use client";
 
 import * as React from "react";
-import { useMutation, useSubscription, gql } from "@apollo/client";
+import { gql } from "@apollo/client";
+import { useMutation, useSubscription } from "@apollo/client/react";
 
 /**
  * GraphQL mutation for uploading insurance card images
@@ -81,6 +82,42 @@ export interface OcrExtractedData {
   member_id?: string;
   group_number?: string;
   subscriber_name?: string;
+}
+
+/**
+ * Insurance data from GraphQL response
+ */
+interface InsuranceData {
+  id: string;
+  payerName: string | null;
+  subscriberName: string | null;
+  memberId: string | null;
+  groupNumber: string | null;
+  verificationStatus: string;
+  ocrProcessed: boolean;
+  ocrExtracted: OcrExtractedData | null;
+  ocrConfidence: OcrConfidenceData | null;
+  ocrLowConfidenceFields: string[] | null;
+  needsReview: boolean;
+  ocrError: string | null;
+}
+
+/**
+ * Upload mutation response
+ */
+interface UploadInsuranceCardResponse {
+  uploadInsuranceCard: {
+    insurance: InsuranceData | null;
+    errors: string[];
+  };
+}
+
+/**
+ * Insurance status subscription payload
+ */
+interface InsuranceStatusPayload {
+  insurance: InsuranceData;
+  progress: { percentage: number; message: string } | null;
 }
 
 /**
@@ -216,7 +253,7 @@ export function useInsuranceCardUpload({
   const [insuranceId, setInsuranceId] = React.useState<string | null>(null);
 
   // GraphQL mutation for uploading insurance card
-  const [uploadMutation] = useMutation(UPLOAD_INSURANCE_CARD, {
+  const [uploadMutation] = useMutation<UploadInsuranceCardResponse>(UPLOAD_INSURANCE_CARD, {
     context: {
       // Enable multipart form upload
       hasUpload: true,
@@ -224,12 +261,13 @@ export function useInsuranceCardUpload({
   });
 
   // GraphQL subscription for OCR status updates
-  const { data: subscriptionData } = useSubscription(INSURANCE_STATUS_CHANGED, {
+  useSubscription<{ insuranceStatusChanged: InsuranceStatusPayload }>(INSURANCE_STATUS_CHANGED, {
     variables: { sessionId },
     skip: !insuranceId || status !== "processing",
-    onData: ({ data }) => {
-      if (data?.data?.insuranceStatusChanged) {
-        handleSubscriptionUpdate(data.data.insuranceStatusChanged);
+    onData: (options) => {
+      const payload = options.data?.data?.insuranceStatusChanged;
+      if (payload) {
+        handleSubscriptionUpdate(payload);
       }
     },
   });
@@ -238,17 +276,7 @@ export function useInsuranceCardUpload({
    * Handles subscription updates for OCR processing status
    */
   const handleSubscriptionUpdate = React.useCallback(
-    (payload: {
-      insurance: {
-        ocrProcessed: boolean;
-        ocrExtracted: OcrExtractedData | null;
-        ocrConfidence: OcrConfidenceData | null;
-        ocrLowConfidenceFields: string[] | null;
-        needsReview: boolean;
-        ocrError: string | null;
-      };
-      progress: { percentage: number; message: string } | null;
-    }) => {
+    (payload: InsuranceStatusPayload) => {
       const { insurance, progress } = payload;
 
       // Update progress message
@@ -417,15 +445,17 @@ export function useInsuranceCardUpload({
       setUploadProgress(100);
 
       // Check for errors in response
-      if (result.data?.uploadInsuranceCard?.errors?.length > 0) {
-        const errorMessage = result.data.uploadInsuranceCard.errors.join(", ");
+      const uploadResult = result.data?.uploadInsuranceCard;
+      const errors = uploadResult?.errors;
+      if (errors && errors.length > 0) {
+        const errorMessage = errors.join(", ");
         setError(errorMessage);
         setStatus("error");
         onError?.(errorMessage);
         return;
       }
 
-      const insurance = result.data?.uploadInsuranceCard?.insurance;
+      const insurance = uploadResult?.insurance;
       if (!insurance) {
         throw new Error("No insurance data returned");
       }

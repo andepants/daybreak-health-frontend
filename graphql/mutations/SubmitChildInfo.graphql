@@ -1,0 +1,29 @@
+# SubmitChildInfo Mutation
+# Submits child demographic information during intake
+# Links child record to the current onboarding session
+
+mutation SubmitChildInfo(
+  $session_id: ID!
+  $child_info: ChildInput!
+) {
+  submitChildInfo(
+    session_id: $session_id
+    child_info: $child_info
+  ) {
+    child {
+      id
+      first_name
+      last_name
+      date_of_birth
+      gender
+      school_name
+      grade
+      primary_concerns
+    }
+    session {
+      id
+      status
+    }
+    errors
+  }
+}

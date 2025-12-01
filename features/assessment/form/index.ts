@@ -12,6 +12,8 @@ export { SaveIndicator } from "./components/SaveIndicator";
 export { Page1AboutYourChild } from "./components/Page1AboutYourChild";
 export { Page2DailyLifeImpact } from "./components/Page2DailyLifeImpact";
 export { Page3AdditionalContext } from "./components/Page3AdditionalContext";
+export { FieldStatusIndicator } from "./components/FieldStatusIndicator";
+export { AssessmentCompletionSummary } from "./components/AssessmentCompletionSummary";
 
 // Component prop types
 export type { FormProgressProps } from "./components/FormProgress";
@@ -20,10 +22,13 @@ export type { SaveIndicatorProps } from "./components/SaveIndicator";
 export type { Page1AboutYourChildProps } from "./components/Page1AboutYourChild";
 export type { Page2DailyLifeImpactProps } from "./components/Page2DailyLifeImpact";
 export type { Page3AdditionalContextProps } from "./components/Page3AdditionalContext";
+export type { FieldStatusIndicatorProps } from "./components/FieldStatusIndicator";
+export type { AssessmentCompletionSummaryProps } from "./components/AssessmentCompletionSummary";
 
 // Hooks
 export { useFormAutoSave } from "./hooks/useFormAutoSave";
 export { useFormNavigation } from "./hooks/useFormNavigation";
+export { useAssessmentFieldStatus } from "./hooks/useAssessmentFieldStatus";
 
 // Hook types
 export type {
@@ -35,6 +40,10 @@ export type {
   UseFormNavigationOptions,
   UseFormNavigationReturn,
 } from "./hooks/useFormNavigation";
+export type {
+  AssessmentFieldStatus,
+  AssessmentFieldStatusReturn,
+} from "./hooks/useAssessmentFieldStatus";
 
 // Utilities
 export { formToSummary, formatSummaryForDisplay } from "./utils/formToSummary";

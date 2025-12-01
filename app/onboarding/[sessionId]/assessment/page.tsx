@@ -11,9 +11,9 @@ import { AssessmentClient } from "./AssessmentClient";
  * Generate static params for the assessment page
  * Returns a placeholder sessionId for static build
  */
-export async function generateStaticParams() {
-  return [{ sessionId: "demo" }];
-}
+// export async function generateStaticParams() {
+//   return [{ sessionId: "demo" }];
+// }
 
 /**
  * Props for Assessment page

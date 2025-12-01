@@ -18,6 +18,7 @@ import {
   type OcrExtractedData,
   type OcrConfidenceData,
 } from "./useInsuranceCardUpload";
+import { CameraCapture } from "./CameraCapture";
 
 // Re-export types for external consumers
 export type { OcrExtractedData, OcrConfidenceData } from "./useInsuranceCardUpload";
@@ -92,16 +93,45 @@ export function InsuranceCardUpload({
   const backCameraRef = React.useRef<HTMLInputElement>(null);
   const [frontDragActive, setFrontDragActive] = React.useState(false);
   const [backDragActive, setBackDragActive] = React.useState(false);
+  const [cameraModalTarget, setCameraModalTarget] = React.useState<"front" | "back" | null>(null);
+  const [hasWebcam, setHasWebcam] = React.useState(false);
 
   /**
-   * Detects if the device has camera capability (mobile/tablet)
+   * Detects if the device is mobile (for native camera capture)
    */
-  const hasCamera = React.useMemo(() => {
+  const isMobile = React.useMemo(() => {
     if (typeof navigator === "undefined") return false;
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
     );
   }, []);
+
+  /**
+   * Checks for webcam availability on mount (for desktop camera capture)
+   */
+  React.useEffect(() => {
+    async function checkWebcam() {
+      if (typeof navigator === "undefined" || !navigator.mediaDevices) {
+        setHasWebcam(false);
+        return;
+      }
+
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter((device) => device.kind === "videoinput");
+        setHasWebcam(videoDevices.length > 0);
+      } catch {
+        setHasWebcam(false);
+      }
+    }
+
+    checkWebcam();
+  }, []);
+
+  /**
+   * Whether camera capture is available (mobile native or desktop webcam)
+   */
+  const hasCamera = isMobile || hasWebcam;
 
   const {
     status,
@@ -321,7 +351,13 @@ export function InsuranceCardUpload({
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        frontCameraRef.current?.click();
+                        if (isMobile) {
+                          // Use native camera on mobile
+                          frontCameraRef.current?.click();
+                        } else {
+                          // Open webcam modal on desktop
+                          setCameraModalTarget("front");
+                        }
                       }}
                       className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-white transition-colors"
                       style={{ backgroundColor: COLORS.teal }}
@@ -436,7 +472,13 @@ export function InsuranceCardUpload({
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        backCameraRef.current?.click();
+                        if (isMobile) {
+                          // Use native camera on mobile
+                          backCameraRef.current?.click();
+                        } else {
+                          // Open webcam modal on desktop
+                          setCameraModalTarget("back");
+                        }
                       }}
                       className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-white transition-colors"
                       style={{ backgroundColor: COLORS.teal }}
@@ -541,6 +583,21 @@ export function InsuranceCardUpload({
           </button>
         </div>
       )}
+
+      {/* Camera capture modal for desktop webcam */}
+      <CameraCapture
+        open={cameraModalTarget !== null}
+        onClose={() => setCameraModalTarget(null)}
+        onCapture={(file) => {
+          if (cameraModalTarget === "front") {
+            setFrontImage(file);
+          } else if (cameraModalTarget === "back") {
+            setBackImage(file);
+          }
+          setCameraModalTarget(null);
+        }}
+        captureLabel={cameraModalTarget === "front" ? "front of card" : "back of card"}
+      />
     </div>
   );
 }

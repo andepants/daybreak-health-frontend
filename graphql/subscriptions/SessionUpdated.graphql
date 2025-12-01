@@ -4,16 +4,18 @@
 
 subscription SessionUpdated($sessionId: ID!) {
   sessionUpdated(sessionId: $sessionId) {
-    id
-    status
-    progress {
-      percentage
-      currentPhase
-      completedPhases
-      nextPhase
-      estimatedMinutesRemaining
+    session {
+      id
+      status
+      progress {
+        percentage
+        currentPhase
+        completedPhases
+        nextPhase
+        estimatedMinutesRemaining
+      }
+      expiresAt
+      updatedAt
     }
-    expiresAt
-    updatedAt
   }
 }

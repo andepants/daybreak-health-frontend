@@ -2,8 +2,8 @@
 # Sends a magic link email to the parent for session recovery
 # Requires parent email to be collected first
 
-mutation RequestSessionRecovery($sessionId: ID!) {
-  requestSessionRecovery(sessionId: $sessionId) {
+mutation RequestSessionRecovery($input: RequestRecoveryInput!) {
+  requestSessionRecovery(input: $input) {
     success
     message
   }

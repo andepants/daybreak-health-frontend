@@ -75,8 +75,8 @@ export function useFormAutoSave({
   const [error, setError] = React.useState<Error | null>(null);
   const [pendingData, setPendingData] = React.useState<Partial<FormAssessmentInput> | null>(null);
 
-  const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
-  const resetTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resetTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveQueueRef = React.useRef<Partial<FormAssessmentInput>>({});
 
   /**
@@ -95,28 +95,35 @@ export function useFormAutoSave({
         // Simulate network delay
         await new Promise((resolve) => setTimeout(resolve, 300));
 
-        // Merge with existing data and store in localStorage
-        const storageKey = `form_assessment_${sessionId}`;
-        let existing: Partial<FormAssessmentInput> = {};
+        // Use unified storage key for consistency with other forms
+        const storageKey = `onboarding_session_${sessionId}`;
+        let existingSession: Record<string, unknown> = { data: {} };
+        let existingFormData: Partial<FormAssessmentInput> = {};
 
         try {
           const stored = localStorage.getItem(storageKey);
           if (stored) {
-            existing = JSON.parse(stored).data || {};
+            existingSession = JSON.parse(stored);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            existingFormData = (existingSession as any).data?.formAssessment || {};
           }
         } catch {
           // Ignore parse errors
         }
 
-        const merged = { ...existing, ...data };
+        const merged = { ...existingFormData, ...data };
 
         try {
+          // Store under formAssessment key within unified storage
           localStorage.setItem(
             storageKey,
             JSON.stringify({
-              data: merged,
+              ...existingSession,
+              data: {
+                ...(existingSession.data || {}),
+                formAssessment: merged,
+              },
               savedAt: new Date().toISOString(),
-              currentPage: 1, // Will be updated by page navigation
             })
           );
         } catch (storageError) {

@@ -1,0 +1,19 @@
+# GetIntercomIdentity Query
+# Fetches identity verification data for secure Intercom widget initialization
+# Uses intercomIdentity query from backend Epic 7 (Story 7.1)
+#
+# Security:
+# - Returns signed JWT for identity verification
+# - Prevents user impersonation in Intercom
+# - Only session ID is used as user identifier (no PHI)
+#
+# Usage: Call after session is created to initialize Intercom with verified identity
+
+query GetIntercomIdentity($sessionId: ID!) {
+  intercomIdentity(sessionId: $sessionId) {
+    appId
+    userJwt
+    userId
+    enabled
+  }
+}

@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { type Page3Input } from "@/lib/validations/assessment";
+import { FieldStatusIndicator } from "./FieldStatusIndicator";
 
 /**
  * Props for Page3AdditionalContext component
@@ -164,9 +165,15 @@ export function Page3AdditionalContext({
       <div className="space-y-2">
         <Label
           htmlFor="therapyGoals"
-          className="flex items-center gap-1"
+          className="flex items-center gap-2"
         >
           What are you hoping to get from therapy? <span className="text-destructive">*</span>
+          <FieldStatusIndicator
+            isValid={isFieldValid("therapyGoals")}
+            isRequired={true}
+            isTouched={!!touchedFields.therapyGoals}
+            hasError={!!errors.therapyGoals}
+          />
         </Label>
         <p className="text-xs text-muted-foreground">
           Help us understand your goals and expectations for your child&apos;s therapy journey.

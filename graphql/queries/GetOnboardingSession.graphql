@@ -28,15 +28,16 @@ query GetSession($id: ID!) {
     }
     child {
       id
-      firstName
-      lastName
-      dateOfBirth
+      first_name
+      last_name
+      date_of_birth
       gender
-      schoolName
+      school_name
       grade
     }
     assessment {
       id
+      status
       responses
       riskFlags
       summary

@@ -127,7 +127,7 @@ export function BookingSuccess({
   }
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="bg-cream/50">
       {/* Success announcement for screen readers */}
       <div
         role="status"
@@ -137,68 +137,78 @@ export function BookingSuccess({
         Appointment successfully booked
       </div>
 
-      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="space-y-8">
-          {/* Celebration Header */}
-          <div className="text-center space-y-4">
-            <div className="flex justify-center">
-              <div className="rounded-full bg-green-50 p-3">
-                <CheckCircle2
-                  className="h-12 w-12 text-green-600"
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h1 className="text-4xl font-serif font-bold text-deep-text">
-                You&apos;re all set!
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                Your appointment has been confirmed
-              </p>
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Celebration Header - Centered above grid */}
+        <div className="text-center space-y-4 mb-8">
+          <div className="flex justify-center">
+            <div className="rounded-full bg-green-50 p-3">
+              <CheckCircle2
+                className="h-12 w-12 text-green-600"
+                aria-hidden="true"
+              />
             </div>
           </div>
 
-          {/* Email Confirmation Status */}
-          <EmailConfirmationMessage
-            emailConfirmation={emailConfirmation ?? null}
-          />
+          <div className="space-y-2">
+            <h1 className="text-4xl font-serif font-bold text-deep-text">
+              You&apos;re all set!
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Your appointment has been confirmed
+            </p>
+          </div>
+        </div>
 
-          {/* Appointment Details Card */}
-          <AppointmentDetailsCard
-            therapist={appointment.therapist}
-            startTime={appointment.startTime}
-            endTime={appointment.endTime}
-            duration={appointment.duration}
-          />
+        {/* Two-column layout: Main content (left) | Sidebar (right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column: Email confirmation + What's Next + Done */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Email Confirmation Status */}
+            <EmailConfirmationMessage
+              emailConfirmation={emailConfirmation ?? null}
+            />
 
-          {/* Calendar Links */}
-          <CalendarLinks
-            therapistName={appointment.therapist.name}
-            startTime={appointment.startTime}
-            endTime={appointment.endTime}
-            meetingUrl={appointment.meetingUrl}
-          />
+            {/* What's Next Section */}
+            <WhatsNext />
 
-          {/* What's Next Section */}
-          <WhatsNext />
+            {/* Done Button */}
+            <div className="pt-4">
+              <Button
+                onClick={handleDone}
+                className="w-full bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
+                size="lg"
+              >
+                Done
+              </Button>
+            </div>
 
-          {/* Done Button */}
-          <div className="pt-4">
-            <Button
-              onClick={handleDone}
-              className="w-full bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
-              size="lg"
-            >
-              Done
-            </Button>
+            {/* Footer Note */}
+            <p className="text-center text-sm text-muted-foreground">
+              We&apos;re excited to support your family on this journey
+            </p>
           </div>
 
-          {/* Footer Note */}
-          <p className="text-center text-sm text-muted-foreground">
-            We&apos;re excited to support your family on this journey
-          </p>
+          {/* Right Column: Sticky Sidebar with Appointment Details + Calendar */}
+          <div className="lg:col-span-1">
+            <div className="lg:sticky lg:top-6 space-y-4">
+              {/* Appointment Details Card */}
+              <AppointmentDetailsCard
+                therapist={appointment.therapist}
+                startTime={appointment.startTime}
+                endTime={appointment.endTime}
+                duration={appointment.duration}
+              />
+
+              {/* Calendar Links */}
+              <CalendarLinks
+                therapistName={appointment.therapist.name}
+                startTime={appointment.startTime}
+                endTime={appointment.endTime}
+                meetingUrl={appointment.meetingUrl}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -3,8 +3,8 @@
 # Session data is retained per data retention policy
 # Idempotent: abandoning already abandoned session succeeds
 
-mutation AbandonSession($sessionId: ID!) {
-  abandonSession(sessionId: $sessionId) {
+mutation AbandonSession($input: AbandonSessionInput!) {
+  abandonSession(input: $input) {
     session {
       id
       status

@@ -1,0 +1,38 @@
+# SubmitAssessmentResponse Mutation
+# Submits a response to a screening assessment question
+# Used during the conversational assessment flow
+
+mutation SubmitAssessmentResponse(
+  $sessionId: ID!
+  $questionId: String!
+  $responseText: String!
+  $responseValue: Int
+) {
+  submitAssessmentResponse(
+    sessionId: $sessionId
+    questionId: $questionId
+    responseText: $responseText
+    responseValue: $responseValue
+  ) {
+    assessment {
+      id
+      status
+      score
+    }
+    nextQuestion {
+      id
+      text
+      instrument
+    }
+    progress {
+      status
+      completedQuestions
+      totalQuestions
+      percentage
+      phqAComplete
+      gad7Complete
+      currentPhase
+    }
+    errors
+  }
+}

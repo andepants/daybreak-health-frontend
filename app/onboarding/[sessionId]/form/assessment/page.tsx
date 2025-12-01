@@ -22,9 +22,9 @@ import { FormAssessmentClient } from "./FormAssessmentClient";
  * Generate static params for the form assessment page
  * Returns a placeholder sessionId for static build
  */
-export async function generateStaticParams() {
-  return [{ sessionId: "demo" }];
-}
+// export async function generateStaticParams() {
+//   return [{ sessionId: "demo" }];
+// }
 
 /**
  * Props for FormAssessment page

@@ -1,15 +1,28 @@
 # GetPaymentPlans Query
 # Fetches available payment plan options for a given session
-# Returns plan details including frequency, amounts, and terms
+# Uses paymentPlanOptions query from backend Epic 6 (Story 6.5)
+# Returns plan details including duration, amounts, fees, and discounts
+#
+# NOTE: Requires estimatedCost parameter - get this from costComparison query first
 
-query GetPaymentPlans($sessionId: ID!) {
-  getPaymentPlans(sessionId: $sessionId) {
-    id
-    name
-    description
-    frequency
-    installmentAmount
+query GetPaymentPlans($sessionId: ID!, $estimatedCost: Float!) {
+  paymentPlanOptions(sessionId: $sessionId, estimatedCost: $estimatedCost) {
+    durationMonths
+    monthlyAmount
     totalAmount
-    terms
+    interestRate
+    hasFees
+    feeAmount
+    upfrontDiscount
+    description
+  }
+  financialAssistanceInfo {
+    available
+    eligibilityCriteria
+    applicationUrl
+    description
+    slidingScaleAvailable
+    discountRange
+    additionalInfo
   }
 }

@@ -8,9 +8,10 @@
 
 import * as React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { Check } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -27,6 +28,7 @@ import {
   SEVERITY_OPTIONS,
   SEVERITY_LABELS,
 } from "@/lib/validations/assessment";
+import { FieldStatusIndicator } from "./FieldStatusIndicator";
 
 /**
  * Props for Page1AboutYourChild component
@@ -98,13 +100,41 @@ export function Page1AboutYourChild({
     onFieldBlur(fieldName);
   };
 
+  /**
+   * Auto-fill form with sample data
+   */
+  const handleAutofill = async () => {
+    setValue("primaryConcerns", "My child has been feeling anxious lately and having trouble sleeping. It started about a month ago and seems to be getting worse.", { shouldValidate: true });
+    setValue("concernDuration", "1-3-months", { shouldValidate: true });
+    setValue("concernSeverity", 3, { shouldValidate: true });
+
+    // Trigger validation
+    await trigger();
+
+    // Trigger auto-save callbacks
+    onFieldBlur("primaryConcerns");
+    onFieldBlur("concernDuration");
+    onFieldBlur("concernSeverity");
+  };
+
   return (
     <div className="space-y-6">
       {/* Page header */}
       <div className="space-y-2">
-        <h2 className="text-xl font-semibold text-foreground">
-          About Your Child
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-serif font-semibold text-foreground">
+            About Your Child
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleAutofill}
+            className="text-daybreak-teal hover:text-daybreak-teal/80 hover:bg-daybreak-teal/10"
+          >
+            <Sparkles className="w-4 h-4 mr-1" />
+            Autofill
+          </Button>
+        </div>
         <p className="text-sm text-muted-foreground">
           Help us understand what brings you here today. All fields are required.
         </p>
@@ -114,9 +144,15 @@ export function Page1AboutYourChild({
       <div className="space-y-2">
         <Label
           htmlFor="primaryConcerns"
-          className="flex items-center gap-1"
+          className="flex items-center gap-2"
         >
           What concerns bring you here today? <span className="text-destructive">*</span>
+          <FieldStatusIndicator
+            isValid={isFieldValid("primaryConcerns")}
+            isRequired={true}
+            isTouched={!!touchedFields.primaryConcerns}
+            hasError={!!errors.primaryConcerns}
+          />
         </Label>
         <p className="text-xs text-muted-foreground">
           Please describe what you&apos;ve been noticing about your child&apos;s behavior, mood, or wellbeing.
@@ -134,6 +170,12 @@ export function Page1AboutYourChild({
             )}
             {...register("primaryConcerns", {
               onBlur: () => handleBlur("primaryConcerns"),
+              onChange: (e) => {
+                // Auto-validate if length is sufficient to improve UX
+                if (e.target.value.length >= 10) {
+                  trigger("primaryConcerns");
+                }
+              }
             })}
           />
           {isFieldValid("primaryConcerns") && (
@@ -167,9 +209,15 @@ export function Page1AboutYourChild({
       <div className="space-y-2">
         <Label
           htmlFor="concernDuration"
-          className="flex items-center gap-1"
+          className="flex items-center gap-2"
         >
           How long have you noticed these concerns? <span className="text-destructive">*</span>
+          <FieldStatusIndicator
+            isValid={isFieldValid("concernDuration")}
+            isRequired={true}
+            isTouched={!!touchedFields.concernDuration}
+            hasError={!!errors.concernDuration}
+          />
         </Label>
         <div className="relative">
           <Select
@@ -221,8 +269,14 @@ export function Page1AboutYourChild({
 
       {/* Severity Rating */}
       <div className="space-y-3">
-        <Label className="flex items-center gap-1">
+        <Label className="flex items-center gap-2">
           How severe would you rate the concerns? <span className="text-destructive">*</span>
+          <FieldStatusIndicator
+            isValid={isFieldValid("concernSeverity")}
+            isRequired={true}
+            isTouched={!!touchedFields.concernSeverity}
+            hasError={!!errors.concernSeverity}
+          />
         </Label>
         <p className="text-xs text-muted-foreground">
           1 = Mild, 5 = Severe
@@ -299,3 +353,4 @@ export function Page1AboutYourChild({
 }
 
 Page1AboutYourChild.displayName = "Page1AboutYourChild";
+

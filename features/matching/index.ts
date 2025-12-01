@@ -30,3 +30,14 @@ export type {
   ProfileAvailabilitySectionProps,
   AvailabilitySlot
 } from "./ProfileAvailabilitySection";
+
+export {
+  FALLBACK_THERAPISTS,
+  createFallbackResults,
+  isFallbackTherapist
+} from "./fallbackTherapists";
+export type {
+  FallbackTherapist,
+  FallbackResults,
+  FallbackMatchReason
+} from "./fallbackTherapists";

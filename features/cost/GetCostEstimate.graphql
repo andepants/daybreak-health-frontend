@@ -1,25 +1,39 @@
 # GetCostEstimate Query
-# Fetches cost estimation for therapy sessions based on insurance information
-# Returns per-session cost, coverage details, and disclaimer text
+# Fetches cost comparison between insurance and self-pay options
+# Uses costComparison query from backend Epic 6
+# Returns comprehensive comparison data to help parents choose payment options
 
 query GetCostEstimate($sessionId: ID!) {
-  getCostEstimate(sessionId: $sessionId) {
-    sessionId
-    perSessionCost
-    insuranceCoverage {
-      percentage
-      amount
-      description
+  costComparison(sessionId: $sessionId) {
+    insuranceEstimate {
+      perSessionCost
+      totalEstimatedCost
+      explanation
+      assumptionNotes
     }
-    copay
-    coinsurance
-    deductible {
-      total
-      met
-      remaining
+    selfPayEstimate {
+      baseRate
+      totalForTypicalTreatment
+      slidingScaleInfo
+      packageOptions {
+        sessions
+        totalPrice
+        perSessionCost
+        savings
+        description
+      }
+      transparentPricingMessage
+      whatIsIncluded
+      whatIsNotIncluded
     }
-    insuranceCarrier
-    disclaimer
-    calculatedAt
+    comparisonTable {
+      label
+      insuranceValue
+      selfPayValue
+      highlightSelfPay
+    }
+    recommendation
+    savingsIfSelfPay
+    highlightSelfPay
   }
 }

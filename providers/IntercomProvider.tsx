@@ -46,32 +46,33 @@ interface IntercomStub {
 const DAYBREAK_TEAL = '#2A9D8F';
 
 /**
- * Loads the Intercom messenger script and initializes the widget.
+ * Loads the Intercom messenger script WITHOUT auto-booting.
  *
- * Configuration:
+ * When identity verification is required in Intercom settings, we must NOT
+ * boot in anonymous mode. Instead, we only load the script here and defer
+ * the actual boot to when identity data is available (via useIntercom hook).
+ *
+ * Configuration applied at boot time:
  * - Position: Fixed bottom-right with padding
  * - Brand color: Daybreak teal (#2A9D8F)
- * - Async loading: Non-blocking script injection
  * - Mobile-optimized: Responsive padding and positioning
  *
  * @param appId - Intercom application ID
  */
 function loadIntercom(appId: string): void {
-  // Set global Intercom configuration
-  window.intercomSettings = {
-    app_id: appId,
-    alignment: 'right',
-    horizontal_padding: 20,
-    vertical_padding: 20,
-    action_color: DAYBREAK_TEAL,
-  };
+  // Store app ID in a custom property - NOT in window.intercomSettings
+  // This prevents Intercom from auto-booting when the script loads
+  // The useIntercom hook will call boot() explicitly with identity data
+  (window as Window & { __intercomAppId?: string }).__intercomAppId = appId;
+
+  // Set empty intercomSettings to prevent auto-boot
+  // When app_id is missing, Intercom loads but doesn't initialize
+  window.intercomSettings = {};
 
   // Check if Intercom is already loaded
   const ic = window.Intercom;
   if (typeof ic === 'function') {
-    // Reattach and update if already initialized
-    ic('reattach_activator');
-    ic('update', window.intercomSettings);
+    // Already initialized - don't re-initialize
     return;
   }
 
@@ -109,9 +110,6 @@ function loadIntercom(appId: string): void {
   // Load when document is ready
   if (document.readyState === 'complete') {
     loadScript();
-  } else if (window.attachEvent) {
-    // IE support (legacy)
-    window.attachEvent('onload', loadScript);
   } else {
     window.addEventListener('load', loadScript, false);
   }

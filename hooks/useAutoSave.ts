@@ -69,7 +69,7 @@ export function useAutoSave({
   const [lastSaved, setLastSaved] = React.useState<Date | null>(null);
   const [error, setError] = React.useState<Error | null>(null);
   const [pendingData, setPendingData] = React.useState<unknown>(null);
-  const resetTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const resetTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
    * Save function - persists data to backend
@@ -87,12 +87,23 @@ export function useAutoSave({
         // Simulate network delay
         await new Promise((resolve) => setTimeout(resolve, 300));
 
-        // Store in localStorage as backup
+        // Store in localStorage as backup, merging with existing data
         try {
+          // Retrieve existing data to merge
+          const existingRaw = localStorage.getItem(`onboarding_session_${sessionId}`);
+          const existing = existingRaw ? JSON.parse(existingRaw) : {};
+          const existingData = existing.data || {};
+
+          // Deep merge new data into existing data
+          const mergedData = {
+            ...existingData,
+            ...(data && typeof data === "object" ? data : {}),
+          };
+
           localStorage.setItem(
             `onboarding_session_${sessionId}`,
             JSON.stringify({
-              data,
+              data: mergedData,
               savedAt: new Date().toISOString(),
             })
           );

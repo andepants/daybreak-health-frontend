@@ -17,7 +17,7 @@
  * - No PHI concerns (payment plans are configuration)
  */
 
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client/react";
 import { useMemo } from "react";
 import type { PaymentPlan } from "@/lib/validations/cost";
 
@@ -95,11 +95,13 @@ export function usePaymentPlans(sessionId: string): UsePaymentPlansResult {
    * Ensures type safety and handles missing data gracefully
    */
   const paymentPlans = useMemo<PaymentPlan[] | null>(() => {
-    if (!data?.getPaymentPlans) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!(data as any)?.getPaymentPlans) {
       return null;
     }
 
-    return data.getPaymentPlans as PaymentPlan[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data as any).getPaymentPlans as PaymentPlan[];
   }, [data]);
 
   /**

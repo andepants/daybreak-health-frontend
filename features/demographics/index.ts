@@ -11,3 +11,10 @@ export {
   ClinicalIntakeForm,
   type ClinicalIntakeFormProps,
 } from "./ClinicalIntakeForm";
+export {
+  useDemographicsSave,
+  type UseDemographicsSaveReturn,
+  type UseDemographicsSaveOptions,
+  type ParentInfoData,
+  type ChildInfoData,
+} from "./useDemographicsSave";

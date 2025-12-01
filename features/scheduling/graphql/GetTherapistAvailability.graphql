@@ -1,12 +1,13 @@
 # GetTherapistAvailability Query
 # Fetches available appointment slots for a specific therapist
+# Uses therapistAvailability query from backend Epic 5 (Story 5.2)
 # Used by the scheduling calendar to display bookable time slots
 # Requires valid JWT token - user can only access availability when booking for their own session
 
 query GetTherapistAvailability(
   $therapistId: ID!
-  $startDate: DateTime!
-  $endDate: DateTime!
+  $startDate: ISO8601DateTime!
+  $endDate: ISO8601DateTime!
   $timezone: String
 ) {
   therapistAvailability(

@@ -36,7 +36,7 @@ const PAGE_TITLES = [
  * Renders form progress indicator
  *
  * Visual specs:
- * - Horizontal step indicator with circles and connecting lines
+ * - Vertical step indicator with circles and connecting lines
  * - Completed steps: teal background with checkmark
  * - Current step: teal border with teal text
  * - Future steps: gray border with gray text
@@ -62,75 +62,96 @@ export function FormProgress({
   return (
     <nav
       aria-label="Form progress"
-      className="w-full max-w-[640px] mx-auto"
+      className="w-full md:w-64 flex-shrink-0"
     >
-      {/* Step text indicator */}
-      <p className="text-sm text-muted-foreground text-center mb-4">
-        Page {currentPage} of 3
-      </p>
+      <div className="mb-8 hidden md:block">
+        <h1 className="text-3xl font-serif text-foreground mb-2">
+          Complete<br />Your<br />Profile
+        </h1>
+        <p className="text-muted-foreground text-sm max-w-[200px]">
+          Please complete the following steps before we can match you with a therapist.
+        </p>
+      </div>
+
+      {/* Mobile Header (visible only on small screens) */}
+      <div className="md:hidden mb-6">
+        <h1 className="text-2xl font-serif text-foreground">
+          Complete Your Profile
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Step {currentPage} of 3: {PAGE_TITLES[currentPage - 1]}
+        </p>
+      </div>
 
       {/* Visual progress bar */}
-      <div className="flex items-center justify-between relative">
-        {/* Connecting line background */}
-        <div className="absolute top-4 left-0 right-0 h-0.5 bg-border" />
+      <div className="relative pl-4 md:pl-0">
+        {/* Vertical Line Background */}
+        <div className="absolute left-[27px] md:left-[15px] top-2 bottom-2 w-0.5 bg-border -z-10" />
 
-        {/* Progress line (completed portion) */}
+        {/* Progress Line (completed portion) */}
         <div
-          className="absolute top-4 left-0 h-0.5 bg-daybreak-teal transition-all duration-300"
+          className="absolute left-[27px] md:left-[15px] top-2 w-0.5 bg-daybreak-teal transition-all duration-500 ease-in-out -z-10"
           style={{
-            width: `${((Math.max(...Array.from(completedPages), 0)) / 2) * 100}%`,
+            height: `${Math.max(0, (currentPage - 1) * 50)}%`, // Approximate progress
+            maxHeight: "calc(100% - 16px)"
           }}
         />
 
-        {[1, 2, 3].map((page) => {
-          const isCompleted = completedPages.has(page);
-          const isCurrent = currentPage === page;
-          const isClickable = isCompleted && page !== currentPage;
+        <div className="space-y-8">
+          {[1, 2, 3].map((page) => {
+            const isCompleted = completedPages.has(page);
+            const isCurrent = currentPage === page;
+            const isClickable = isCompleted && page !== currentPage;
 
-          return (
-            <div
-              key={page}
-              className="flex flex-col items-center relative z-10"
-            >
-              {/* Step circle */}
-              <button
-                type="button"
-                onClick={() => isClickable && onPageClick?.(page)}
-                disabled={!isClickable}
-                tabIndex={!isClickable ? -1 : 0}
-                aria-label={`Step ${page}: ${PAGE_TITLES[page - 1]}${isCompleted ? " (completed)" : ""}${isCurrent ? " (current)" : ""}`}
-                aria-current={isCurrent ? "step" : undefined}
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center",
-                  "text-sm font-medium transition-all duration-200",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-daybreak-teal focus-visible:ring-offset-2",
-                  isCompleted && !isCurrent && "bg-daybreak-teal text-white",
-                  isCurrent && "border-2 border-daybreak-teal bg-background text-daybreak-teal",
-                  !isCompleted && !isCurrent && "border-2 border-border bg-background text-muted-foreground",
-                  isClickable && "cursor-pointer hover:ring-2 hover:ring-daybreak-teal/50"
-                )}
+            return (
+              <div
+                key={page}
+                className="flex items-start gap-4"
               >
-                {isCompleted && !isCurrent ? (
-                  <Check className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  page
-                )}
-              </button>
+                {/* Step circle */}
+                <button
+                  type="button"
+                  onClick={() => isClickable && onPageClick?.(page)}
+                  disabled={!isClickable}
+                  tabIndex={!isClickable ? -1 : 0}
+                  aria-label={`Step ${page}: ${PAGE_TITLES[page - 1]}${isCompleted ? " (completed)" : ""}${isCurrent ? " (current)" : ""}`}
+                  aria-current={isCurrent ? "step" : undefined}
+                  className={cn(
+                    "relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                    "text-sm font-medium transition-all duration-200 bg-background",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-daybreak-teal focus-visible:ring-offset-2",
+                    isCompleted && !isCurrent && "bg-daybreak-teal text-white border-2 border-daybreak-teal",
+                    isCurrent && "border-2 border-daybreak-teal text-daybreak-teal",
+                    !isCompleted && !isCurrent && "border-2 border-border text-muted-foreground",
+                    isClickable && "cursor-pointer hover:ring-2 hover:ring-daybreak-teal/50"
+                  )}
+                >
+                  {isCompleted && !isCurrent ? (
+                    <Check className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    page
+                  )}
+                </button>
 
-              {/* Step title */}
-              <span
-                className={cn(
-                  "mt-2 text-xs text-center max-w-[80px]",
-                  isCurrent && "text-daybreak-teal font-medium",
-                  isCompleted && !isCurrent && "text-foreground",
-                  !isCompleted && !isCurrent && "text-muted-foreground"
-                )}
-              >
-                {PAGE_TITLES[page - 1]}
-              </span>
-            </div>
-          );
-        })}
+                {/* Step title - Hidden on mobile to save space, shown on desktop */}
+                <div className={cn(
+                  "pt-1 hidden md:block",
+                  isCurrent ? "opacity-100" : "opacity-70"
+                )}>
+                  <span
+                    className={cn(
+                      "text-sm font-medium block",
+                      isCurrent && "text-daybreak-teal",
+                      !isCurrent && "text-foreground"
+                    )}
+                  >
+                    {PAGE_TITLES[page - 1]}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );

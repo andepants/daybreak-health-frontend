@@ -1,0 +1,14 @@
+# CompleteAssessment Mutation
+# Validates prerequisites and transitions session to assessment_complete status
+# Called when navigating to matching page to ensure booking will succeed
+
+mutation CompleteAssessment($input: CompleteAssessmentInput!) {
+  completeAssessment(input: $input) {
+    session {
+      id
+      status
+    }
+    success
+    errors
+  }
+}

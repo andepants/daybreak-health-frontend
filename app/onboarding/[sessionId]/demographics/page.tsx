@@ -17,12 +17,15 @@ import {
   ParentInfoForm,
   ChildInfoForm,
   ClinicalIntakeForm,
+  useDemographicsSave,
 } from "@/features/demographics";
 import type {
   ParentInfoInput,
   ChildInfoInput,
   ClinicalIntakeInput,
 } from "@/lib/validations/demographics";
+// Note: Toast notifications disabled until sonner package is installed
+// import { toast } from "sonner";
 
 /**
  * Props for Demographics page
@@ -82,6 +85,22 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
   // Track whether data has been loaded (for form key to force re-mount)
   const [dataLoaded, setDataLoaded] = useState(false);
 
+  // Demographics save hook for persisting data to backend
+  const { saveParentInfo, saveChildInfo, parentSaveStatus, childSaveStatus, error: saveError } = useDemographicsSave({
+    sessionId,
+    onParentSaveSuccess: () => {
+      console.info("Parent info saved to backend successfully");
+    },
+    onChildSaveSuccess: () => {
+      console.info("Child info saved to backend successfully");
+    },
+    onError: (error) => {
+      console.error("Failed to save demographics:", error);
+      // TODO: Add toast notification when sonner is installed
+      // toast.error(error);
+    },
+  });
+
   /**
    * Load stored session data from localStorage on mount
    * This enables resume functionality and dev toolbar data fill
@@ -92,9 +111,18 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed?.data) {
+          // Parse child dateOfBirth string to Date object for form compatibility
+          let childData = parsed.data.child;
+          if (childData?.dateOfBirth && typeof childData.dateOfBirth === "string") {
+            childData = {
+              ...childData,
+              dateOfBirth: new Date(childData.dateOfBirth),
+            };
+          }
+
           setStoredData({
             parent: parsed.data.parent,
-            child: parsed.data.child,
+            child: childData,
             clinical: parsed.data.clinical,
             assessmentSummary: parsed.data.assessmentSummary,
           });
@@ -124,10 +152,31 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
 
   /**
    * Handles parent form submission and navigation to child form
+   * Saves parent info to backend before navigating
    * @param data - Validated parent info form data
    */
-  function handleParentContinue(data: ParentInfoInput): void {
+  async function handleParentContinue(data: ParentInfoInput): Promise<void> {
     console.info("Parent info submitted:", { sessionId, data });
+
+    // Determine if the person is the legal guardian based on relationship
+    const isGuardian = ["parent", "guardian", "foster_parent"].includes(
+      data.relationshipToChild
+    );
+
+    // Save to backend
+    const result = await saveParentInfo({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone,
+      relationship: data.relationshipToChild,
+      isGuardian,
+    });
+
+    if (!result.success) {
+      // Error already handled by hook's onError callback
+      return;
+    }
 
     // Navigate to child section using URL params (AC-3.2.1)
     router.push(`/onboarding/${sessionId}/demographics?section=child`);
@@ -142,10 +191,32 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
 
   /**
    * Handles child form submission and navigation to clinical intake
+   * Saves child info to backend before navigating
    * @param data - Validated child info form data
    */
-  function handleChildContinue(data: ChildInfoInput): void {
+  async function handleChildContinue(data: ChildInfoInput): Promise<void> {
     console.info("Child info submitted:", { sessionId, data });
+
+    // Format date to ISO 8601 string
+    const dateOfBirth = data.dateOfBirth instanceof Date
+      ? data.dateOfBirth.toISOString().split("T")[0]
+      : String(data.dateOfBirth);
+
+    // Save to backend
+    // Note: Frontend child form doesn't collect lastName, so we pass empty string
+    // Gender is derived from pronouns selection
+    const result = await saveChildInfo({
+      firstName: data.firstName,
+      dateOfBirth,
+      gender: data.pronouns || data.pronounsCustom || undefined,
+      grade: data.grade || undefined,
+      primaryConcerns: data.primaryConcerns,
+    });
+
+    if (!result.success) {
+      // Error already handled by hook's onError callback
+      return;
+    }
 
     // Navigate to clinical intake section (Story 3.3)
     router.push(`/onboarding/${sessionId}/demographics?section=clinical`);

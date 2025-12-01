@@ -8,6 +8,7 @@
  * - Responsive: Icons only on mobile, labels + icons on desktop
  * - Accessible: ARIA labels for step status
  * - Daybreak branding: Teal active state, completion indicators
+ * - Partial fill circles showing real completion percentage
  */
 "use client";
 
@@ -20,6 +21,7 @@ import {
   Calendar,
   Check,
 } from "lucide-react";
+import { PartialFillCircle } from "@/components/ui/partial-fill-circle";
 
 /**
  * Step identifiers for the onboarding flow
@@ -30,6 +32,7 @@ type StepId = "assessment" | "info" | "insurance" | "match" | "book";
  * Props for the OnboardingProgress component
  * @param currentStep - Currently active step in the onboarding flow
  * @param completedSteps - Array of completed step identifiers
+ * @param stepPercentages - Completion percentage (0-100) for each step
  * @param className - Additional CSS classes for customization
  * @param onStepClick - Callback when a step is clicked (for navigation)
  * @param allowAllNavigation - If true, all steps are clickable (for testing)
@@ -37,6 +40,7 @@ type StepId = "assessment" | "info" | "insurance" | "match" | "book";
 interface OnboardingProgressProps {
   currentStep: StepId;
   completedSteps?: StepId[];
+  stepPercentages?: Partial<Record<StepId, number>>;
   className?: string;
   onStepClick?: (stepId: StepId) => void;
   allowAllNavigation?: boolean;
@@ -56,11 +60,13 @@ const STEPS: { id: StepId; label: string; icon: React.ComponentType<{ className?
 /**
  * Renders the progress stepper with 5 steps
  * Active step receives teal styling, completed steps show checkmark
+ * Partial fill circles show real completion percentage
  * Steps are clickable when onStepClick is provided
  */
 function OnboardingProgress({
   currentStep,
   completedSteps = [],
+  stepPercentages = {},
   className,
   onStepClick,
   allowAllNavigation = false,
@@ -82,25 +88,19 @@ function OnboardingProgress({
           // Step is clickable if: allowAllNavigation OR (has callback AND (completed OR past))
           const isClickable = onStepClick && (allowAllNavigation || isCompleted || isPast);
 
+          // Get percentage for this step (default to 100 if completed/past, 0 otherwise)
+          const percentage = stepPercentages[step.id] ?? (isCompleted || isPast ? 100 : 0);
+          const isStepComplete = percentage >= 100 || isCompleted;
+
           const stepIndicator = (
-            <div
-              className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200",
-                "border-2",
-                isCompleted || isPast
-                  ? "bg-daybreak-teal border-daybreak-teal text-white"
-                  : isCurrent
-                  ? "bg-daybreak-teal border-daybreak-teal text-white"
-                  : "bg-background border-border text-muted-foreground"
-              )}
-              aria-current={isCurrent ? "step" : undefined}
-            >
-              {isCompleted ? (
-                <Check className="w-5 h-5" aria-hidden="true" />
-              ) : (
-                <Icon className="w-5 h-5" aria-hidden="true" />
-              )}
-            </div>
+            <PartialFillCircle
+              percentage={percentage}
+              icon={Icon}
+              isComplete={isStepComplete}
+              isCurrent={isCurrent}
+              size={40}
+              strokeWidth={3}
+            />
           );
 
           const stepLabel = (
@@ -108,7 +108,7 @@ function OnboardingProgress({
               className={cn(
                 "text-xs md:text-sm font-medium transition-colors",
                 "hidden md:block",
-                isCurrent || isCompleted || isPast
+                isCurrent || isStepComplete || isPast
                   ? "text-foreground"
                   : "text-muted-foreground"
               )}
@@ -149,7 +149,7 @@ function OnboardingProgress({
               {/* Screen reader text */}
               <span className="sr-only">
                 {step.label}
-                {isCompleted ? " (completed)" : isCurrent ? " (current)" : ""}
+                {isStepComplete ? " (completed)" : isCurrent ? " (current)" : ` (${percentage}% complete)`}
               </span>
 
               {/* Connector line - not after last step */}
@@ -157,7 +157,7 @@ function OnboardingProgress({
                 <div
                   className={cn(
                     "hidden md:block w-8 lg:w-16 h-0.5 mx-2",
-                    index < currentIndex || completedSteps.includes(STEPS[index + 1].id)
+                    index < currentIndex || isStepComplete
                       ? "bg-daybreak-teal"
                       : "bg-border"
                   )}

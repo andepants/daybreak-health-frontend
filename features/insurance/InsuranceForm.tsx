@@ -117,9 +117,22 @@ export function InsuranceForm({
 }: InsuranceFormProps) {
   const [carrierSearch, setCarrierSearch] = React.useState("");
   const [isSelfPayOpen, setIsSelfPayOpen] = React.useState(false);
-  const [showManualEntry, setShowManualEntry] = React.useState(false);
+  // Show manual entry immediately if initial data is provided (e.g., from dev autofill)
+  const [showManualEntry, setShowManualEntry] = React.useState(
+    Boolean(initialData && Object.keys(initialData).length > 0)
+  );
   const [ocrCompleted, setOcrCompleted] = React.useState(false);
   const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  /**
+   * Show manual entry form when initial data becomes available
+   * (e.g., from dev autofill or storage sync)
+   */
+  React.useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0 && !showManualEntry) {
+      setShowManualEntry(true);
+    }
+  }, [initialData, showManualEntry]);
 
   const {
     register,
@@ -129,12 +142,35 @@ export function InsuranceForm({
     trigger,
     setValue,
     getFieldState,
+    reset,
     formState: { errors, isValid, touchedFields, dirtyFields },
   } = useForm<InsuranceFormData>({
     resolver: zodResolver(insuranceSchema),
     defaultValues: { ...insuranceDefaults, ...initialData },
     mode: "onBlur", // AC-4.1.5: Validate on blur, not keystroke
   });
+
+  // Track if we've applied initial data to avoid re-applying on every render
+  const appliedInitialDataRef = React.useRef<string | null>(null);
+
+  /**
+   * Update form values when initialData changes
+   * Only applies once per unique initialData to prevent infinite loops
+   */
+  React.useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      // Create a hash of initialData to track if it's changed
+      const dataHash = JSON.stringify(initialData);
+
+      // Skip if we've already applied this exact data
+      if (appliedInitialDataRef.current === dataHash) {
+        return;
+      }
+
+      appliedInitialDataRef.current = dataHash;
+      reset({ ...insuranceDefaults, ...initialData }, { keepDirtyValues: true });
+    }
+  }, [initialData, reset]);
 
   // Watch form values for auto-save and relationship changes
   const formValues = watch();
@@ -238,14 +274,16 @@ export function InsuranceForm({
 
       // Debounce auto-save by 500ms (AC-4.1.8)
       debounceTimerRef.current = setTimeout(() => {
-        // PHI Protection: Never include member ID in logs
+        // Save the actual form data (PHI protection is handled at logging level, not storage)
+        // Data is saved nested under 'insurance' key to match useStorageSync expectations
         save({
-          carrier: formValues.carrier,
-          // Mask member ID for any debugging
-          memberId: formValues.memberId ? "[REDACTED]" : "",
-          groupNumber: formValues.groupNumber || "",
-          subscriberName: formValues.subscriberName,
-          relationshipToSubscriber: formValues.relationshipToSubscriber,
+          insurance: {
+            carrier: formValues.carrier,
+            memberId: formValues.memberId,
+            groupNumber: formValues.groupNumber || "",
+            subscriberName: formValues.subscriberName,
+            relationshipToSubscriber: formValues.relationshipToSubscriber,
+          },
         });
         debounceTimerRef.current = null;
       }, 500);

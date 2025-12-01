@@ -215,7 +215,7 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
   const [isComplete, setIsComplete] = React.useState(false);
   const [crisisDetected, setCrisisDetected] = React.useState(false);
   const [summary, setSummary] = React.useState<AssessmentSummary | null>(null);
-  const aiResponseTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const aiResponseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastUserMessageRef = React.useRef<{ content: string; isQuickReply: boolean } | null>(null);
 
   // GraphQL mutations for summary flow

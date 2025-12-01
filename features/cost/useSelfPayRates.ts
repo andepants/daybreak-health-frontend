@@ -17,7 +17,7 @@
  * - No PHI concerns (pricing is public)
  */
 
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { useMemo } from "react";
 import type { SelfPayRate } from "@/lib/validations/cost";
 
@@ -81,11 +81,13 @@ export function useSelfPayRates(): UseSelfPayRatesResult {
    * Ensures type safety and handles missing data gracefully
    */
   const selfPayRates = useMemo<SelfPayRate | null>(() => {
-    if (!data?.getSelfPayRates) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!(data as any)?.getSelfPayRates) {
       return null;
     }
 
-    return data.getSelfPayRates as SelfPayRate;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data as any).getSelfPayRates as SelfPayRate;
   }, [data]);
 
   /**

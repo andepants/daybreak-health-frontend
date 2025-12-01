@@ -1,0 +1,24 @@
+# SubmitParentInfo Mutation
+# Submits parent/guardian information during intake
+# Links parent record to the current onboarding session
+
+mutation SubmitParentInfo(
+  $sessionId: ID!
+  $parentInfo: ParentInput!
+) {
+  submitParentInfo(
+    sessionId: $sessionId
+    parentInfo: $parentInfo
+  ) {
+    parent {
+      id
+      firstName
+      lastName
+      email
+      phone
+      relationship
+      isGuardian
+    }
+    errors
+  }
+}

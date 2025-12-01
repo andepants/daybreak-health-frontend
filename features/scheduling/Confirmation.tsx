@@ -87,6 +87,14 @@ export interface ConfirmationProps {
  *   onComplete={() => console.log("Booking completed")}
  * />
  */
+/**
+ * Check if therapist ID is a fallback/mock therapist
+ * Fallback therapists cannot be booked as they don't exist in the backend
+ */
+function isFallbackTherapist(therapistId: string): boolean {
+  return therapistId.startsWith("fallback_");
+}
+
 export function Confirmation({
   bookingRequest,
   onComplete,
@@ -96,9 +104,16 @@ export function Confirmation({
   const { bookAppointment, loading, error, appointment, emailConfirmation } = useBooking();
 
   /**
-   * Automatically trigger booking on mount
+   * Check if attempting to book with a fallback therapist
+   */
+  const isUsingFallbackTherapist = isFallbackTherapist(bookingRequest.therapistId);
+
+  /**
+   * Automatically trigger booking on mount (skip for fallback therapists)
    */
   React.useEffect(() => {
+    if (isUsingFallbackTherapist) return;
+
     const performBooking = async () => {
       await bookAppointment({
         sessionId: bookingRequest.sessionId,
@@ -111,7 +126,7 @@ export function Confirmation({
     };
 
     performBooking();
-  }, []); // Empty deps - only run once on mount
+  }, [isUsingFallbackTherapist]); // Skip booking for fallback therapists
 
   /**
    * Handles retry button click after error
