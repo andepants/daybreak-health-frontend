@@ -35,6 +35,7 @@ import {
   formatPhoneNumber,
   extractPhoneDigits,
   toE164,
+  fromE164,
 } from "@/lib/utils/formatters";
 
 /**
@@ -43,12 +44,14 @@ import {
  * @param initialData - Optional pre-filled form data (for resume sessions)
  * @param onContinue - Callback fired when form is submitted successfully
  * @param onBack - Callback fired when back button is clicked
+ * @param onFormChange - Callback fired when form data changes (for parent state sync)
  */
 export interface ParentInfoFormProps {
   sessionId: string;
   initialData?: Partial<ParentInfoInput>;
   onContinue?: (data: ParentInfoInput) => void;
   onBack?: () => void;
+  onFormChange?: (data: Partial<ParentInfoInput>) => void;
 }
 
 /**
@@ -96,7 +99,18 @@ export function ParentInfoForm({
   initialData,
   onContinue,
   onBack,
+  onFormChange,
 }: ParentInfoFormProps) {
+  // Process initialData to convert phone from E.164 format if needed
+  const processedInitialData = React.useMemo(() => {
+    if (!initialData) return undefined;
+    return {
+      ...initialData,
+      // Convert E.164 phone format (+1XXXXXXXXXX) back to 10-digit format for validation
+      phone: initialData.phone ? fromE164(initialData.phone) : undefined,
+    };
+  }, [initialData]);
+
   const {
     register,
     control,
@@ -108,12 +122,21 @@ export function ParentInfoForm({
     formState: { errors, isValid, touchedFields, dirtyFields },
   } = useForm<ParentInfoInput>({
     resolver: zodResolver(parentInfoSchema),
-    defaultValues: { ...parentInfoDefaults, ...initialData },
+    defaultValues: { ...parentInfoDefaults, ...processedInitialData },
     mode: "onBlur", // AC-3.1.7: Validate on blur, not keystroke
   });
 
   // Watch form values for auto-save
   const formValues = watch();
+
+  // Trigger initial validation when form loads with pre-filled data
+  // Without this, fields filled via initialData are never validated
+  // (since mode: "onBlur" requires user interaction)
+  React.useEffect(() => {
+    if (processedInitialData && Object.keys(processedInitialData).length > 0) {
+      trigger();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-save integration (AC-3.1.14)
   const { save, saveStatus } = useAutoSave({
@@ -125,24 +148,28 @@ export function ParentInfoForm({
 
   /**
    * Handles blur event for auto-save
-   * Saves valid form data on field blur
+   * Saves valid form data on field blur and notifies parent of changes
    */
   const handleFieldBlur = React.useCallback(
     async (fieldName: keyof ParentInfoInput) => {
       // Trigger validation for the field
       await trigger(fieldName);
 
+      // Prepare data with E.164 phone format
+      const dataToSave = {
+        ...formValues,
+        // Convert phone to E.164 format for storage
+        phone: formValues.phone ? toE164(formValues.phone) : "",
+      };
+
       // Auto-save current form state (even partial data)
       // Save nested under 'parent' key to match useStorageSync expectations
-      save({
-        parent: {
-          ...formValues,
-          // Convert phone to E.164 format for storage
-          phone: formValues.phone ? toE164(formValues.phone) : "",
-        },
-      });
+      save({ parent: dataToSave });
+
+      // Notify parent component of form changes for completion summary
+      onFormChange?.(dataToSave);
     },
-    [trigger, save, formValues]
+    [trigger, save, formValues, onFormChange]
   );
 
   /**
@@ -442,25 +469,9 @@ export function ParentInfoForm({
         )}
       </div>
 
-      {/* Save status indicator */}
-      {saveStatus === "saving" && (
-        <p className="text-xs text-muted-foreground text-center">
-          Saving...
-        </p>
-      )}
-      {saveStatus === "saved" && (
-        <p className="text-xs text-muted-foreground text-center">
-          All changes saved
-        </p>
-      )}
-      {saveStatus === "error" && (
-        <p className="text-xs text-center" style={{ color: ERROR_COLOR }}>
-          Failed to save. Please try again.
-        </p>
-      )}
-
       {/* Action buttons */}
-      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
+      <div className="pt-4">
+        <div className="flex flex-col-reverse sm:flex-row gap-3">
         {/* Back button (AC-3.1.16) */}
         <Button
           type="button"
@@ -483,6 +494,21 @@ export function ParentInfoForm({
         >
           Continue
         </Button>
+        </div>
+        {/* Save status indicator - positioned below buttons */}
+        <div className="mt-3 text-center">
+          {saveStatus === "saving" && (
+            <p className="text-xs text-muted-foreground">Saving...</p>
+          )}
+          {saveStatus === "saved" && (
+            <p className="text-xs text-muted-foreground">All changes saved</p>
+          )}
+          {saveStatus === "error" && (
+            <p className="text-xs" style={{ color: ERROR_COLOR }}>
+              Failed to save. Please try again.
+            </p>
+          )}
+        </div>
       </div>
     </form>
   );

@@ -62,9 +62,9 @@ export function FormProgress({
   return (
     <nav
       aria-label="Form progress"
-      className="w-full md:w-64 flex-shrink-0"
+      className="w-full lg:sticky lg:top-6"
     >
-      <div className="mb-8 hidden md:block">
+      <div className="mb-8 hidden lg:block">
         <h1 className="text-3xl font-serif text-foreground mb-2">
           Complete<br />Your<br />Profile
         </h1>
@@ -74,7 +74,7 @@ export function FormProgress({
       </div>
 
       {/* Mobile Header (visible only on small screens) */}
-      <div className="md:hidden mb-6">
+      <div className="lg:hidden mb-6">
         <h1 className="text-2xl font-serif text-foreground">
           Complete Your Profile
         </h1>
@@ -84,13 +84,13 @@ export function FormProgress({
       </div>
 
       {/* Visual progress bar */}
-      <div className="relative pl-4 md:pl-0">
+      <div className="relative pl-4 lg:pl-0">
         {/* Vertical Line Background */}
-        <div className="absolute left-[27px] md:left-[15px] top-2 bottom-2 w-0.5 bg-border -z-10" />
+        <div className="absolute left-[27px] lg:left-[15px] top-2 bottom-2 w-0.5 bg-border -z-10" />
 
         {/* Progress Line (completed portion) */}
         <div
-          className="absolute left-[27px] md:left-[15px] top-2 w-0.5 bg-daybreak-teal transition-all duration-500 ease-in-out -z-10"
+          className="absolute left-[27px] lg:left-[15px] top-2 w-0.5 bg-daybreak-teal transition-all duration-500 ease-in-out -z-10"
           style={{
             height: `${Math.max(0, (currentPage - 1) * 50)}%`, // Approximate progress
             maxHeight: "calc(100% - 16px)"
@@ -101,7 +101,7 @@ export function FormProgress({
           {[1, 2, 3].map((page) => {
             const isCompleted = completedPages.has(page);
             const isCurrent = currentPage === page;
-            const isClickable = isCompleted && page !== currentPage;
+            const isClickable = page !== currentPage; // All non-current steps clickable
 
             return (
               <div
@@ -135,7 +135,7 @@ export function FormProgress({
 
                 {/* Step title - Hidden on mobile to save space, shown on desktop */}
                 <div className={cn(
-                  "pt-1 hidden md:block",
+                  "pt-1 hidden lg:block",
                   isCurrent ? "opacity-100" : "opacity-70"
                 )}>
                   <span

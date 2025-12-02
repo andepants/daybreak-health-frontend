@@ -106,7 +106,7 @@ export const DEV_TEST_DATA = {
   insurance: {
     payerName: "Blue Cross Blue Shield",
     memberId: "XYZ123456789",
-    groupNumber: "GRP001",
+    groupNumber: "GRPDEV12345678",
     subscriberName: "Andrew Sheim",
     subscriberDob: "1985-06-15",
   },

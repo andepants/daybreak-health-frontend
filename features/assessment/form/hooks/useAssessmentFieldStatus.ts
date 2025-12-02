@@ -31,6 +31,24 @@ export interface AssessmentFieldStatus {
 }
 
 /**
+ * Status for a section (page)
+ */
+export interface SectionStatus {
+  /** Section identifier (e.g., "page1") */
+  name: string;
+  /** Human-readable label for display */
+  label: string;
+  /** Page number (1, 2, or 3) */
+  page: number;
+  /** Whether all required fields in section are complete */
+  isComplete: boolean;
+  /** Number of required fields in this section */
+  requiredCount: number;
+  /** Number of completed required fields in this section */
+  completedCount: number;
+}
+
+/**
  * Return type for useAssessmentFieldStatus hook
  */
 export interface AssessmentFieldStatusReturn {
@@ -50,6 +68,14 @@ export interface AssessmentFieldStatusReturn {
   overallPercentage: number;
   /** Whether all required fields are complete */
   isAllRequiredComplete: boolean;
+  /** Section-level completion status */
+  sections: SectionStatus[];
+  /** Count of completed sections */
+  sectionsComplete: number;
+  /** Total count of sections (always 3) */
+  sectionsTotal: number;
+  /** Section completion percentage */
+  sectionPercentage: number;
 }
 
 /**
@@ -214,6 +240,34 @@ export function useAssessmentFieldStatus({
         ? Math.round((requiredComplete / requiredFields.length) * 100)
         : 100;
 
+    // Calculate section-level status
+    const sectionLabels: Record<number, string> = {
+      1: "About Your Child",
+      2: "Daily Life Impact",
+      3: "Additional Context",
+    };
+
+    const sections: SectionStatus[] = [1, 2, 3].map((page) => {
+      const pageRequiredFields = requiredFields.filter((f) => f.page === page);
+      const completedCount = pageRequiredFields.filter((f) => f.isComplete).length;
+      const requiredCount = pageRequiredFields.length;
+      // Section is complete if all required fields are done (or no required fields)
+      const isComplete = requiredCount === 0 || completedCount === requiredCount;
+
+      return {
+        name: `page${page}`,
+        label: sectionLabels[page],
+        page,
+        isComplete,
+        requiredCount,
+        completedCount,
+      };
+    });
+
+    const sectionsComplete = sections.filter((s) => s.isComplete).length;
+    const sectionsTotal = sections.length;
+    const sectionPercentage = Math.round((sectionsComplete / sectionsTotal) * 100);
+
     return {
       fields,
       requiredFields,
@@ -223,6 +277,10 @@ export function useAssessmentFieldStatus({
       optionalTotal: optionalFields.length,
       overallPercentage,
       isAllRequiredComplete: requiredComplete === requiredFields.length,
+      sections,
+      sectionsComplete,
+      sectionsTotal,
+      sectionPercentage,
     };
   }, [formValues]);
 }

@@ -36,7 +36,7 @@ const ERROR_COLOR = "#E85D5D";
  * Renders auto-save status indicator
  *
  * Visual specs:
- * - idle: Hidden
+ * - idle: Hidden (parent should use absolute positioning to prevent layout shift)
  * - saving: Gray text with spinner "Saving..."
  * - saved: Green text with checkmark "Saved" (fades after 2s)
  * - error: Red text with warning icon "Failed to save"

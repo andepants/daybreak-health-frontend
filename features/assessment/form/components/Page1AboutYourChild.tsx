@@ -285,7 +285,7 @@ export function Page1AboutYourChild({
         <fieldset className="space-y-1" aria-required="true">
           <legend className="sr-only">Severity rating from 1 to 5</legend>
           <div
-            className="flex gap-2 sm:gap-4"
+            className="grid grid-cols-5 gap-2"
             role="radiogroup"
             aria-label="Severity rating"
             aria-invalid={!!errors.concernSeverity}

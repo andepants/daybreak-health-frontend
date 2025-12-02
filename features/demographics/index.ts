@@ -18,3 +18,18 @@ export {
   type ParentInfoData,
   type ChildInfoData,
 } from "./useDemographicsSave";
+export {
+  InfoProgress,
+  type InfoProgressProps,
+  type DemographicsSection,
+} from "./InfoProgress";
+export {
+  DemographicsCompletionSummary,
+  type DemographicsCompletionSummaryProps,
+} from "./DemographicsCompletionSummary";
+export {
+  useDemographicsFieldStatus,
+  type DemographicsFieldStatus,
+  type DemographicsSectionStatus,
+  type DemographicsFieldStatusReturn,
+} from "./useDemographicsFieldStatus";

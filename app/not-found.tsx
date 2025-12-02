@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 export default function NotFound() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6">
-      <div className="flex flex-col items-center text-center">
+      <div className="flex w-full max-w-xl flex-col items-center text-center">
         {/* Daybreak Logo */}
         <Image
           src="/daybreak_logo.svg"
@@ -36,7 +36,7 @@ export default function NotFound() {
           Page not found
         </h2>
 
-        <p className="mt-4 max-w-md text-muted-foreground">
+        <p className="mt-4 text-muted-foreground">
           Oops! The page you&apos;re looking for doesn&apos;t exist or has been
           moved. Let&apos;s get you back on track.
         </p>

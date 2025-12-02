@@ -642,21 +642,6 @@ export function InsuranceForm({
           )}
         </div>
 
-            {/* Save status indicator */}
-            {saveStatus === "saving" && (
-              <p className="text-xs text-muted-foreground text-center">Saving...</p>
-            )}
-            {saveStatus === "saved" && (
-              <p className="text-xs text-muted-foreground text-center">
-                All changes saved
-              </p>
-            )}
-            {saveStatus === "error" && (
-              <p className="text-xs text-center" style={{ color: ERROR_COLOR }}>
-                Failed to save. Please try again.
-              </p>
-            )}
-
             {/* Self-pay link (AC-4.1.6) */}
             <div className="text-center">
               <button
@@ -669,28 +654,44 @@ export function InsuranceForm({
             </div>
 
             {/* Action buttons */}
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onBack}
-                className="w-full sm:w-auto"
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Back
-              </Button>
+            <div className="pt-4">
+              <div className="flex flex-col-reverse sm:flex-row gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onBack}
+                  className="w-full sm:w-auto"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Back
+                </Button>
 
-              {/* Continue button (AC-4.1.7) */}
-              <Button
-                type="submit"
-                disabled={!isValid || isSaving}
-                className={cn(
-                  "w-full sm:flex-1",
-                  "bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
+                {/* Continue button (AC-4.1.7) */}
+                <Button
+                  type="submit"
+                  disabled={!isValid || isSaving}
+                  className={cn(
+                    "w-full sm:flex-1",
+                    "bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
+                  )}
+                >
+                  {isSaving ? "Submitting..." : "Continue"}
+                </Button>
+              </div>
+              {/* Save status indicator - positioned below buttons */}
+              <div className="mt-3 text-center">
+                {saveStatus === "saving" && (
+                  <p className="text-xs text-muted-foreground">Saving...</p>
                 )}
-              >
-                {isSaving ? "Submitting..." : "Continue"}
-              </Button>
+                {saveStatus === "saved" && (
+                  <p className="text-xs text-muted-foreground">All changes saved</p>
+                )}
+                {saveStatus === "error" && (
+                  <p className="text-xs" style={{ color: ERROR_COLOR }}>
+                    Failed to save. Please try again.
+                  </p>
+                )}
+              </div>
             </div>
           </form>
         )}

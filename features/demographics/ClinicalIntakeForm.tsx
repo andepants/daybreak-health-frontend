@@ -45,12 +45,14 @@ import {
  * @param initialData - Optional pre-filled form data (for resume sessions)
  * @param onContinue - Callback fired when Continue button is clicked
  * @param onBack - Callback fired when Back button is clicked
+ * @param onFormChange - Callback fired when form data changes (for parent state sync)
  */
 export interface ClinicalIntakeFormProps {
   sessionId: string;
   initialData?: Partial<ClinicalIntakeInput>;
   onContinue?: (data: ClinicalIntakeInput) => void;
   onBack?: () => void;
+  onFormChange?: (data: Partial<ClinicalIntakeInput>) => void;
 }
 
 /**
@@ -95,6 +97,7 @@ export function ClinicalIntakeForm({
   initialData,
   onContinue,
   onBack,
+  onFormChange,
 }: ClinicalIntakeFormProps) {
   // Merge defaults with initial data
   const defaultValues = React.useMemo(
@@ -128,15 +131,18 @@ export function ClinicalIntakeForm({
 
   /**
    * Handles blur event for auto-save
-   * Saves current form state on field blur
+   * Saves current form state on field blur and notifies parent of changes
    */
   const handleFieldBlur = React.useCallback(
     async (fieldName: keyof ClinicalIntakeInput) => {
       await trigger(fieldName);
       // Save nested under 'clinical' key to match demographics page expectations
       save({ clinical: formValues });
+
+      // Notify parent component of form changes for completion summary
+      onFormChange?.(formValues);
     },
-    [trigger, save, formValues]
+    [trigger, save, formValues, onFormChange]
   );
 
   /**
@@ -455,44 +461,45 @@ export function ClinicalIntakeForm({
         </div>
       </div>
 
-      {/* Save status indicator */}
-      {saveStatus === "saving" && (
-        <p className="text-xs text-muted-foreground text-center">Saving...</p>
-      )}
-      {saveStatus === "saved" && (
-        <p className="text-xs text-muted-foreground text-center">
-          All changes saved
-        </p>
-      )}
-      {saveStatus === "error" && (
-        <p className="text-xs text-destructive text-center">
-          Failed to save. Please try again.
-        </p>
-      )}
-
       {/* Action buttons (AC-3.3.11) */}
-      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
-        {/* Back button */}
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          className="w-full sm:w-auto"
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Back
-        </Button>
+      <div className="pt-4">
+        <div className="flex flex-col-reverse sm:flex-row gap-3">
+          {/* Back button */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            className="w-full sm:w-auto"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Back
+          </Button>
 
-        {/* Continue button - always enabled since all fields optional (AC-3.3.7) */}
-        <Button
-          type="submit"
-          className={cn(
-            "w-full sm:flex-1",
-            "bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
+          {/* Continue button - always enabled since all fields optional (AC-3.3.7) */}
+          <Button
+            type="submit"
+            className={cn(
+              "w-full sm:flex-1",
+              "bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
+            )}
+          >
+            Continue
+          </Button>
+        </div>
+        {/* Save status indicator - positioned below buttons */}
+        <div className="mt-3 text-center">
+          {saveStatus === "saving" && (
+            <p className="text-xs text-muted-foreground">Saving...</p>
           )}
-        >
-          Continue
-        </Button>
+          {saveStatus === "saved" && (
+            <p className="text-xs text-muted-foreground">All changes saved</p>
+          )}
+          {saveStatus === "error" && (
+            <p className="text-xs text-destructive">
+              Failed to save. Please try again.
+            </p>
+          )}
+        </div>
       </div>
     </form>
   );

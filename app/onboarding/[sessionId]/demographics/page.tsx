@@ -8,6 +8,9 @@
  *
  * Uses URL search params (?section=parent|child|clinical) to manage which form is displayed.
  * All forms auto-save on blur. Child form pre-populates primary concerns from assessment.
+ *
+ * Features a sidebar progress indicator (desktop) or header progress (mobile) showing
+ * completion status and allowing navigation to previously completed sections.
  */
 "use client";
 
@@ -18,14 +21,16 @@ import {
   ChildInfoForm,
   ClinicalIntakeForm,
   useDemographicsSave,
+  InfoProgress,
+  DemographicsCompletionSummary,
+  useDemographicsFieldStatus,
+  type DemographicsSection,
 } from "@/features/demographics";
 import type {
   ParentInfoInput,
   ChildInfoInput,
   ClinicalIntakeInput,
 } from "@/lib/validations/demographics";
-// Note: Toast notifications disabled until sonner package is installed
-// import { toast } from "sonner";
 
 /**
  * Props for Demographics page
@@ -38,15 +43,18 @@ interface DemographicsPageProps {
 }
 
 /**
- * Section type for managing form visibility
+ * LocalStorage key helper for completed sections
  */
-type DemographicsSection = "parent" | "child" | "clinical";
+function getCompletedSectionsKey(sessionId: string): string {
+  return `demographics_completed_${sessionId}`;
+}
 
 /**
  * Demographics page component
  *
  * Renders parent info form first, then child info form, then clinical intake.
  * Uses URL search params for section navigation to support browser back button.
+ * Includes sidebar progress indicator on desktop.
  *
  * Route flow:
  * - /onboarding/[sessionId]/demographics (defaults to parent)
@@ -57,8 +65,8 @@ type DemographicsSection = "parent" | "child" | "clinical";
  *
  * Layout:
  * - Uses onboarding layout (header, progress bar, footer)
- * - Single-column form centered with max-width 640px
- * - Mobile-first responsive design
+ * - Two-column layout on desktop: sidebar (left) + form (right)
+ * - Single-column on mobile with progress in header
  */
 export default function DemographicsPage({ params }: DemographicsPageProps) {
   const { sessionId } = use(params);
@@ -82,11 +90,22 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
     assessmentSummary?: string;
   }>({});
 
+  // Track which sections have been completed
+  const [completedSections, setCompletedSections] = useState<Set<DemographicsSection>>(
+    new Set()
+  );
+
   // Track whether data has been loaded (for form key to force re-mount)
   const [dataLoaded, setDataLoaded] = useState(false);
 
   // Demographics save hook for persisting data to backend
-  const { saveParentInfo, saveChildInfo, parentSaveStatus, childSaveStatus, error: saveError } = useDemographicsSave({
+  const {
+    saveParentInfo,
+    saveChildInfo,
+    parentSaveStatus,
+    childSaveStatus,
+    error: saveError,
+  } = useDemographicsSave({
     sessionId,
     onParentSaveSuccess: () => {
       console.info("Parent info saved to backend successfully");
@@ -96,17 +115,16 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
     },
     onError: (error) => {
       console.error("Failed to save demographics:", error);
-      // TODO: Add toast notification when sonner is installed
-      // toast.error(error);
     },
   });
 
   /**
-   * Load stored session data from localStorage on mount
+   * Load stored session data and completed sections from localStorage on mount
    * This enables resume functionality and dev toolbar data fill
    */
   useEffect(() => {
     try {
+      // Load session data
       const stored = localStorage.getItem(`onboarding_session_${sessionId}`);
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -128,12 +146,45 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
           });
         }
       }
+
+      // Load completed sections
+      const completedStr = localStorage.getItem(getCompletedSectionsKey(sessionId));
+      if (completedStr) {
+        const completedArr = JSON.parse(completedStr) as DemographicsSection[];
+        setCompletedSections(new Set(completedArr));
+      }
     } catch (e) {
       console.warn("Failed to load session data from storage:", e);
     }
     // Mark data as loaded to trigger form re-mount with new defaults
     setDataLoaded(true);
   }, [sessionId]);
+
+  /**
+   * Persist completed sections to localStorage
+   */
+  function saveCompletedSections(sections: Set<DemographicsSection>): void {
+    try {
+      localStorage.setItem(
+        getCompletedSectionsKey(sessionId),
+        JSON.stringify(Array.from(sections))
+      );
+    } catch (e) {
+      console.warn("Failed to save completed sections:", e);
+    }
+  }
+
+  /**
+   * Mark a section as completed and persist
+   */
+  function markSectionComplete(section: DemographicsSection): void {
+    setCompletedSections((prev) => {
+      const updated = new Set(prev);
+      updated.add(section);
+      saveCompletedSections(updated);
+      return updated;
+    });
+  }
 
   /**
    * Extract assessment summary for child form pre-population (AC-3.2.9)
@@ -149,6 +200,14 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
     }
     return "";
   }, [storedData.assessmentSummary, storedData.child?.primaryConcerns]);
+
+  /**
+   * Handle sidebar section click navigation
+   * Allows navigation to any section for quick jumping
+   */
+  function handleSectionClick(section: DemographicsSection): void {
+    router.push(`/onboarding/${sessionId}/demographics?section=${section}`);
+  }
 
   /**
    * Handles parent form submission and navigation to child form
@@ -178,7 +237,8 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
       return;
     }
 
-    // Navigate to child section using URL params (AC-3.2.1)
+    // Mark section complete and navigate
+    markSectionComplete("parent");
     router.push(`/onboarding/${sessionId}/demographics?section=child`);
   }
 
@@ -198,13 +258,12 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
     console.info("Child info submitted:", { sessionId, data });
 
     // Format date to ISO 8601 string
-    const dateOfBirth = data.dateOfBirth instanceof Date
-      ? data.dateOfBirth.toISOString().split("T")[0]
-      : String(data.dateOfBirth);
+    const dateOfBirth =
+      data.dateOfBirth instanceof Date
+        ? data.dateOfBirth.toISOString().split("T")[0]
+        : String(data.dateOfBirth);
 
     // Save to backend
-    // Note: Frontend child form doesn't collect lastName, so we pass empty string
-    // Gender is derived from pronouns selection
     const result = await saveChildInfo({
       firstName: data.firstName,
       dateOfBirth,
@@ -218,7 +277,8 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
       return;
     }
 
-    // Navigate to clinical intake section (Story 3.3)
+    // Mark section complete and navigate
+    markSectionComplete("child");
     router.push(`/onboarding/${sessionId}/demographics?section=clinical`);
   }
 
@@ -236,7 +296,8 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
   function handleClinicalContinue(data: ClinicalIntakeInput): void {
     console.info("Clinical intake submitted:", { sessionId, data });
 
-    // Navigate to insurance form (AC-3.3.11)
+    // Mark section complete and navigate
+    markSectionComplete("clinical");
     router.push(`/onboarding/${sessionId}/insurance`);
   }
 
@@ -247,75 +308,147 @@ export default function DemographicsPage({ params }: DemographicsPageProps) {
     router.push(`/onboarding/${sessionId}/demographics?section=child`);
   }
 
-  // Parent section content
-  if (currentSection === "parent") {
+  /**
+   * Handles parent form data changes for completion summary updates
+   * Updates storedData.parent so useDemographicsFieldStatus reflects current values
+   */
+  const handleParentFormChange = useCallback((data: Partial<ParentInfoInput>) => {
+    setStoredData(prev => ({ ...prev, parent: data }));
+  }, []);
+
+  /**
+   * Handles child form data changes for completion summary updates
+   * Updates storedData.child so useDemographicsFieldStatus reflects current values
+   */
+  const handleChildFormChange = useCallback((data: Partial<ChildInfoInput>) => {
+    setStoredData(prev => ({ ...prev, child: data }));
+  }, []);
+
+  /**
+   * Handles clinical form data changes for completion summary updates
+   * Updates storedData.clinical so useDemographicsFieldStatus reflects current values
+   */
+  const handleClinicalFormChange = useCallback((data: Partial<ClinicalIntakeInput>) => {
+    setStoredData(prev => ({ ...prev, clinical: data }));
+  }, []);
+
+  // Track field completion status for summary
+  const fieldStatus = useDemographicsFieldStatus({
+    parentData: storedData.parent,
+    childData: storedData.child,
+    clinicalData: storedData.clinical,
+    completedSections,
+  });
+
+  /**
+   * Render the current section's form content
+   */
+  function renderFormContent(): React.ReactNode {
+    if (currentSection === "parent") {
+      return (
+        <div className="min-h-[400px] bg-card rounded-xl border shadow-sm p-6 md:p-8">
+          <div className="space-y-2 text-center lg:text-left mb-6">
+            <h2 className="text-xl font-semibold font-serif text-foreground">
+              About You
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Please provide your contact information so we can reach you about
+              your child&apos;s care.
+            </p>
+          </div>
+
+          <ParentInfoForm
+            key={`parent-${dataLoaded}`}
+            sessionId={sessionId}
+            initialData={storedData.parent}
+            onContinue={handleParentContinue}
+            onBack={handleParentBack}
+            onFormChange={handleParentFormChange}
+          />
+        </div>
+      );
+    }
+
+    if (currentSection === "child") {
+      return (
+        <div className="min-h-[400px] bg-card rounded-xl border shadow-sm p-6 md:p-8">
+          <div className="space-y-2 text-center lg:text-left mb-6">
+            <h2 className="text-xl font-semibold font-serif text-foreground">
+              About Your Child
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Tell us about your child so we can find the best match for their
+              needs.
+            </p>
+          </div>
+
+          <ChildInfoForm
+            key={`child-${dataLoaded}`}
+            sessionId={sessionId}
+            initialData={storedData.child}
+            assessmentSummary={assessmentSummary}
+            onContinue={handleChildContinue}
+            onBack={handleChildBack}
+            onFormChange={handleChildFormChange}
+          />
+        </div>
+      );
+    }
+
+    // Clinical section
     return (
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold font-serif text-foreground">
-            Your Information
-          </h1>
-          <p className="text-muted-foreground">
-            Please provide your contact information so we can reach you about your
-            child&apos;s care.
+      <div className="min-h-[400px] bg-card rounded-xl border shadow-sm p-6 md:p-8">
+        <div className="space-y-2 text-center lg:text-left mb-6">
+          <h2 className="text-xl font-semibold font-serif text-foreground">
+            Medical History
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Help us understand your child&apos;s background to provide better
+            care.
           </p>
         </div>
 
-        <ParentInfoForm
-          key={`parent-${dataLoaded}`}
+        <ClinicalIntakeForm
+          key={`clinical-${dataLoaded}`}
           sessionId={sessionId}
-          initialData={storedData.parent}
-          onContinue={handleParentContinue}
-          onBack={handleParentBack}
+          initialData={storedData.clinical}
+          onContinue={handleClinicalContinue}
+          onBack={handleClinicalBack}
+          onFormChange={handleClinicalFormChange}
         />
       </div>
     );
   }
 
-  // Child section content (AC-3.2.1)
-  if (currentSection === "child") {
-    return (
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold font-serif text-foreground">
-            Child&apos;s Information
-          </h1>
-          <p className="text-muted-foreground">
-            Tell us about your child so we can find the best match for their needs.
-          </p>
-        </div>
-
-        <ChildInfoForm
-          key={`child-${dataLoaded}`}
-          sessionId={sessionId}
-          initialData={storedData.child}
-          assessmentSummary={assessmentSummary}
-          onContinue={handleChildContinue}
-          onBack={handleChildBack}
-        />
-      </div>
-    );
-  }
-
-  // Clinical intake section content (Story 3.3, AC-3.3.1)
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold font-serif text-foreground">
-          Clinical Information
-        </h1>
-        <p className="text-muted-foreground">
-          Help us understand your child&apos;s background to provide better care.
-        </p>
-      </div>
+    <div className="w-full max-w-5xl mx-auto p-4 md:p-8">
+      {/* Layout: Sidebar (Desktop) / Stacked (Mobile) - Matches Assessment page */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12">
+        {/* Left Column: Progress Sidebar */}
+        <div className="lg:col-span-1">
+          <InfoProgress
+            currentSection={currentSection}
+            completedSections={completedSections}
+            onSectionClick={handleSectionClick}
+          />
+        </div>
 
-      <ClinicalIntakeForm
-        key={`clinical-${dataLoaded}`}
-        sessionId={sessionId}
-        initialData={storedData.clinical}
-        onContinue={handleClinicalContinue}
-        onBack={handleClinicalBack}
-      />
+        {/* Right Column: Main Content Area */}
+        <div className="lg:col-span-3">
+          {/* Completion summary checklist */}
+          <DemographicsCompletionSummary
+            sections={fieldStatus.sections}
+            requiredComplete={fieldStatus.requiredComplete}
+            requiredTotal={fieldStatus.requiredTotal}
+            percentage={fieldStatus.overallPercentage}
+            onSectionClick={handleSectionClick}
+            currentSection={currentSection}
+          />
+
+          {/* Form content */}
+          {renderFormContent()}
+        </div>
+      </div>
     </div>
   );
 }

@@ -88,8 +88,8 @@ function OnboardingProgress({
           // Step is clickable if: allowAllNavigation OR (has callback AND (completed OR past))
           const isClickable = onStepClick && (allowAllNavigation || isCompleted || isPast);
 
-          // Get percentage for this step (default to 100 if completed/past, 0 otherwise)
-          const percentage = stepPercentages[step.id] ?? (isCompleted || isPast ? 100 : 0);
+          // Get percentage for this step (default to 100 if explicitly completed, 0 otherwise)
+          const percentage = stepPercentages[step.id] ?? (isCompleted ? 100 : 0);
           const isStepComplete = percentage >= 100 || isCompleted;
 
           const stepIndicator = (

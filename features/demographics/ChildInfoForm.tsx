@@ -54,6 +54,7 @@ import {
  * @param assessmentSummary - Pre-populated primary concerns from assessment
  * @param onContinue - Callback fired when form is submitted successfully
  * @param onBack - Callback fired when back button is clicked
+ * @param onFormChange - Callback fired when form data changes (for parent state sync)
  */
 export interface ChildInfoFormProps {
   sessionId: string;
@@ -61,6 +62,7 @@ export interface ChildInfoFormProps {
   assessmentSummary?: string;
   onContinue?: (data: ChildInfoInput) => void;
   onBack?: () => void;
+  onFormChange?: (data: Partial<ChildInfoInput>) => void;
 }
 
 /**
@@ -105,6 +107,7 @@ export function ChildInfoForm({
   assessmentSummary = "",
   onContinue,
   onBack,
+  onFormChange,
 }: ChildInfoFormProps) {
   const [calendarOpen, setCalendarOpen] = React.useState(false);
 
@@ -144,23 +147,27 @@ export function ChildInfoForm({
 
   /**
    * Handles blur event for auto-save
-   * Saves valid form data on field blur
+   * Saves valid form data on field blur and notifies parent of changes
    */
   const handleFieldBlur = React.useCallback(
     async (fieldName: keyof ChildInfoInput) => {
       // Trigger validation for the field
       await trigger(fieldName);
 
+      // Prepare data for saving (with ISO date string)
+      const dataToSave = {
+        ...formValues,
+        dateOfBirth: formValues.dateOfBirth?.toISOString(),
+      };
+
       // Auto-save current form state
       // Save nested under 'child' key to match useStorageSync expectations
-      save({
-        child: {
-          ...formValues,
-          dateOfBirth: formValues.dateOfBirth?.toISOString(),
-        },
-      });
+      save({ child: dataToSave });
+
+      // Notify parent component of form changes for completion summary
+      onFormChange?.(formValues);
     },
-    [trigger, save, formValues]
+    [trigger, save, formValues, onFormChange]
   );
 
   /**
@@ -278,9 +285,8 @@ export function ChildInfoForm({
                   }}
                   defaultMonth={field.value || defaultMonth}
                   disabled={(date) => date > maxDate || date < minDate}
-                  captionLayout="dropdown"
-                  fromYear={new Date().getFullYear() - 25}
-                  toYear={new Date().getFullYear() - 5}
+                  fromDate={minDate}
+                  toDate={maxDate}
                   initialFocus
                 />
               </PopoverContent>
@@ -455,45 +461,46 @@ export function ChildInfoForm({
         </p>
       </div>
 
-      {/* Save status indicator */}
-      {saveStatus === "saving" && (
-        <p className="text-xs text-muted-foreground text-center">Saving...</p>
-      )}
-      {saveStatus === "saved" && (
-        <p className="text-xs text-muted-foreground text-center">
-          All changes saved
-        </p>
-      )}
-      {saveStatus === "error" && (
-        <p className="text-xs text-center" style={{ color: ERROR_COLOR }}>
-          Failed to save. Please try again.
-        </p>
-      )}
-
       {/* Action buttons (AC-3.2.13, AC-3.2.14, AC-3.2.17) */}
-      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
-        {/* Back button (AC-3.2.17) */}
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          className="w-full sm:w-auto"
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Back
-        </Button>
+      <div className="pt-4">
+        <div className="flex flex-col-reverse sm:flex-row gap-3">
+          {/* Back button (AC-3.2.17) */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            className="w-full sm:w-auto"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Back
+          </Button>
 
-        {/* Continue button (AC-3.2.13, AC-3.2.14) */}
-        <Button
-          type="submit"
-          disabled={!isValid}
-          className={cn(
-            "w-full sm:flex-1",
-            "bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
+          {/* Continue button (AC-3.2.13, AC-3.2.14) */}
+          <Button
+            type="submit"
+            disabled={!isValid}
+            className={cn(
+              "w-full sm:flex-1",
+              "bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
+            )}
+          >
+            Continue
+          </Button>
+        </div>
+        {/* Save status indicator - positioned below buttons */}
+        <div className="mt-3 text-center">
+          {saveStatus === "saving" && (
+            <p className="text-xs text-muted-foreground">Saving...</p>
           )}
-        >
-          Continue
-        </Button>
+          {saveStatus === "saved" && (
+            <p className="text-xs text-muted-foreground">All changes saved</p>
+          )}
+          {saveStatus === "error" && (
+            <p className="text-xs" style={{ color: ERROR_COLOR }}>
+              Failed to save. Please try again.
+            </p>
+          )}
+        </div>
       </div>
     </form>
   );

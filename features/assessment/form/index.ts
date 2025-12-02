@@ -43,6 +43,7 @@ export type {
 export type {
   AssessmentFieldStatus,
   AssessmentFieldStatusReturn,
+  SectionStatus,
 } from "./hooks/useAssessmentFieldStatus";
 
 // Utilities

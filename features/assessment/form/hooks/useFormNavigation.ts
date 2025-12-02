@@ -76,19 +76,15 @@ export function useFormNavigation({
 
   /**
    * Navigate to a specific page
-   * Only allows navigation to completed pages or current page
+   * Allows navigation to any valid page for quick jumping
    */
   const goToPage = React.useCallback(
     (page: number) => {
       if (page < 1 || page > totalPages) return;
-      // Allow navigation to completed pages or the next page after last completed
-      const maxAccessible = Math.max(...Array.from(completedPages), 0) + 1;
-      if (page <= maxAccessible) {
-        setCurrentPage(page);
-        onPageChange?.(page);
-      }
+      setCurrentPage(page);
+      onPageChange?.(page);
     },
-    [totalPages, completedPages, onPageChange]
+    [totalPages, onPageChange]
   );
 
   /**

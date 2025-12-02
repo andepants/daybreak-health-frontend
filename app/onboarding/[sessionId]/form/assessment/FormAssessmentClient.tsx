@@ -23,7 +23,6 @@ import {
   useFormNavigation,
   useAssessmentFieldStatus,
   formToSummary,
-  formatSummaryForDisplay,
   chatToFormMapper,
   loadFormDataFromStorage,
   loadChatDataFromStorage,
@@ -227,20 +226,12 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
   );
 
   /**
-   * Handle click on a field in the completion summary
-   * Navigates to the correct page and focuses the field
+   * Handle click on a section in the completion summary
+   * Navigates to the correct page
    */
-  const handleFieldClick = React.useCallback(
-    (fieldName: string, page: number) => {
+  const handleSectionClick = React.useCallback(
+    (_sectionName: string, page: number) => {
       goToPage(page);
-      // Focus field after navigation (allow DOM to update)
-      setTimeout(() => {
-        const element = document.getElementById(fieldName);
-        if (element) {
-          element.focus();
-          element.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      }, 100);
     },
     [goToPage]
   );
@@ -380,12 +371,105 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
         </div>
 
         {/* Summary content */}
-        <div className="rounded-lg border bg-card p-6 space-y-4">
-          <div className="prose prose-sm max-w-none">
-            <pre className="whitespace-pre-wrap text-sm font-sans">
-              {formatSummaryForDisplay(summary)}
-            </pre>
-          </div>
+        <div className="rounded-lg border bg-card p-6 space-y-6">
+          {/* Key Concerns */}
+          <section>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              Key Concerns
+            </h3>
+            <ol className="list-decimal list-inside space-y-1 text-foreground">
+              {summary.keyConcerns.map((concern, i) => (
+                <li key={i}>{concern}</li>
+              ))}
+            </ol>
+          </section>
+
+          {/* Context */}
+          <section>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              Context
+            </h3>
+            <dl className="space-y-1 text-sm">
+              <div className="flex gap-2">
+                <dt className="font-medium text-foreground">Duration:</dt>
+                <dd className="text-muted-foreground">{summary.metadata.concernDuration}</dd>
+              </div>
+              <div className="flex gap-2">
+                <dt className="font-medium text-foreground">Severity:</dt>
+                <dd className="text-muted-foreground">{summary.metadata.concernSeverity}/5</dd>
+              </div>
+            </dl>
+          </section>
+
+          {/* Daily Life Impact */}
+          {(summary.metadata.dailyLifeImpact.sleep ||
+            summary.metadata.dailyLifeImpact.appetite ||
+            summary.metadata.dailyLifeImpact.school ||
+            summary.metadata.dailyLifeImpact.social) && (
+            <section>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                Daily Life Impact
+              </h3>
+              <dl className="space-y-1 text-sm">
+                {summary.metadata.dailyLifeImpact.sleep && (
+                  <div className="flex gap-2">
+                    <dt className="font-medium text-foreground">Sleep:</dt>
+                    <dd className="text-muted-foreground">{summary.metadata.dailyLifeImpact.sleep}</dd>
+                  </div>
+                )}
+                {summary.metadata.dailyLifeImpact.appetite && (
+                  <div className="flex gap-2">
+                    <dt className="font-medium text-foreground">Appetite:</dt>
+                    <dd className="text-muted-foreground">{summary.metadata.dailyLifeImpact.appetite}</dd>
+                  </div>
+                )}
+                {summary.metadata.dailyLifeImpact.school && (
+                  <div className="flex gap-2">
+                    <dt className="font-medium text-foreground">School:</dt>
+                    <dd className="text-muted-foreground">{summary.metadata.dailyLifeImpact.school}</dd>
+                  </div>
+                )}
+                {summary.metadata.dailyLifeImpact.social && (
+                  <div className="flex gap-2">
+                    <dt className="font-medium text-foreground">Social:</dt>
+                    <dd className="text-muted-foreground">{summary.metadata.dailyLifeImpact.social}</dd>
+                  </div>
+                )}
+              </dl>
+            </section>
+          )}
+
+          {/* Recent Events */}
+          {summary.metadata.recentEvents && (
+            <section>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                Recent Events
+              </h3>
+              <p className="text-sm text-foreground">{summary.metadata.recentEvents}</p>
+            </section>
+          )}
+
+          {/* Therapy Goals */}
+          {summary.metadata.therapyGoals && (
+            <section>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                Therapy Goals
+              </h3>
+              <p className="text-sm text-foreground">{summary.metadata.therapyGoals}</p>
+            </section>
+          )}
+
+          {/* Recommended Focus Areas */}
+          <section>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              Recommended Focus Areas
+            </h3>
+            <ul className="list-disc list-inside space-y-1 text-sm text-foreground">
+              {summary.recommendedFocus.map((area, i) => (
+                <li key={i}>{area}</li>
+              ))}
+            </ul>
+          </section>
         </div>
 
         {/* Actions */}
@@ -419,16 +503,20 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
         : page3Form.formState.isValid;
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-4 md:p-8 flex flex-col md:flex-row gap-8 md:gap-16">
-      {/* Progress Sidebar */}
-      <FormProgress
-        currentPage={currentPage}
-        completedPages={completedPages}
-        onPageClick={goToPage}
-      />
+    <div className="w-full max-w-5xl mx-auto p-4 md:p-8">
+      {/* Layout: Sidebar (Desktop) / Stacked (Mobile) */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12">
+        {/* Left Column: Progress Sidebar */}
+        <div className="lg:col-span-1">
+          <FormProgress
+            currentPage={currentPage}
+            completedPages={completedPages}
+            onPageClick={goToPage}
+          />
+        </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 max-w-2xl">
+        {/* Right Column: Main Content Area */}
+        <div className="lg:col-span-3">
         {/* Mode switch link (AC-3.4.10) */}
         <div className="flex justify-end mb-6">
           <button
@@ -443,12 +531,13 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
 
         {/* Completion summary checklist */}
         <AssessmentCompletionSummary
-          fields={fieldStatus.fields}
-          requiredComplete={fieldStatus.requiredComplete}
-          requiredTotal={fieldStatus.requiredTotal}
-          percentage={fieldStatus.overallPercentage}
-          onFieldClick={handleFieldClick}
+          sections={fieldStatus.sections}
+          sectionsComplete={fieldStatus.sectionsComplete}
+          sectionsTotal={fieldStatus.sectionsTotal}
+          percentage={fieldStatus.sectionPercentage}
+          onSectionClick={handleSectionClick}
           currentPage={currentPage}
+          completedPages={completedPages}
         />
 
         {/* Page content */}
@@ -462,11 +551,6 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
           {currentPage === 3 && (
             <Page3AdditionalContext form={page3Form} onFieldBlur={handlePage3Blur} />
           )}
-
-          {/* Save status indicator (AC-3.4.6) */}
-          <div className="mt-6 mb-4">
-            <SaveIndicator status={saveStatus} />
-          </div>
 
           {/* Submit error display */}
           {submitError && (
@@ -491,6 +575,11 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
             onBack={handleBack}
             onNext={handleNext}
           />
+          {/* Save status indicator (AC-3.4.6) - positioned below navigation buttons */}
+          <div className="mt-3">
+            <SaveIndicator status={saveStatus} />
+          </div>
+        </div>
         </div>
       </div>
     </div>
