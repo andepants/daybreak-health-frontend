@@ -37,3 +37,7 @@ export type {
 } from "./useInsuranceCardUpload";
 
 export { maskMemberId, formatVerificationStatus } from "./utils";
+
+// Development-only components
+export { DevTestCardButton } from "./DevTestCardButton";
+export type { DevTestCardButtonProps } from "./DevTestCardButton";

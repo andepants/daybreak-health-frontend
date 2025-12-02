@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Wrench, Check, X, ChevronDown, ChevronUp, Trash2, Zap, Loader2, AlertTriangle } from "lucide-react";
 import { useDevAutofill } from "@/hooks/useDevAutofill";
 import { getAuthToken } from "@/lib/apollo/client";
+import { DevTestCardButton } from "@/features/insurance/DevTestCardButton";
 
 /**
  * Props for the DevToolbar component
@@ -265,6 +266,18 @@ export function DevToolbar({ sessionId }: DevToolbarProps) {
               </div>
             </div>
           )}
+
+          <hr className="border-zinc-700" />
+
+          <p className="text-xs text-zinc-500 font-medium">Insurance Testing</p>
+
+          <DevTestCardButton
+            sessionId={sessionId}
+            variant="toolbar"
+            onComplete={(data) => {
+              console.log("Test card loaded:", data.payerName);
+            }}
+          />
 
           <hr className="border-zinc-700" />
 

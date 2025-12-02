@@ -19,6 +19,7 @@ import {
   type OcrConfidenceData,
 } from "./useInsuranceCardUpload";
 import { CameraCapture } from "./CameraCapture";
+import { DevTestCardButton } from "./DevTestCardButton";
 
 // Re-export types for external consumers
 export type { OcrExtractedData, OcrConfidenceData } from "./useInsuranceCardUpload";
@@ -570,6 +571,35 @@ export function InsuranceCardUpload({
           </Button>
         )}
       </div>
+
+      {/* Dev test card button - development only */}
+      {!isComplete && (
+        <div className="pt-4 border-t border-dashed border-muted">
+          <DevTestCardButton
+            sessionId={sessionId}
+            variant="inline"
+            onComplete={(data) => {
+              // Trigger OCR complete callback with test data
+              if (onOcrComplete) {
+                onOcrComplete(
+                  {
+                    payer_name: data.payerName,
+                    member_id: data.memberId,
+                    group_number: data.groupNumber,
+                    subscriber_name: undefined,
+                  },
+                  {
+                    payer_name: 95,
+                    member_id: 88,
+                    group_number: 92,
+                    subscriber_name: undefined,
+                  }
+                );
+              }
+            }}
+          />
+        </div>
+      )}
 
       {/* Skip option */}
       {!isComplete && (

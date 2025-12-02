@@ -1,0 +1,82 @@
+# GetEnhancedCostComparison Query
+# Fetches comprehensive cost comparison data including insurance details,
+# self-pay options, card images, and deductible/OOP tracking.
+#
+# Used by the EnhancedCostComparisonView component to display a full
+# side-by-side comparison of insurance vs self-pay options with all
+# available cost fields.
+
+query GetEnhancedCostComparison($sessionId: ID!) {
+  # Cost comparison data from backend
+  costComparison(sessionId: $sessionId) {
+    # Insurance estimate (null if not verified)
+    insuranceEstimate {
+      perSessionCost
+      totalEstimatedCost
+      explanation
+      assumptionNotes
+    }
+
+    # Self-pay estimate (always available)
+    selfPayEstimate {
+      baseRate
+      totalForTypicalTreatment
+      slidingScaleInfo
+      transparentPricingMessage
+      whatIsIncluded
+      whatIsNotIncluded
+      packageOptions {
+        sessions
+        totalPrice
+        perSessionCost
+        savings
+        description
+      }
+    }
+
+    # Pre-built comparison table rows
+    comparisonTable {
+      label
+      insuranceValue
+      selfPayValue
+      highlightSelfPay
+    }
+
+    # Recommendation data
+    recommendation
+    savingsIfSelfPay
+    highlightSelfPay
+  }
+
+  # Deductible and out-of-pocket tracking
+  deductibleStatus(sessionId: $sessionId) {
+    amount
+    met
+    remaining
+    progressPercentage
+    isMet
+    oopMaxAmount
+    oopMet
+    oopRemaining
+    oopProgressPercentage
+  }
+
+  # Session data with insurance details and card images
+  session(id: $sessionId) {
+    insurance {
+      # Card images (presigned URLs, 15-min expiry)
+      cardImageFrontUrl
+      cardImageBackUrl
+
+      # Carrier info
+      payerName
+      memberId
+
+      # Cost details
+      copayAmount
+      coinsurancePercentage
+      deductibleAmount
+      deductibleMet
+    }
+  }
+}

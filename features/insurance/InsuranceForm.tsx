@@ -124,12 +124,21 @@ export function InsuranceForm({
   const [ocrCompleted, setOcrCompleted] = React.useState(false);
   const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
+  // Track if user has explicitly navigated back to upload view
+  const hasNavigatedBackRef = React.useRef(false);
+
   /**
    * Show manual entry form when initial data becomes available
    * (e.g., from dev autofill or storage sync)
+   * Only auto-show if user hasn't explicitly navigated back to upload
    */
   React.useEffect(() => {
-    if (initialData && Object.keys(initialData).length > 0 && !showManualEntry) {
+    if (
+      initialData &&
+      Object.keys(initialData).length > 0 &&
+      !showManualEntry &&
+      !hasNavigatedBackRef.current
+    ) {
       setShowManualEntry(true);
     }
   }, [initialData, showManualEntry]);
@@ -226,6 +235,7 @@ export function InsuranceForm({
       }
 
       setOcrCompleted(true);
+      hasNavigatedBackRef.current = false;
       setShowManualEntry(true);
     },
     [setValue]
@@ -235,6 +245,7 @@ export function InsuranceForm({
    * Shows manual entry form when user skips OCR
    */
   const handleSkipOcr = React.useCallback(() => {
+    hasNavigatedBackRef.current = false;
     setShowManualEntry(true);
   }, []);
 
@@ -659,7 +670,10 @@ export function InsuranceForm({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={onBack}
+                  onClick={() => {
+                    hasNavigatedBackRef.current = true;
+                    setShowManualEntry(false);
+                  }}
                   className="w-full sm:w-auto"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />

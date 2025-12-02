@@ -1,8 +1,9 @@
 /**
  * Cost Estimation Page
  *
- * Displays estimated therapy session costs based on insurance information.
- * Shows per-session pricing, coverage breakdown, and disclaimer text.
+ * Displays comprehensive cost comparison between insurance and self-pay options.
+ * Shows per-session pricing, coverage breakdown, deductible tracking,
+ * out-of-pocket progress, and personalized recommendations.
  *
  * Route: /onboarding/[sessionId]/cost
  *
@@ -11,28 +12,26 @@
  * - Next: /onboarding/[sessionId]/matching
  *
  * Features:
- * - Per-session cost estimate from backend
- * - Insurance carrier name and coverage details
- * - Copay and coinsurance display
- * - Deductible tracking (when available)
- * - Disclaimer text from API
+ * - Side-by-side insurance vs self-pay comparison
+ * - All cost fields: perSessionCost, coverage, copay, coinsurance
+ * - Deductible and out-of-pocket maximum tracking
+ * - Package options for self-pay
+ * - Personalized recommendation banner
+ * - Insurance card thumbnail preview
  * - Graceful error handling with support contact
- * - Loading state with cost calculation message
+ * - Loading state with comparison calculation message
  *
  * Implements:
  * - Story 6.1: Cost Estimation Display
- * - AC-6.1.1: Display per-session estimate within 2 seconds
- * - AC-6.1.2: Show carrier name and coverage breakdown
- * - AC-6.1.3: Show "Unable to estimate" with support contact
- * - AC-6.1.4: Display disclaimer text from API
- * - AC-6.1.5: Mask member ID showing only last 4 digits
+ * - Story 6.2: Self-Pay Rate Display
+ * - Story 6.3: Deductible and Out-of-Pocket Tracking
  */
 "use client";
 
 import { use } from "react";
 import { useRouter } from "next/navigation";
-import { CostEstimationCard } from "@/features/cost";
-import { useCostEstimate } from "@/features/cost/useCostEstimate";
+import { EnhancedCostComparisonView } from "@/features/cost/EnhancedCostComparisonView";
+import { useCostComparison } from "@/features/cost/hooks/useCostComparison";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -48,24 +47,24 @@ interface CostPageProps {
 /**
  * Cost Estimation page component
  *
- * Fetches cost estimate via GraphQL and displays results.
- * Handles loading, success, and error states appropriately.
+ * Fetches comprehensive cost comparison data via GraphQL and displays
+ * a side-by-side comparison of insurance vs self-pay options.
  *
  * Layout:
  * - Uses onboarding layout (header, progress bar, footer)
- * - Centered content with max-width 640px
- * - Mobile-first responsive design
+ * - Centered content with max-width for readability
+ * - Mobile-first responsive design with stacked cards on mobile
  *
  * States:
- * - Loading: Shows animated spinner with calculation message
- * - Success: Shows cost card with breakdown
- * - Error: Shows error message with support contact option
- * - Empty: Shows message if no estimate available
+ * - Loading: Shows animated skeleton with loading message
+ * - Success: Shows full comparison with all cost fields
+ * - Error: Shows error message with retry and support options
+ * - No Insurance: Shows self-pay only with option to add insurance
  *
  * Performance:
  * - Apollo Client caching for instant re-renders
+ * - Cache-and-network policy for fresh data with fast initial load
  * - Optimized loading states to minimize layout shift
- * - Error boundaries for graceful failure handling
  *
  * @example
  * Route: /onboarding/sess_abc123/cost
@@ -75,30 +74,21 @@ export default function CostPage({ params }: CostPageProps) {
   const router = useRouter();
 
   /**
-   * Fetch cost estimate for this session
-   * Uses custom hook that wraps Apollo query
+   * Fetch comprehensive cost comparison data
+   * Includes insurance estimate, self-pay, deductible, OOP, and card images
    */
-  const { costEstimate, loading, error, refetch } = useCostEstimate(sessionId);
-
-  /**
-   * Get member ID from session for masked display
-   * In production, this would come from session query or context
-   *
-   * @returns Member ID if available in localStorage
-   */
-  function getMemberId(): string | undefined {
-    try {
-      const stored = localStorage.getItem(`onboarding_session_${sessionId}`);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return parsed?.data?.insurance?.memberId;
-      }
-    } catch {
-      // Silently fail - member ID display is optional
-      return undefined;
-    }
-    return undefined;
-  }
+  const {
+    insuranceEstimate,
+    selfPayEstimate,
+    deductibleStatus,
+    insuranceDetails,
+    recommendation,
+    savingsIfSelfPay,
+    highlightSelfPay,
+    loading,
+    error,
+    refetch,
+  } = useCostComparison(sessionId);
 
   /**
    * Handles back navigation to insurance page
@@ -115,11 +105,65 @@ export default function CostPage({ params }: CostPageProps) {
   }
 
   /**
+   * Handles insurance selection
+   * Stores preference and continues to matching
+   */
+  function handleSelectInsurance() {
+    try {
+      // Store payment preference in localStorage
+      const stored = localStorage.getItem(`onboarding_session_${sessionId}`);
+      const data = stored ? JSON.parse(stored) : { data: {} };
+      data.data.paymentPreference = "insurance";
+      localStorage.setItem(`onboarding_session_${sessionId}`, JSON.stringify(data));
+
+      // Continue to matching
+      router.push(`/onboarding/${sessionId}/matching`);
+    } catch (err) {
+      console.error("Failed to save payment preference:", err);
+      // Still continue - preference can be set later
+      router.push(`/onboarding/${sessionId}/matching`);
+    }
+  }
+
+  /**
+   * Handles self-pay selection
+   * Stores preference and continues to matching
+   */
+  function handleSelectSelfPay() {
+    try {
+      // Store payment preference in localStorage
+      const stored = localStorage.getItem(`onboarding_session_${sessionId}`);
+      const data = stored ? JSON.parse(stored) : { data: {} };
+      data.data.paymentPreference = "self_pay";
+      localStorage.setItem(`onboarding_session_${sessionId}`, JSON.stringify(data));
+
+      // Continue to matching
+      router.push(`/onboarding/${sessionId}/matching`);
+    } catch (err) {
+      console.error("Failed to save payment preference:", err);
+      // Still continue - preference can be set later
+      router.push(`/onboarding/${sessionId}/matching`);
+    }
+  }
+
+  /**
    * Handles retry after error
-   * Refetches cost estimate query
+   * Refetches cost comparison query
    */
   function handleRetry() {
     refetch();
+  }
+
+  /**
+   * Opens support chat (Intercom)
+   */
+  function handleContactSupport() {
+    // Open Intercom widget
+    if (typeof window !== "undefined" && (window as any).Intercom) {
+      (window as any).Intercom("show");
+    } else {
+      console.log("Support chat not available");
+    }
   }
 
   return (
@@ -127,25 +171,32 @@ export default function CostPage({ params }: CostPageProps) {
       {/* Page Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold font-serif text-deep-text mb-2">
-          Your Estimated Cost
+          Your Cost Options
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Based on your insurance information, here&apos;s what you can expect to pay
-          per therapy session.
+          Compare your insurance coverage with our self-pay rates to find the
+          best option for you.
         </p>
       </div>
 
-      {/* Cost Estimation Card */}
-      <CostEstimationCard
-        costEstimate={costEstimate}
-        memberId={getMemberId()}
+      {/* Enhanced Cost Comparison View */}
+      <EnhancedCostComparisonView
+        insuranceEstimate={insuranceEstimate}
+        selfPayEstimate={selfPayEstimate}
+        deductibleStatus={deductibleStatus}
+        insuranceDetails={insuranceDetails}
+        recommendation={recommendation}
+        savingsIfSelfPay={savingsIfSelfPay}
+        highlightSelfPay={highlightSelfPay}
         loading={loading}
         error={error}
+        onSelectInsurance={handleSelectInsurance}
+        onSelectSelfPay={handleSelectSelfPay}
         onRetry={handleRetry}
       />
 
       {/* Navigation Buttons */}
-      <div className="flex flex-col-reverse sm:flex-row gap-3 max-w-[640px] mx-auto">
+      <div className="flex flex-col-reverse sm:flex-row gap-3 max-w-4xl mx-auto">
         <Button
           variant="outline"
           onClick={handleBack}
@@ -164,14 +215,11 @@ export default function CostPage({ params }: CostPageProps) {
       </div>
 
       {/* Help Text */}
-      <div className="text-center max-w-[640px] mx-auto">
+      <div className="text-center max-w-4xl mx-auto">
         <p className="text-sm text-muted-foreground">
           Have questions about costs?{" "}
           <button
-            onClick={() => {
-              // This would open Intercom widget in production
-              console.log("Open support chat");
-            }}
+            onClick={handleContactSupport}
             className="text-daybreak-teal hover:text-daybreak-teal/80 underline"
           >
             Contact our support team
