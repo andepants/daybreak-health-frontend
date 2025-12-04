@@ -1,0 +1,23 @@
+# GetInsuranceStatus Query
+# Fetches the current state of an insurance record's OCR processing
+# Used as a polling fallback when WebSocket subscriptions don't work
+
+query GetInsuranceStatus($sessionId: ID!) {
+  session(id: $sessionId) {
+    insurance {
+      id
+      payerName
+      subscriberName
+      memberId
+      groupNumber
+      verificationStatus
+      ocrProcessed
+      ocrExtracted
+      ocrConfidence
+      ocrLowConfidenceFields
+      needsReview
+      ocrError
+      ocrDataAvailable
+    }
+  }
+}

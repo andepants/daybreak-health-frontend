@@ -16,9 +16,10 @@
 "use client";
 
 import * as React from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { celebrateBooking, clearConfetti } from "@/lib/utils/confetti";
 import { AppointmentDetailsCard } from "./AppointmentDetailsCard";
 import type { TherapistInfo } from "./AppointmentDetailsCard";
 
@@ -38,8 +39,12 @@ export interface BookingReviewProps {
   onConfirm: () => void;
   /** Callback when user wants to go back */
   onBack: () => void;
-  /** Whether the confirm button should be disabled */
+  /** Whether the confirm button should be disabled (loading state) */
   isConfirming?: boolean;
+  /** Whether the booking was successful (success state) */
+  isSuccess?: boolean;
+  /** Callback when user clicks Done after successful booking */
+  onDone?: () => void;
 }
 
 /**
@@ -74,16 +79,41 @@ export function BookingReview({
   onConfirm,
   onBack,
   isConfirming = false,
+  isSuccess = false,
+  onDone,
 }: BookingReviewProps) {
+  /**
+   * Trigger confetti celebration when booking succeeds
+   * Clean up on unmount
+   */
+  React.useEffect(() => {
+    if (isSuccess) {
+      celebrateBooking();
+      return () => clearConfetti();
+    }
+  }, [isSuccess]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
+        {isSuccess && (
+          <div className="flex justify-center mb-4">
+            <div className="rounded-full bg-green-50 p-3">
+              <CheckCircle2
+                className="h-12 w-12 text-green-600"
+                aria-hidden="true"
+              />
+            </div>
+          </div>
+        )}
         <h1 className="text-3xl font-serif font-bold text-deep-text">
-          Review Your Appointment
+          {isSuccess ? "You're all set!" : "Review Your Appointment"}
         </h1>
         <p className="text-muted-foreground">
-          Please confirm your appointment details below
+          {isSuccess
+            ? "Your appointment has been confirmed"
+            : "Please confirm your appointment details below"}
         </p>
       </div>
 
@@ -95,34 +125,59 @@ export function BookingReview({
         duration={duration}
       />
 
-      {/* Confirmation Note */}
-      <div className="rounded-lg bg-daybreak-teal/5 border border-daybreak-teal/20 p-4">
-        <p className="text-sm text-muted-foreground text-center">
-          By confirming, you&apos;ll receive an email with appointment details
-          and a link to join your video session.
-        </p>
-      </div>
+      {/* Confirmation Note - shown only before confirmation */}
+      {!isSuccess && (
+        <div className="rounded-lg bg-daybreak-teal/5 border border-daybreak-teal/20 p-4">
+          <p className="text-sm text-muted-foreground text-center">
+            By confirming, you&apos;ll receive an email with appointment details
+            and a link to join your video session.
+          </p>
+        </div>
+      )}
+
+      {/* Success Note - shown after confirmation */}
+      {isSuccess && (
+        <div className="rounded-lg bg-green-50 border border-green-200 p-4">
+          <p className="text-sm text-muted-foreground text-center">
+            A confirmation email has been sent with your appointment details
+            and a link to join your video session.
+          </p>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex flex-col gap-3 sm:flex-row-reverse">
-        <Button
-          onClick={onConfirm}
-          disabled={isConfirming}
-          className="bg-daybreak-teal hover:bg-daybreak-teal/90 text-white flex-1"
-          size="lg"
-        >
-          {isConfirming ? "Confirming..." : "Confirm Booking"}
-        </Button>
-        <Button
-          onClick={onBack}
-          variant="outline"
-          size="lg"
-          disabled={isConfirming}
-          className="flex-1"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Go Back
-        </Button>
+        {isSuccess ? (
+          <Button
+            onClick={onDone}
+            className="bg-green-600 hover:bg-green-700 text-white flex-1"
+            size="lg"
+          >
+            <CheckCircle2 className="h-4 w-4 mr-2" />
+            Done
+          </Button>
+        ) : (
+          <>
+            <Button
+              onClick={onConfirm}
+              disabled={isConfirming}
+              className="bg-daybreak-teal hover:bg-daybreak-teal/90 text-white flex-1"
+              size="lg"
+            >
+              {isConfirming ? "Confirming..." : "Confirm Booking"}
+            </Button>
+            <Button
+              onClick={onBack}
+              variant="outline"
+              size="lg"
+              disabled={isConfirming}
+              className="flex-1"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Go Back
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -2512,6 +2512,13 @@ export type UploadInsuranceCardMutationVariables = Exact<{
 
 export type UploadInsuranceCardMutation = { __typename?: 'Mutation', uploadInsuranceCard: { __typename?: 'UploadCardPayload', errors: Array<string>, insurance: { __typename?: 'Insurance', id: string, payerName: string | null, subscriberName: string | null, memberId: string | null, groupNumber: string | null, verificationStatus: string, cardImageFrontUrl: string | null, cardImageBackUrl: string | null, ocrProcessed: boolean, ocrExtracted: Record<string, unknown> | null, ocrConfidence: Record<string, unknown> | null, ocrLowConfidenceFields: Array<string> | null, needsReview: boolean, ocrError: Record<string, unknown> | null } | null } | null };
 
+export type GetInsuranceStatusQueryVariables = Exact<{
+  sessionId: Scalars['ID']['input'];
+}>;
+
+
+export type GetInsuranceStatusQuery = { __typename?: 'Query', session: { __typename?: 'OnboardingSession', insurance: { __typename?: 'Insurance', id: string, payerName: string | null, subscriberName: string | null, memberId: string | null, groupNumber: string | null, verificationStatus: string, ocrProcessed: boolean, ocrExtracted: Record<string, unknown> | null, ocrConfidence: Record<string, unknown> | null, ocrLowConfidenceFields: Array<string> | null, needsReview: boolean, ocrError: Record<string, unknown> | null, ocrDataAvailable: boolean } | null } };
+
 export type GetIntercomContextQueryVariables = Exact<{
   sessionId: Scalars['ID']['input'];
 }>;
@@ -3191,6 +3198,37 @@ export function useUploadInsuranceCardMutation(baseOptions?: ApolloReactHooks.Mu
         return ApolloReactHooks.useMutation<UploadInsuranceCardMutation, UploadInsuranceCardMutationVariables>(UploadInsuranceCardDocument, options);
       }
 export type UploadInsuranceCardMutationHookResult = ReturnType<typeof useUploadInsuranceCardMutation>;
+export const GetInsuranceStatusDocument = gql`
+    query GetInsuranceStatus($sessionId: ID!) {
+  session(id: $sessionId) {
+    insurance {
+      id
+      payerName
+      subscriberName
+      memberId
+      groupNumber
+      verificationStatus
+      ocrProcessed
+      ocrExtracted
+      ocrConfidence
+      ocrLowConfidenceFields
+      needsReview
+      ocrError
+      ocrDataAvailable
+    }
+  }
+}
+    `;
+export function useGetInsuranceStatusQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetInsuranceStatusQuery, GetInsuranceStatusQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetInsuranceStatusQuery, GetInsuranceStatusQueryVariables>(GetInsuranceStatusDocument, options);
+      }
+export function useGetInsuranceStatusLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetInsuranceStatusQuery, GetInsuranceStatusQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetInsuranceStatusQuery, GetInsuranceStatusQueryVariables>(GetInsuranceStatusDocument, options);
+        }
+export type GetInsuranceStatusQueryHookResult = ReturnType<typeof useGetInsuranceStatusQuery>;
+export type GetInsuranceStatusLazyQueryHookResult = ReturnType<typeof useGetInsuranceStatusLazyQuery>;
 export const GetIntercomContextDocument = gql`
     query GetIntercomContext($sessionId: ID!) {
   generateIntercomContext(sessionId: $sessionId) {

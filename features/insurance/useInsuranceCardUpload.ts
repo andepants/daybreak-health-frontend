@@ -3,12 +3,15 @@
  *
  * Handles file upload via GraphQL mutation, subscription to OCR status changes,
  * and state management for the upload flow. Integrates with Apollo Upload Client.
+ *
+ * Includes polling fallback for production environments where WebSocket
+ * subscriptions may not work reliably (ActionCable origin restrictions, etc.)
  */
 "use client";
 
 import * as React from "react";
 import { gql } from "@apollo/client";
-import { useMutation, useSubscription } from "@apollo/client/react";
+import { useMutation, useSubscription, useLazyQuery } from "@apollo/client/react";
 
 /**
  * GraphQL mutation for uploading insurance card images
@@ -73,6 +76,37 @@ const INSURANCE_STATUS_CHANGED = gql`
     }
   }
 `;
+
+/**
+ * GraphQL query for polling insurance OCR status
+ * Used as fallback when WebSocket subscription doesn't work (e.g., production ActionCable issues)
+ */
+const GET_INSURANCE_STATUS = gql`
+  query GetInsuranceStatus($sessionId: ID!) {
+    session(id: $sessionId) {
+      insurance {
+        id
+        payerName
+        subscriberName
+        memberId
+        groupNumber
+        verificationStatus
+        ocrProcessed
+        ocrExtracted
+        ocrConfidence
+        ocrLowConfidenceFields
+        needsReview
+        ocrError
+        ocrDataAvailable
+      }
+    }
+  }
+`;
+
+/** Polling interval for OCR status fallback (2 seconds) */
+const POLL_INTERVAL_MS = 2000;
+/** Maximum polling duration before timeout (30 seconds) */
+const MAX_POLL_DURATION_MS = 30000;
 
 /**
  * OCR extracted fields from insurance card
@@ -260,6 +294,85 @@ export function useInsuranceCardUpload({
     },
   });
 
+  // Track if subscription has received data (for polling fallback)
+  const subscriptionReceivedData = React.useRef(false);
+  const pollStartTime = React.useRef<number | null>(null);
+  const pollIntervalId = React.useRef<NodeJS.Timeout | null>(null);
+
+  // GraphQL lazy query for polling fallback
+  interface GetInsuranceStatusResponse {
+    session: {
+      insurance: InsuranceData | null;
+    } | null;
+  }
+  const [fetchInsuranceStatus] = useLazyQuery<GetInsuranceStatusResponse>(GET_INSURANCE_STATUS, {
+    fetchPolicy: "network-only",
+  });
+
+  /**
+   * Saves OCR data to localStorage for persistence
+   */
+  const saveToLocalStorage = React.useCallback(
+    (extractedData: OcrExtractedData, confidence: OcrConfidenceData | null) => {
+      try {
+        const existing = localStorage.getItem(`onboarding_session_${sessionId}`);
+        const parsed = existing ? JSON.parse(existing) : { data: {} };
+        parsed.data.insuranceOcr = {
+          extractedData,
+          confidence,
+          processedAt: new Date().toISOString(),
+        };
+        localStorage.setItem(
+          `onboarding_session_${sessionId}`,
+          JSON.stringify(parsed)
+        );
+      } catch (storageError) {
+        console.warn("Failed to save OCR data to localStorage:", storageError);
+      }
+    },
+    [sessionId]
+  );
+
+  /**
+   * Polls for OCR status as a fallback when WebSocket subscription doesn't work
+   * This handles production environments with ActionCable origin restrictions
+   */
+  const pollForOcrStatus = React.useCallback(async () => {
+    try {
+      const result = await fetchInsuranceStatus({ variables: { sessionId } });
+      const insurance = result.data?.session?.insurance;
+
+      if (insurance?.ocrProcessed) {
+        // Stop polling - OCR is complete
+        if (pollIntervalId.current) {
+          clearInterval(pollIntervalId.current);
+          pollIntervalId.current = null;
+        }
+
+        // Process the result same as subscription
+        if (insurance.ocrError) {
+          setError(insurance.ocrError);
+          setStatus("error");
+          onError?.(insurance.ocrError);
+        } else if (insurance.ocrExtracted) {
+          setOcrData(insurance.ocrExtracted);
+          setOcrConfidence(insurance.ocrConfidence);
+          setLowConfidenceFields(insurance.ocrLowConfidenceFields || []);
+          setStatus(insurance.needsReview ? "needs_review" : "complete");
+          setProcessingMessage(null);
+
+          onOcrComplete?.(
+            insurance.ocrExtracted,
+            insurance.ocrConfidence || {}
+          );
+          saveToLocalStorage(insurance.ocrExtracted, insurance.ocrConfidence);
+        }
+      }
+    } catch (err) {
+      console.warn("Error polling OCR status:", err);
+    }
+  }, [sessionId, fetchInsuranceStatus, onOcrComplete, onError, saveToLocalStorage]);
+
   // GraphQL subscription for OCR status updates
   useSubscription<{ insuranceStatusChanged: InsuranceStatusPayload }>(INSURANCE_STATUS_CHANGED, {
     variables: { sessionId },
@@ -267,10 +380,62 @@ export function useInsuranceCardUpload({
     onData: (options) => {
       const payload = options.data?.data?.insuranceStatusChanged;
       if (payload) {
+        subscriptionReceivedData.current = true;
         handleSubscriptionUpdate(payload);
       }
     },
   });
+
+  /**
+   * Starts polling fallback after a delay if subscription hasn't received data
+   * This ensures we have a working path even if WebSockets fail
+   */
+  React.useEffect(() => {
+    if (status !== "processing" || !insuranceId) {
+      // Clean up polling if status changes
+      if (pollIntervalId.current) {
+        clearInterval(pollIntervalId.current);
+        pollIntervalId.current = null;
+      }
+      return;
+    }
+
+    // Wait 3 seconds for subscription to work, then start polling as fallback
+    const fallbackTimeout = setTimeout(() => {
+      if (!subscriptionReceivedData.current && status === "processing") {
+        console.log("Starting OCR status polling fallback (subscription not responding)");
+        pollStartTime.current = Date.now();
+
+        // Start polling
+        pollIntervalId.current = setInterval(() => {
+          // Check timeout
+          if (pollStartTime.current && Date.now() - pollStartTime.current > MAX_POLL_DURATION_MS) {
+            if (pollIntervalId.current) {
+              clearInterval(pollIntervalId.current);
+              pollIntervalId.current = null;
+            }
+            setError("OCR processing timed out. Please try uploading again.");
+            setStatus("error");
+            onError?.("OCR processing timed out");
+            return;
+          }
+
+          pollForOcrStatus();
+        }, POLL_INTERVAL_MS);
+
+        // Also do an immediate poll
+        pollForOcrStatus();
+      }
+    }, 3000);
+
+    return () => {
+      clearTimeout(fallbackTimeout);
+      if (pollIntervalId.current) {
+        clearInterval(pollIntervalId.current);
+        pollIntervalId.current = null;
+      }
+    };
+  }, [status, insuranceId, pollForOcrStatus, onError]);
 
   /**
    * Handles subscription updates for OCR processing status
@@ -308,31 +473,7 @@ export function useInsuranceCardUpload({
         }
       }
     },
-    [onOcrComplete, onError, sessionId]
-  );
-
-  /**
-   * Saves OCR data to localStorage for persistence
-   */
-  const saveToLocalStorage = React.useCallback(
-    (extractedData: OcrExtractedData, confidence: OcrConfidenceData | null) => {
-      try {
-        const existing = localStorage.getItem(`onboarding_session_${sessionId}`);
-        const parsed = existing ? JSON.parse(existing) : { data: {} };
-        parsed.data.insuranceOcr = {
-          extractedData,
-          confidence,
-          processedAt: new Date().toISOString(),
-        };
-        localStorage.setItem(
-          `onboarding_session_${sessionId}`,
-          JSON.stringify(parsed)
-        );
-      } catch (storageError) {
-        console.warn("Failed to save OCR data to localStorage:", storageError);
-      }
-    },
-    [sessionId]
+    [onOcrComplete, onError, sessionId, saveToLocalStorage]
   );
 
   /**
@@ -425,6 +566,9 @@ export function useInsuranceCardUpload({
     setStatus("uploading");
     setError(null);
     setUploadProgress(0);
+    // Reset subscription tracking for new upload
+    subscriptionReceivedData.current = false;
+    pollStartTime.current = null;
 
     try {
       // Simulate upload progress (actual progress from XHR not easily available with Apollo)
@@ -507,6 +651,14 @@ export function useInsuranceCardUpload({
   const reset = React.useCallback(() => {
     if (frontPreviewUrl) URL.revokeObjectURL(frontPreviewUrl);
     if (backPreviewUrl) URL.revokeObjectURL(backPreviewUrl);
+
+    // Clear polling state
+    if (pollIntervalId.current) {
+      clearInterval(pollIntervalId.current);
+      pollIntervalId.current = null;
+    }
+    subscriptionReceivedData.current = false;
+    pollStartTime.current = null;
 
     setStatus("idle");
     setUploadProgress(0);
