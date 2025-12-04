@@ -4,13 +4,15 @@
  * Components and utilities for appointment scheduling, booking, and confirmation flows.
  *
  * Scheduling Components:
- * - ScheduleContainer: Main orchestration component for date/time selection
- * - AppointmentCalendar: Calendar for selecting appointment date
- * - TimeSlotPicker: Grid of available time slots
+ * - ScheduleContainer: Main orchestration component for recommended time slots
+ * - RecommendedTimeSlots: Curated list of best-matching appointment times
+ * - AppointmentCalendar: Calendar for selecting appointment date (legacy)
+ * - TimeSlotPicker: Grid of available time slots (legacy)
  * - SessionDetails: Display session information and therapist details
  * - TimezoneSelector: Timezone selection dropdown with auto-detection
  *
  * Booking Confirmation Components:
+ * - BookingReview: Review appointment details before confirming
  * - BookingProcessingState: Loading state during booking
  * - BookingSuccess: Success page with confetti and details
  * - AppointmentDetailsCard: Card showing appointment info
@@ -24,6 +26,9 @@
 // Scheduling Components
 export { ScheduleContainer } from "./ScheduleContainer";
 export type { ScheduleContainerProps } from "./ScheduleContainer";
+
+export { RecommendedTimeSlots } from "./RecommendedTimeSlots";
+export type { RecommendedTimeSlotsProps } from "./RecommendedTimeSlots";
 
 export { AppointmentCalendar } from "./AppointmentCalendar";
 export type { AppointmentCalendarProps } from "./AppointmentCalendar";
@@ -40,6 +45,8 @@ export type { TimezoneSelectorProps } from "./TimezoneSelector";
 // Booking Confirmation Components
 export { Confirmation } from "./Confirmation";
 export type { ConfirmationProps, BookingRequest } from "./Confirmation";
+export { BookingReview } from "./BookingReview";
+export type { BookingReviewProps } from "./BookingReview";
 export { BookingProcessingState } from "./BookingProcessingState";
 export { BookingSuccess } from "./BookingSuccess";
 export type { BookingSuccessProps, AppointmentData } from "./BookingSuccess";

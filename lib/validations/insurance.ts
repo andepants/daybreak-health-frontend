@@ -66,10 +66,6 @@ export const insuranceSchema = z.object({
   groupNumber: z
     .string()
     .max(30, "Group number must be 30 characters or less")
-    .regex(
-      /^[A-Za-z0-9-]*$/,
-      "Group number can only contain letters, numbers, and hyphens"
-    )
     .optional()
     .or(z.literal("")),
 

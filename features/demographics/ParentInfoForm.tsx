@@ -10,9 +10,10 @@
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ChevronLeft } from "lucide-react";
+import { Check, ChevronLeft, Loader2 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn, scrollToFirstError } from "@/lib/utils";
+import { SyncErrorBanner } from "@/components/shared";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -37,6 +38,7 @@ import {
   toE164,
   fromE164,
 } from "@/lib/utils/formatters";
+import { useDemographicsSave } from "./useDemographicsSave";
 
 /**
  * Props for ParentInfoForm component
@@ -102,13 +104,19 @@ export function ParentInfoForm({
   onFormChange,
 }: ParentInfoFormProps) {
   // Process initialData to convert phone from E.164 format if needed
+  // Also filter out empty relationshipToChild so default value isn't overwritten
   const processedInitialData = React.useMemo(() => {
     if (!initialData) return undefined;
-    return {
+    const processed: Partial<ParentInfoInput> = {
       ...initialData,
       // Convert E.164 phone format (+1XXXXXXXXXX) back to 10-digit format for validation
       phone: initialData.phone ? fromE164(initialData.phone) : undefined,
     };
+    // Remove empty relationshipToChild to preserve default value
+    if (!processed.relationshipToChild) {
+      delete processed.relationshipToChild;
+    }
+    return processed;
   }, [initialData]);
 
   const {
@@ -123,7 +131,7 @@ export function ParentInfoForm({
   } = useForm<ParentInfoInput>({
     resolver: zodResolver(parentInfoSchema),
     defaultValues: { ...parentInfoDefaults, ...processedInitialData },
-    mode: "onBlur", // AC-3.1.7: Validate on blur, not keystroke
+    mode: "onChange", // Validate in real-time as user types
   });
 
   // Watch form values for auto-save
@@ -131,12 +139,14 @@ export function ParentInfoForm({
 
   // Trigger initial validation when form loads with pre-filled data
   // Without this, fields filled via initialData are never validated
-  // (since mode: "onBlur" requires user interaction)
   React.useEffect(() => {
     if (processedInitialData && Object.keys(processedInitialData).length > 0) {
       trigger();
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Form ref for scrolling to errors
+  const formRef = React.useRef<HTMLFormElement>(null);
 
   // Auto-save integration (AC-3.1.14)
   const { save, saveStatus } = useAutoSave({
@@ -145,6 +155,32 @@ export function ParentInfoForm({
       // Optional: show toast notification
     },
   });
+
+  // Auto-save default values on mount to persist relationshipToChild default
+  // This ensures the default "parent" value is saved even if user never interacts with the field
+  const hasSavedDefaults = React.useRef(false);
+  React.useEffect(() => {
+    if (!hasSavedDefaults.current && formValues.relationshipToChild) {
+      hasSavedDefaults.current = true;
+      // Prepare data with E.164 phone format
+      const dataToSave = {
+        ...formValues,
+        phone: formValues.phone ? toE164(formValues.phone) : "",
+      };
+      // Save nested under 'parent' key to match useStorageSync expectations
+      save({ parent: dataToSave });
+      // Notify parent component of initial form state
+      onFormChange?.(dataToSave);
+    }
+  }, [formValues, save, onFormChange]);
+
+  // Backend sync for persisting data on Continue
+  const {
+    saveParentInfo,
+    parentSaveStatus,
+    error: syncError,
+    clearError: clearSyncError,
+  } = useDemographicsSave({ sessionId });
 
   /**
    * Handles blur event for auto-save
@@ -195,15 +231,55 @@ export function ParentInfoForm({
   );
 
   /**
-   * Handles form submission
-   * Converts phone to E.164 before passing to callback
+   * Handles Continue button click
+   * 1. Clears any previous sync errors
+   * 2. Validates all form fields
+   * 3. If invalid, scrolls to first error
+   * 4. If valid, syncs to backend
+   * 5. If sync succeeds, calls onContinue
    */
-  const onSubmit = (data: ParentInfoInput) => {
+  const handleContinueClick = React.useCallback(async () => {
+    // Clear previous errors
+    clearSyncError();
+
+    // Trigger full form validation
+    const isFormValid = await trigger();
+
+    if (!isFormValid) {
+      scrollToFirstError(formRef.current);
+      return;
+    }
+
+    // Prepare data for backend
     const submissionData = {
-      ...data,
-      phone: toE164(data.phone),
+      firstName: formValues.firstName,
+      lastName: formValues.lastName,
+      email: formValues.email,
+      phone: formValues.phone, // Will be converted to E.164 by saveParentInfo
+      relationship: formValues.relationshipToChild,
+      isGuardian: true, // Default to true as parent is guardian
     };
-    onContinue?.(submissionData);
+
+    // Sync to backend
+    const result = await saveParentInfo(submissionData);
+
+    if (result.success) {
+      // Convert phone to E.164 for callback
+      const callbackData = {
+        ...formValues,
+        phone: toE164(formValues.phone),
+      };
+      onContinue?.(callbackData);
+    }
+    // If sync fails, error will be displayed via syncError state
+  }, [trigger, formValues, saveParentInfo, clearSyncError, onContinue]);
+
+  /**
+   * Handles form submission (prevents default, calls handleContinueClick)
+   */
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleContinueClick();
   };
 
   /**
@@ -218,12 +294,23 @@ export function ParentInfoForm({
     );
   };
 
+  // Check if syncing
+  const isSyncing = parentSaveStatus === "saving";
+
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      ref={formRef}
+      onSubmit={onSubmit}
       className="w-full max-w-[640px] mx-auto space-y-6"
       noValidate
     >
+      {/* Sync Error Banner */}
+      <SyncErrorBanner
+        error={syncError}
+        onDismiss={clearSyncError}
+        onRetry={handleContinueClick}
+      />
+
       {/* First Name Field */}
       <div className="space-y-2">
         <Label
@@ -483,16 +570,23 @@ export function ParentInfoForm({
           Back
         </Button>
 
-        {/* Continue button (AC-3.1.10, AC-3.1.15) */}
+        {/* Continue button - validates and syncs on click */}
         <Button
           type="submit"
-          disabled={!isValid}
+          disabled={isSyncing}
           className={cn(
             "w-full sm:flex-1",
             "bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
           )}
         >
-          Continue
+          {isSyncing ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Continue"
+          )}
         </Button>
         </div>
         {/* Save status indicator - positioned below buttons */}

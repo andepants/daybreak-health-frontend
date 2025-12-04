@@ -10,6 +10,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { scrollToFirstError } from "@/lib/utils";
 
 import {
   FormProgress,
@@ -118,21 +119,21 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
   const page1Form = useForm<Page1Input>({
     resolver: zodResolver(page1Schema),
     defaultValues: page1Defaults,
-    mode: "onBlur",
+    mode: "onChange",
   });
 
   // Page 2 form
   const page2Form = useForm<Page2Input>({
     resolver: zodResolver(page2Schema),
     defaultValues: page2Defaults,
-    mode: "onBlur",
+    mode: "onChange",
   });
 
   // Page 3 form
   const page3Form = useForm<Page3Input>({
     resolver: zodResolver(page3Schema),
     defaultValues: page3Defaults,
-    mode: "onBlur",
+    mode: "onChange",
   });
 
   // Track field completion status for summary and inline indicators
@@ -238,7 +239,7 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
 
   /**
    * Handle next button click
-   * Validates current page and advances
+   * Validates current page, scrolls to first error if invalid, and advances
    */
   const handleNext = React.useCallback(async () => {
     let isValid = false;
@@ -249,6 +250,9 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
         await saveAll(getAllFormData());
         markPageComplete(1);
         goNext();
+      } else {
+        // Scroll to first validation error
+        scrollToFirstError();
       }
     } else if (currentPage === 2) {
       // Page 2 is all optional, always valid
@@ -261,6 +265,9 @@ export function FormAssessmentClient({ sessionId }: FormAssessmentClientProps) {
       if (isValid) {
         // Final page - submit
         await handleSubmit();
+      } else {
+        // Scroll to first validation error
+        scrollToFirstError();
       }
     }
     // Note: handleSubmit is defined below but referenced here - React handles this correctly

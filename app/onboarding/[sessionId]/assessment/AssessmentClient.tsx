@@ -9,7 +9,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ChatWindow, useAssessmentChat, AssessmentSummary } from "@/features/assessment";
+import { ChatWindow, useAssessmentChat } from "@/features/assessment";
+import { ResourcePanel } from "@/features/support";
 import { getAuthToken } from "@/lib/apollo/client";
 
 /**
@@ -28,6 +29,7 @@ interface AssessmentClientProps {
  */
 export function AssessmentClient({ sessionId }: AssessmentClientProps) {
   const router = useRouter();
+  const [isResourcePanelOpen, setIsResourcePanelOpen] = React.useState(false);
   const {
     messages,
     sendMessage,
@@ -42,10 +44,7 @@ export function AssessmentClient({ sessionId }: AssessmentClientProps) {
     goBack,
     isComplete,
     crisisDetected,
-    summary,
     handleConfirmSummary,
-    handleAddMore,
-    handleStartOver,
   } = useAssessmentChat(sessionId);
 
   /**
@@ -96,22 +95,15 @@ export function AssessmentClient({ sessionId }: AssessmentClientProps) {
     !error.message.toLowerCase().includes("invalid token") &&
     !error.message.toLowerCase().includes("authentication");
 
-  // Show summary when assessment is complete and summary is generated
-  if (isComplete && summary) {
-    return (
-      <main className="flex flex-col min-h-screen bg-background">
-        <AssessmentSummary
-          summary={summary}
-          sessionId={sessionId}
-          onConfirm={handleConfirmSummary}
-          onAddMore={handleAddMore}
-          onStartOver={handleStartOver}
-        />
-      </main>
-    );
-  }
+  /**
+   * Handle continue button click - navigate to next step
+   */
+  const handleContinue = React.useCallback(async () => {
+    await handleConfirmSummary();
+    router.push(`/onboarding/${sessionId}/demographics`);
+  }, [handleConfirmSummary, router, sessionId]);
 
-  // Otherwise show chat interface
+  // Show chat interface (Continue button shown when complete)
   return (
     <main className="flex flex-col h-full flex-1 bg-background overflow-hidden">
       {/* Error banner for non-auth errors */}
@@ -151,31 +143,44 @@ export function AssessmentClient({ sessionId }: AssessmentClientProps) {
         </div>
       )}
 
-      {/* Completeness indicator */}
-      {isComplete && !summary && (
-        <div className="bg-daybreak-teal/10 border-b border-daybreak-teal/20 px-4 py-3">
-          <div className="max-w-2xl mx-auto text-center">
-            <p className="text-sm text-daybreak-teal font-medium">
-              Almost done! The AI is generating a summary of our conversation...
-            </p>
+      {/* Chat window in constrained container to ensure Continue button visibility */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ChatWindow
+          messages={messages}
+          sessionId={sessionId}
+          onMessageUpdate={handleMessageUpdate}
+          onSend={sendMessage}
+          onRetry={retryLastMessage}
+          suggestedReplies={suggestedReplies}
+          isAiResponding={isAiResponding}
+          mode={assessmentMode}
+          structuredQuestion={structuredQuestion || undefined}
+          structuredProgress={structuredProgress || undefined}
+          onStructuredAnswer={selectOption}
+          onStructuredBack={goBack}
+          onOpenResources={() => setIsResourcePanelOpen(true)}
+        />
+      </div>
+
+      {/* Continue button when assessment is complete - shrink-0 ensures visibility */}
+      {isComplete && (
+        <div className="shrink-0 border-t border-border bg-background px-4 py-4 safe-area-bottom">
+          <div className="max-w-2xl mx-auto">
+            <button
+              onClick={handleContinue}
+              className="w-full bg-daybreak-teal hover:bg-daybreak-teal/90 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+            >
+              Continue
+            </button>
           </div>
         </div>
       )}
 
-      {/* Chat window takes full available space */}
-      <ChatWindow
-        messages={messages}
-        sessionId={sessionId}
-        onMessageUpdate={handleMessageUpdate}
-        onSend={sendMessage}
-        onRetry={retryLastMessage}
-        suggestedReplies={suggestedReplies}
-        isAiResponding={isAiResponding}
-        mode={assessmentMode}
-        structuredQuestion={structuredQuestion || undefined}
-        structuredProgress={structuredProgress || undefined}
-        onStructuredAnswer={selectOption}
-        onStructuredBack={goBack}
+      {/* Resource Panel for helpful content */}
+      <ResourcePanel
+        isOpen={isResourcePanelOpen}
+        onOpenChange={setIsResourcePanelOpen}
+        source="chat"
       />
     </main>
   );

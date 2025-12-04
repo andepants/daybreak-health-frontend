@@ -9,6 +9,8 @@
 import * as React from "react";
 
 import type { InsuranceFormData } from "@/lib/validations/insurance";
+import { useSubmitInsuranceInfoMutation, useSelectSelfPayMutation } from "@/types/graphql";
+import { getCarrierById } from "@/lib/data/insurance-carriers";
 
 /**
  * Insurance information returned from API
@@ -75,6 +77,10 @@ export function useInsurance({
   const [isSaving, setIsSaving] = React.useState(false);
   const [error, setError] = React.useState<Error | null>(null);
 
+  // Apollo mutations for backend persistence
+  const [submitInsuranceInfoMutation] = useSubmitInsuranceInfoMutation();
+  const [selectSelfPayMutation] = useSelectSelfPayMutation();
+
   /**
    * Submit insurance information for verification
    * Calls GraphQL mutation and updates local state
@@ -85,30 +91,36 @@ export function useInsurance({
       setError(null);
 
       try {
-        // TODO: Replace with actual GraphQL mutation when backend is ready
-        // const result = await submitInsuranceInfoMutation({
-        //   variables: {
-        //     input: {
-        //       sessionId,
-        //       carrier: data.carrier,
-        //       memberId: data.memberId,
-        //       groupNumber: data.groupNumber || null,
-        //       subscriberName: data.subscriberName,
-        //       relationshipToSubscriber: data.relationshipToSubscriber,
-        //     },
-        //   },
-        // });
+        // Convert carrier ID to name (backend expects the full name, not ID)
+        const carrier = getCarrierById(data.carrier);
+        const payerName = carrier?.name || data.carrier;
 
-        // Simulate network delay for mock implementation
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        // Call the real GraphQL mutation to persist to backend
+        const result = await submitInsuranceInfoMutation({
+          variables: {
+            sessionId,
+            payerName,
+            memberId: data.memberId,
+            groupNumber: data.groupNumber || null,
+            subscriberName: data.subscriberName,
+          },
+        });
 
-        // Store in localStorage as backup
+        // Check for errors from backend
+        const errors = result.data?.submitInsuranceInfo?.errors;
+        if (errors && errors.length > 0) {
+          throw new Error(errors[0].message || "Failed to submit insurance");
+        }
+
+        const insurance = result.data?.submitInsuranceInfo?.insurance;
+
+        // Also store in localStorage as backup for offline resilience
         try {
           const existing = localStorage.getItem(`onboarding_session_${sessionId}`);
           const parsed = existing ? JSON.parse(existing) : { data: {} };
           parsed.data.insurance = {
             ...data,
-            verificationStatus: "pending",
+            verificationStatus: insurance?.verificationStatus || "pending",
             savedAt: new Date().toISOString(),
           };
           localStorage.setItem(
@@ -119,15 +131,17 @@ export function useInsurance({
           console.warn("Failed to save insurance to localStorage:", storageError);
         }
 
-        // Update local state
-        setInsuranceInfo({
-          id: `ins_${Date.now()}`,
-          payerName: data.carrier,
-          subscriberName: data.subscriberName,
-          memberId: data.memberId,
-          groupNumber: data.groupNumber || null,
-          verificationStatus: "pending",
-        });
+        // Update local state with response from backend
+        if (insurance) {
+          setInsuranceInfo({
+            id: insurance.id,
+            payerName: insurance.payerName || data.carrier,
+            subscriberName: insurance.subscriberName || data.subscriberName,
+            memberId: insurance.memberId || data.memberId,
+            groupNumber: insurance.groupNumber || null,
+            verificationStatus: insurance.verificationStatus as InsuranceInformation["verificationStatus"] || "pending",
+          });
+        }
 
         onSubmitSuccess?.();
       } catch (err) {
@@ -139,7 +153,7 @@ export function useInsurance({
         setIsSaving(false);
       }
     },
-    [sessionId, onSubmitSuccess, onError]
+    [sessionId, submitInsuranceInfoMutation, onSubmitSuccess, onError]
   );
 
   /**
@@ -151,13 +165,21 @@ export function useInsurance({
     setError(null);
 
     try {
-      // TODO: Replace with actual GraphQL mutation
-      // await setSelfPayMutation({ variables: { sessionId } });
+      // Call the real GraphQL mutation to persist to backend
+      const result = await selectSelfPayMutation({
+        variables: {
+          input: { sessionId },
+        },
+      });
 
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // Check for success from backend
+      if (!result.data?.selectSelfPay?.success) {
+        throw new Error("Failed to set self-pay option");
+      }
 
-      // Store in localStorage
+      const session = result.data.selectSelfPay.session;
+
+      // Also store in localStorage as backup
       try {
         const existing = localStorage.getItem(`onboarding_session_${sessionId}`);
         const parsed = existing ? JSON.parse(existing) : { data: {} };
@@ -176,7 +198,7 @@ export function useInsurance({
 
       // Update local state
       setInsuranceInfo({
-        id: `ins_${Date.now()}`,
+        id: session?.insurance?.id || `ins_${Date.now()}`,
         payerName: "Self-Pay",
         subscriberName: "",
         memberId: "",
@@ -193,7 +215,7 @@ export function useInsurance({
     } finally {
       setIsSaving(false);
     }
-  }, [sessionId, onSelfPaySuccess, onError]);
+  }, [sessionId, selectSelfPayMutation, onSelfPaySuccess, onError]);
 
   /**
    * Clear error state

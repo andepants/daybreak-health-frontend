@@ -11,9 +11,10 @@ import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon, Check, ChevronLeft } from "lucide-react";
+import { CalendarIcon, Check, ChevronLeft, Loader2 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn, scrollToFirstError } from "@/lib/utils";
+import { SyncErrorBanner } from "@/components/shared";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -46,6 +47,7 @@ import {
   getMinBirthDate,
   getMaxBirthDate,
 } from "@/lib/utils/age-validation";
+import { useDemographicsSave } from "./useDemographicsSave";
 
 /**
  * Props for ChildInfoForm component
@@ -130,12 +132,15 @@ export function ChildInfoForm({
   } = useForm<ChildInfoInput>({
     resolver: zodResolver(childInfoSchema),
     defaultValues,
-    mode: "onBlur", // AC-3.2.11: Validate on blur, not keystroke
+    mode: "onChange", // Validate in real-time as user types
   });
 
   // Watch form values for auto-save and conditional rendering
   const formValues = watch();
   const selectedPronouns = watch("pronouns");
+
+  // Form ref for scrolling to errors
+  const formRef = React.useRef<HTMLFormElement>(null);
 
   // Auto-save integration (AC-3.2.16)
   const { save, saveStatus } = useAutoSave({
@@ -144,6 +149,14 @@ export function ChildInfoForm({
       // Optional: show toast notification
     },
   });
+
+  // Backend sync for persisting data on Continue
+  const {
+    saveChildInfo,
+    childSaveStatus,
+    error: syncError,
+    clearError: clearSyncError,
+  } = useDemographicsSave({ sessionId });
 
   /**
    * Handles blur event for auto-save
@@ -171,10 +184,52 @@ export function ChildInfoForm({
   );
 
   /**
-   * Handles form submission
+   * Handles Continue button click
+   * 1. Clears any previous sync errors
+   * 2. Validates all form fields
+   * 3. If invalid, scrolls to first error
+   * 4. If valid, syncs to backend
+   * 5. If sync succeeds, calls onContinue
    */
-  const onSubmit = (data: ChildInfoInput) => {
-    onContinue?.(data);
+  const handleContinueClick = React.useCallback(async () => {
+    // Clear previous errors
+    clearSyncError();
+
+    // Trigger full form validation
+    const isFormValid = await trigger();
+
+    if (!isFormValid) {
+      scrollToFirstError(formRef.current);
+      return;
+    }
+
+    // Prepare data for backend (with ISO date string)
+    const submissionData = {
+      firstName: formValues.firstName,
+      lastName: "", // Not collected in this form
+      dateOfBirth: formValues.dateOfBirth
+        ? format(formValues.dateOfBirth, "yyyy-MM-dd")
+        : "",
+      gender: formValues.pronouns || undefined,
+      grade: formValues.grade || undefined,
+      primaryConcerns: formValues.primaryConcerns || undefined,
+    };
+
+    // Sync to backend
+    const result = await saveChildInfo(submissionData);
+
+    if (result.success) {
+      onContinue?.(formValues);
+    }
+    // If sync fails, error will be displayed via syncError state
+  }, [trigger, formValues, saveChildInfo, clearSyncError, onContinue]);
+
+  /**
+   * Handles form submission (prevents default, calls handleContinueClick)
+   */
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleContinueClick();
   };
 
   /**
@@ -194,12 +249,23 @@ export function ChildInfoForm({
   const maxDate = getMaxBirthDate();
   const defaultMonth = getDefaultCalendarDate();
 
+  // Check if syncing
+  const isSyncing = childSaveStatus === "saving";
+
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      ref={formRef}
+      onSubmit={onSubmit}
       className="w-full max-w-[640px] mx-auto space-y-6"
       noValidate
     >
+      {/* Sync Error Banner */}
+      <SyncErrorBanner
+        error={syncError}
+        onDismiss={clearSyncError}
+        onRetry={handleContinueClick}
+      />
+
       {/* First Name Field (AC-3.2.2) */}
       <div className="space-y-2">
         <Label htmlFor="firstName" className="flex items-center gap-1">
@@ -287,6 +353,7 @@ export function ChildInfoForm({
                   disabled={(date) => date > maxDate || date < minDate}
                   fromDate={minDate}
                   toDate={maxDate}
+                  showDropdowns
                   initialFocus
                 />
               </PopoverContent>
@@ -475,16 +542,23 @@ export function ChildInfoForm({
             Back
           </Button>
 
-          {/* Continue button (AC-3.2.13, AC-3.2.14) */}
+          {/* Continue button - validates and syncs on click */}
           <Button
             type="submit"
-            disabled={!isValid}
+            disabled={isSyncing}
             className={cn(
               "w-full sm:flex-1",
               "bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
             )}
           >
-            Continue
+            {isSyncing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Continue"
+            )}
           </Button>
         </div>
         {/* Save status indicator - positioned below buttons */}

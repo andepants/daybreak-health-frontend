@@ -4,6 +4,7 @@
  * Provides a date selection interface with month/year navigation.
  * Styled to match Daybreak design system with custom navigation.
  * Supports single date selection, range selection, and disabled dates.
+ * Includes dropdown selectors for easy month and year navigation.
  */
 "use client";
 
@@ -14,7 +15,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
-export type CalendarProps = DayPickerProps;
+export type CalendarProps = DayPickerProps & {
+  /** Enable dropdown selectors for month and year navigation */
+  showDropdowns?: boolean;
+};
 
 /**
  * Calendar component for date selection
@@ -41,29 +45,52 @@ function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  showDropdowns = false,
   ...props
 }: CalendarProps) {
+  // Default year range: 10 years back to 10 years forward
+  const currentYear = new Date().getFullYear();
+  const defaultStartMonth = new Date(currentYear - 10, 0);
+  const defaultEndMonth = new Date(currentYear + 10, 11);
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      captionLayout={showDropdowns ? "dropdown" : "label"}
+      startMonth={showDropdowns ? (props.startMonth ?? defaultStartMonth) : props.startMonth}
+      endMonth={showDropdowns ? (props.endMonth ?? defaultEndMonth) : props.endMonth}
       className={cn("p-3", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         month_caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-base font-semibold font-serif text-deep-text",
+        caption_label: cn(
+          "text-base font-semibold font-serif text-deep-text",
+          showDropdowns && "hidden"
+        ),
+        dropdowns: "flex gap-2 items-center justify-center",
+        dropdown: cn(
+          "appearance-none bg-white border border-gray-200 rounded-md",
+          "px-2 py-1 text-sm font-medium text-deep-text",
+          "hover:border-daybreak-teal/50 focus:outline-none focus:ring-2 focus:ring-daybreak-teal/30",
+          "cursor-pointer transition-colors duration-150"
+        ),
+        months_dropdown: "font-serif",
+        years_dropdown: "font-serif",
         nav: "space-x-1 flex items-center",
         button_previous: cn(
-          "absolute left-1 h-8 w-8 flex items-center justify-center",
+          "absolute left-3 h-8 w-8 flex items-center justify-center",
           "bg-white border border-gray-200 rounded-md",
           "hover:bg-gray-50 hover:border-daybreak-teal/50",
-          "transition-colors duration-150"
+          "transition-colors duration-150",
+          showDropdowns && "hidden"
         ),
         button_next: cn(
-          "absolute right-1 h-8 w-8 flex items-center justify-center",
+          "absolute right-3 h-8 w-8 flex items-center justify-center",
           "bg-white border border-gray-200 rounded-md",
           "hover:bg-gray-50 hover:border-daybreak-teal/50",
-          "transition-colors duration-150"
+          "transition-colors duration-150",
+          showDropdowns && "hidden"
         ),
         month_grid: "w-full border-collapse space-y-1",
         weekdays: "flex",

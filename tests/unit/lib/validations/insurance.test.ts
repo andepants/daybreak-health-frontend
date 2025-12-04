@@ -181,18 +181,6 @@ describe("insuranceSchema", () => {
       }
     });
 
-    it("should reject group number with invalid characters", () => {
-      const result = insuranceSchema.safeParse({
-        ...validData,
-        groupNumber: "GRP@001",
-      });
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].message).toBe(
-          "Group number can only contain letters, numbers, and hyphens"
-        );
-      }
-    });
   });
 
   describe("Subscriber Name Validation (AC-4.1.4)", () => {

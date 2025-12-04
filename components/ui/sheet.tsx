@@ -70,7 +70,8 @@ const sheetVariants = cva(
   cn(
     "fixed z-50 gap-4 bg-background shadow-lg transition ease-in-out",
     "data-[state=closed]:duration-300 data-[state=open]:duration-500",
-    "data-[state=open]:animate-in data-[state=closed]:animate-out"
+    "data-[state=open]:animate-in data-[state=closed]:animate-out",
+    "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
   ),
   {
     variants: {
@@ -91,13 +92,15 @@ const sheetVariants = cva(
           "inset-y-0 left-0 h-full w-3/4 border-r",
           "data-[state=closed]:slide-out-to-left",
           "data-[state=open]:slide-in-from-left",
-          "sm:max-w-sm"
+          // Use explicit pixel values for Tailwind v4 compatibility
+          "sm:max-w-[384px]"
         ),
         right: cn(
           "inset-y-0 right-0 h-full w-3/4 border-l",
           "data-[state=closed]:slide-out-to-right",
           "data-[state=open]:slide-in-from-right",
-          "sm:max-w-sm md:max-w-md lg:max-w-lg"
+          // Use explicit pixel values for Tailwind v4 compatibility
+          "sm:max-w-[384px] md:max-w-[448px] lg:max-w-[512px]"
         ),
       },
     },
@@ -141,7 +144,9 @@ const SheetContent = React.forwardRef<
       className={cn(
         sheetVariants({ side }),
         // Responsive: Use bottom sheet on mobile, side sheet on desktop
-        "max-sm:inset-x-0 max-sm:bottom-0 max-sm:rounded-t-2xl max-sm:border-t",
+        // Override the side positioning for mobile to become bottom sheet
+        "max-sm:inset-x-0 max-sm:bottom-0 max-sm:top-auto max-sm:right-auto",
+        "max-sm:h-auto max-sm:w-full max-sm:rounded-t-2xl max-sm:border-t max-sm:border-l-0",
         "max-sm:data-[state=closed]:slide-out-to-bottom",
         "max-sm:data-[state=open]:slide-in-from-bottom",
         // Add max height for mobile bottom sheet

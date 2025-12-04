@@ -9,7 +9,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import { FileText, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChatBubble, type Message } from "./ChatBubble";
 import { MessageInput } from "./MessageInput";
@@ -30,12 +30,14 @@ export type AssessmentMode = "chat" | "structured";
  * @param onSend - Callback for sending messages
  * @param onRetry - Optional callback for retrying last message when AI times out
  * @param suggestedReplies - Quick reply options to display
+ * @param isSuggestionsLoading - Whether suggestions are being fetched
  * @param isAiResponding - Whether AI is currently responding
  * @param mode - Display mode: 'chat' or 'structured'
  * @param structuredQuestion - Current structured question (when mode is 'structured')
  * @param structuredProgress - Progress tracking for structured section
  * @param onStructuredAnswer - Callback for structured question answers
  * @param onStructuredBack - Callback for back navigation in structured mode
+ * @param onOpenResources - Callback to open resources panel
  * @param className - Additional CSS classes for customization
  */
 export interface ChatWindowProps {
@@ -45,12 +47,14 @@ export interface ChatWindowProps {
   onSend: (message: string, isQuickReply?: boolean) => void;
   onRetry?: () => void;
   suggestedReplies?: QuickReplyOption[];
+  isSuggestionsLoading?: boolean;
   isAiResponding?: boolean;
   mode?: AssessmentMode;
   structuredQuestion?: StructuredQuestion;
   structuredProgress?: { current: number; total: number };
   onStructuredAnswer?: (answer: string) => void;
   onStructuredBack?: () => void;
+  onOpenResources?: () => void;
   className?: string;
 }
 
@@ -88,12 +92,14 @@ export function ChatWindow({
   onSend,
   onRetry,
   suggestedReplies = [],
+  isSuggestionsLoading = false,
   isAiResponding = false,
   mode = "chat",
   structuredQuestion,
   structuredProgress,
   onStructuredAnswer,
   onStructuredBack,
+  onOpenResources,
   className,
 }: ChatWindowProps) {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -213,11 +219,31 @@ export function ChatWindow({
 
           {/* Input area - fixed to bottom */}
           <div className="shrink-0 safe-area-bottom">
+            {/* Suggestions loading indicator */}
+            {isSuggestionsLoading && !isAiResponding && (
+              <div className="flex justify-center py-2 px-4">
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className="w-1.5 h-1.5 rounded-full bg-daybreak-teal/50 animate-pulse"
+                    style={{ animationDelay: "0ms" }}
+                  />
+                  <div
+                    className="w-1.5 h-1.5 rounded-full bg-daybreak-teal/50 animate-pulse"
+                    style={{ animationDelay: "150ms" }}
+                  />
+                  <div
+                    className="w-1.5 h-1.5 rounded-full bg-daybreak-teal/50 animate-pulse"
+                    style={{ animationDelay: "300ms" }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Quick reply chips */}
             <QuickReplyChips
               options={suggestedReplies}
               onSelect={handleQuickReply}
-              isVisible={suggestedReplies.length > 0 && !isTyping && !isAiResponding}
+              isVisible={suggestedReplies.length > 0 && !isTyping && !isAiResponding && !isSuggestionsLoading}
             />
 
             {/* Message input */}
@@ -226,15 +252,27 @@ export function ChatWindow({
               isDisabled={isAiResponding}
             />
 
-            {/* Form fallback link (AC-3.4.1) */}
+            {/* Footer links - resources and form fallback */}
             {sessionId && (
-              <div className="px-4 pb-3 pt-1 text-center border-t border-border/50">
+              <div className="px-4 pb-3 pt-1 text-center border-t border-border/50 flex justify-center gap-4">
+                {/* Resources button */}
+                {onOpenResources && (
+                  <button
+                    type="button"
+                    onClick={onOpenResources}
+                    className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+                  >
+                    <BookOpen className="h-3 w-3" />
+                    Browse helpful resources
+                  </button>
+                )}
+                {/* Form fallback link (AC-3.4.1) */}
                 <Link
                   href={`/onboarding/${sessionId}/form/assessment`}
                   className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
                 >
                   <FileText className="h-3 w-3" />
-                  Prefer a traditional form? Click here
+                  Prefer a traditional form?
                 </Link>
               </div>
             )}

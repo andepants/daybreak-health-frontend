@@ -234,6 +234,22 @@
     animation: fade-in 0.2s ease-out;
   }
 
+  /* Fade in up animation for staggered quick reply chips */
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.3s ease-out;
+  }
+
   /* Typing indicator dot bounce animation */
   @keyframes typing-dot-bounce {
     0%, 80%, 100% {

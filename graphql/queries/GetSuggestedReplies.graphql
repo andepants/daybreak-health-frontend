@@ -1,0 +1,12 @@
+# GetSuggestedReplies Query
+# Fetches AI-generated quick reply suggestions for the chat interface
+# Returns contextual suggestions based on the last AI message
+# Only returns suggestions during open-ended conversation phases (concerns, assessment)
+
+query GetSuggestedReplies($sessionId: ID!, $messageId: ID) {
+  suggestedReplies(sessionId: $sessionId, messageId: $messageId) {
+    label
+    value
+    icon
+  }
+}

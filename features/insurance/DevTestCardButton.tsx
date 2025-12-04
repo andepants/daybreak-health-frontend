@@ -62,7 +62,7 @@ const TEST_CARDS: TestCard[] = [
   },
   {
     id: "anthem-test",
-    payerName: "Anthem BCBS CA",
+    payerName: "Anthem Blue Cross",
     memberId: "MCA84103067D",
     groupNumber: "W3001103",
     frontImagePath: "/test-assets/fake-insurance-front.png",

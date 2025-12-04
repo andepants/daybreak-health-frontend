@@ -10,7 +10,6 @@
  * - Appointment details card
  * - Add to calendar buttons
  * - What's next section
- * - "Done" button to navigate away
  * - Warm, reassuring design using Daybreak palette
  *
  * @module features/scheduling/BookingSuccess
@@ -19,10 +18,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { celebrateBooking, clearConfetti } from "@/lib/utils/confetti";
 import { AppointmentDetailsCard } from "./AppointmentDetailsCard";
 import { CalendarLinks } from "./CalendarLinks";
@@ -51,10 +47,6 @@ export interface BookingSuccessProps {
   appointment: AppointmentData;
   /** Email confirmation status from booking mutation */
   emailConfirmation?: EmailConfirmationStatus | null;
-  /** Callback when "Done" button is clicked (optional) */
-  onDone?: () => void;
-  /** Return URL for Done button (default: "/") */
-  returnUrl?: string;
 }
 
 /**
@@ -65,7 +57,6 @@ export interface BookingSuccessProps {
  * - Shows appointment details
  * - Provides calendar export options
  * - Displays next steps
- * - Done button for navigation
  *
  * Accessibility:
  * - Semantic HTML structure
@@ -91,17 +82,12 @@ export interface BookingSuccessProps {
  *     duration: 50,
  *     meetingUrl: "https://daybreak.health/meet/abc123"
  *   }}
- *   returnUrl="/dashboard"
  * />
  */
 export function BookingSuccess({
   appointment,
   emailConfirmation,
-  onDone,
-  returnUrl = "/",
 }: BookingSuccessProps) {
-  const router = useRouter();
-
   /**
    * Trigger confetti celebration on mount
    * Clean up on unmount
@@ -114,20 +100,8 @@ export function BookingSuccess({
     };
   }, []);
 
-  /**
-   * Handles Done button click
-   * Calls callback if provided, otherwise navigates to return URL
-   */
-  function handleDone() {
-    if (onDone) {
-      onDone();
-    } else {
-      router.push(returnUrl);
-    }
-  }
-
   return (
-    <div className="bg-cream/50">
+    <div className="space-y-6">
       {/* Success announcement for screen readers */}
       <div
         role="status"
@@ -137,79 +111,59 @@ export function BookingSuccess({
         Appointment successfully booked
       </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        {/* Celebration Header - Centered above grid */}
-        <div className="text-center space-y-4 mb-8">
-          <div className="flex justify-center">
-            <div className="rounded-full bg-green-50 p-3">
-              <CheckCircle2
-                className="h-12 w-12 text-green-600"
-                aria-hidden="true"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <h1 className="text-4xl font-serif font-bold text-deep-text">
-              You&apos;re all set!
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Your appointment has been confirmed
-            </p>
-          </div>
-        </div>
-
-        {/* Two-column layout: Main content (left) | Sidebar (right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Email confirmation + What's Next + Done */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Email Confirmation Status */}
-            <EmailConfirmationMessage
-              emailConfirmation={emailConfirmation ?? null}
+      {/* Celebration Header */}
+      <div className="text-center space-y-4">
+        <div className="flex justify-center">
+          <div className="rounded-full bg-green-50 p-3">
+            <CheckCircle2
+              className="h-12 w-12 text-green-600"
+              aria-hidden="true"
             />
-
-            {/* What's Next Section */}
-            <WhatsNext />
-
-            {/* Done Button */}
-            <div className="pt-4">
-              <Button
-                onClick={handleDone}
-                className="w-full bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
-                size="lg"
-              >
-                Done
-              </Button>
-            </div>
-
-            {/* Footer Note */}
-            <p className="text-center text-sm text-muted-foreground">
-              We&apos;re excited to support your family on this journey
-            </p>
-          </div>
-
-          {/* Right Column: Sticky Sidebar with Appointment Details + Calendar */}
-          <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-6 space-y-4">
-              {/* Appointment Details Card */}
-              <AppointmentDetailsCard
-                therapist={appointment.therapist}
-                startTime={appointment.startTime}
-                endTime={appointment.endTime}
-                duration={appointment.duration}
-              />
-
-              {/* Calendar Links */}
-              <CalendarLinks
-                therapistName={appointment.therapist.name}
-                startTime={appointment.startTime}
-                endTime={appointment.endTime}
-                meetingUrl={appointment.meetingUrl}
-              />
-            </div>
           </div>
         </div>
+
+        <div className="space-y-2">
+          <h1 className="text-4xl font-serif font-bold text-deep-text">
+            You&apos;re all set!
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Your appointment has been confirmed
+          </p>
+        </div>
+      </div>
+
+      {/* Appointment Details Card */}
+      <AppointmentDetailsCard
+        therapist={appointment.therapist}
+        startTime={appointment.startTime}
+        endTime={appointment.endTime}
+        duration={appointment.duration}
+      />
+
+      {/* Email Confirmation Status */}
+      <EmailConfirmationMessage
+        emailConfirmation={emailConfirmation ?? null}
+      />
+
+      {/* Calendar Links */}
+      <CalendarLinks
+        therapistName={appointment.therapist.name}
+        startTime={appointment.startTime}
+        endTime={appointment.endTime}
+        meetingUrl={appointment.meetingUrl}
+      />
+
+      {/* What's Next Section */}
+      <WhatsNext />
+
+      {/* Footer Note */}
+      <div className="text-center space-y-2 pt-4">
+        <p className="text-muted-foreground">
+          You can close this tab or add the appointment to your calendar
+        </p>
+        <p className="text-sm text-muted-foreground">
+          We&apos;re excited to support your family on this journey
+        </p>
       </div>
     </div>
   );

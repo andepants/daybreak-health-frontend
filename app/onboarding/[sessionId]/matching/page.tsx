@@ -3,12 +3,12 @@
  *
  * Displays matched therapists for the current onboarding session.
  * This is the page where parents see 2-3 recommended therapists
- * after completing the insurance submission step.
+ * after completing the availability selection step.
  *
  * Route: /onboarding/[sessionId]/matching
  *
  * Flow:
- * - Previous: /onboarding/[sessionId]/insurance
+ * - Previous: /onboarding/[sessionId]/availability
  * - Next: /onboarding/[sessionId]/schedule/[therapistId] (after booking)
  *
  * Features:
@@ -26,7 +26,8 @@
 
 import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, CheckCircle2, XCircle, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { useApolloClient } from "@apollo/client/react";
+import { AlertCircle, CheckCircle2, XCircle, ChevronRight, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 
 import { useGetMatchedTherapistsQuery, useGetSessionQuery, useCompleteAssessmentMutation } from "@/types/graphql";
 import {
@@ -35,8 +36,7 @@ import {
 } from "@/features/matching";
 import { Button } from "@/components/ui/button";
 import { useCompletionStatus } from "@/lib/completion";
-import { useDataSync } from "@/hooks";
-import { DataSyncPrompt } from "@/components/shared";
+import { detectSyncNeeds, syncLocalStorageToBackend, type SyncResult } from "@/lib/utils/data-sync";
 
 /**
  * Props for Matching page
@@ -52,7 +52,7 @@ interface MatchingPageProps {
  * Section configuration for navigation
  */
 interface SectionConfig {
-  id: "assessment" | "info" | "insurance";
+  id: "assessment" | "info" | "insurance" | "availability";
   label: string;
   path: string;
 }
@@ -82,9 +82,15 @@ interface SectionConfig {
  * @example
  * Route: /onboarding/sess_abc123/matching
  */
+/**
+ * Sync status for tracking data synchronization state
+ */
+type SyncStatus = "pending" | "checking" | "syncing" | "complete" | "failed";
+
 export default function MatchingPage({ params }: MatchingPageProps) {
   const { sessionId } = use(params);
   const router = useRouter();
+  const apolloClient = useApolloClient();
 
   /**
    * Child name state for personalized messages
@@ -99,12 +105,19 @@ export default function MatchingPage({ params }: MatchingPageProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   /**
+   * Sync state for tracking localStorage to backend synchronization
+   */
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("pending");
+  const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+
+  /**
    * Section configuration for navigation
    */
   const sectionConfigs: SectionConfig[] = [
     { id: "assessment", label: "Assessment", path: `/onboarding/${sessionId}/form/assessment` },
     { id: "info", label: "Info", path: `/onboarding/${sessionId}/demographics` },
     { id: "insurance", label: "Insurance / Payment", path: `/onboarding/${sessionId}/insurance` },
+    { id: "availability", label: "Availability", path: `/onboarding/${sessionId}/availability` },
   ];
 
   /**
@@ -128,11 +141,68 @@ export default function MatchingPage({ params }: MatchingPageProps) {
   const [completeAssessment] = useCompleteAssessmentMutation();
 
   /**
-   * Auto-complete assessment status on page load
+   * Sync localStorage data to backend on mount
+   * This ensures data collected in forms is persisted to database before matching
+   */
+  useEffect(() => {
+    async function performSync() {
+      setSyncStatus("checking");
+
+      try {
+        // First check if sync is needed by comparing localStorage with backend
+        const syncNeeds = detectSyncNeeds(sessionId, sessionData?.session);
+
+        if (!syncNeeds.needsSync) {
+          // No sync needed, proceed to matching
+          console.log("[Matching] No sync needed, localStorage matches backend");
+          setSyncStatus("complete");
+          return;
+        }
+
+        console.log("[Matching] Sync needed for:", syncNeeds.itemsToSync);
+        setSyncStatus("syncing");
+
+        // Perform the sync
+        const result = await syncLocalStorageToBackend(apolloClient, sessionId, {
+          onProgress: (step, current, total) => {
+            console.log(`[Matching] Sync progress: ${step} (${current}/${total})`);
+          },
+        });
+
+        setSyncResult(result);
+
+        if (result.success) {
+          console.log("[Matching] Sync successful:", result.syncedItems);
+          setSyncStatus("complete");
+          // Refetch session data to get updated state
+          refetchSession();
+        } else {
+          console.warn("[Matching] Sync had errors:", result.errors);
+          // Still mark as complete to allow matching to proceed
+          // The matching query will show any remaining validation errors
+          setSyncStatus("complete");
+        }
+      } catch (error) {
+        console.error("[Matching] Sync failed:", error);
+        setSyncStatus("failed");
+      }
+    }
+
+    // Only perform sync once we have session data (or it has loaded)
+    if (sessionData !== undefined) {
+      performSync();
+    }
+  }, [sessionId, sessionData, apolloClient, refetchSession]);
+
+  /**
+   * Auto-complete assessment status after sync completes
    * This ensures the session is in the correct status for booking
    * Uses force=true to bypass prerequisite validation during development
    */
   useEffect(() => {
+    // Only complete assessment after sync is done
+    if (syncStatus !== "complete") return;
+
     async function ensureAssessmentComplete() {
       try {
         const result = await completeAssessment({
@@ -155,17 +225,7 @@ export default function MatchingPage({ params }: MatchingPageProps) {
     }
 
     ensureAssessmentComplete();
-  }, [sessionId, completeAssessment]);
-
-  /**
-   * Data sync hook for detecting and resolving localStorage/backend mismatches
-   * When localStorage has complete data but backend is missing records,
-   * this enables automatic syncing via GraphQL mutations.
-   */
-  const dataSync = useDataSync({
-    sessionId,
-    backendSession: sessionData?.session,
-  });
+  }, [sessionId, completeAssessment, syncStatus]);
 
   /**
    * Toggle section expansion in the checklist
@@ -211,6 +271,7 @@ export default function MatchingPage({ params }: MatchingPageProps) {
   /**
    * Fetch matched therapists for this session
    * Uses generated Apollo hook from GraphQL codegen
+   * Skips query until sync is complete to ensure backend has all data
    */
   const { data, loading, error, refetch } = useGetMatchedTherapistsQuery({
     variables: { sessionId },
@@ -218,13 +279,15 @@ export default function MatchingPage({ params }: MatchingPageProps) {
     fetchPolicy: "cache-and-network",
     // Show loading state on first load only
     notifyOnNetworkStatusChange: true,
+    // Skip query until sync is complete
+    skip: syncStatus !== "complete",
   });
 
   /**
-   * Handles back navigation to insurance page
+   * Handles back navigation to availability page
    */
   function handleBack() {
-    router.push(`/onboarding/${sessionId}/insurance`);
+    router.push(`/onboarding/${sessionId}/availability`);
   }
 
   /**
@@ -233,6 +296,25 @@ export default function MatchingPage({ params }: MatchingPageProps) {
    */
   function handleRetry() {
     refetch();
+  }
+
+  // Syncing state - show sync progress indicator
+  if (syncStatus === "checking" || syncStatus === "syncing" || syncStatus === "pending") {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col items-center justify-center py-12">
+          <Loader2 className="h-10 w-10 text-daybreak-teal animate-spin mb-4" />
+          <h2 className="text-xl font-semibold font-serif text-deep-text mb-2">
+            {syncStatus === "syncing" ? "Syncing your information..." : "Preparing your profile..."}
+          </h2>
+          <p className="text-muted-foreground text-center max-w-md">
+            {syncStatus === "syncing"
+              ? "We're saving your information to ensure the best therapist matches."
+              : "Getting everything ready for matching..."}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // Loading state - show skeleton cards with animation
@@ -251,31 +333,9 @@ export default function MatchingPage({ params }: MatchingPageProps) {
       "Session must have complete"
     );
 
-    // For incomplete sessions, check if we can sync localStorage data to backend
-    if (isIncompleteSession && dataSync.needsSync) {
-      // Show sync prompt when localStorage has data but backend doesn't
-      return (
-        <DataSyncPrompt
-          syncStatus={dataSync.syncStatus}
-          onSync={dataSync.sync}
-          isSyncing={dataSync.isSyncing}
-          progress={dataSync.progress}
-          currentStep={dataSync.currentStep}
-          errors={dataSync.errors}
-          syncedItems={dataSync.syncedItems}
-          isComplete={dataSync.isComplete}
-          wasSuccessful={dataSync.wasSuccessful}
-          onRetry={dataSync.reset}
-          onContinue={() => {
-            // Refetch both session and matches after successful sync
-            refetchSession();
-            refetch();
-          }}
-        />
-      );
-    }
-
-    // For incomplete sessions without sync data, show the detailed completion checklist
+    // For incomplete sessions, show the detailed completion checklist
+    // Note: Data syncs automatically on each form's Continue click, so if the session
+    // is incomplete, it means the user hasn't finished filling out required fields.
     if (isIncompleteSession) {
       const { sections, overallPercentComplete, canProceedToMatching, matchingBlockers } = completionState;
       const totalBlockers = matchingBlockers.length;

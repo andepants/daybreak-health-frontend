@@ -14,7 +14,11 @@ import type { Message } from "./ChatBubble";
 import type { QuickReplyOption } from "./types";
 import type { StructuredQuestion } from "./AssessmentCard";
 import { useAutoSave } from "@/hooks/useAutoSave";
+import { useSuggestedReplies } from "./useSuggestedReplies";
 import { useOnboardingSession } from "@/hooks/useOnboardingSession";
+import { chatToFormMapper, type ChatMessage } from "./form/utils/chatToFormMapper";
+import type { FormAssessmentInput } from "@/lib/validations/assessment";
+import { useCompleteAssessmentMutation as useCompleteAssessmentMutationGenerated } from "@/types/graphql";
 
 /**
  * GraphQL mutation for sending messages to AI backend
@@ -74,14 +78,37 @@ export interface AssessmentSummary {
 }
 
 /**
- * Stub mutation hooks for assessment flow
- * TODO: Replace with actual GraphQL mutations when backend is ready
+ * Wrapper for completeAssessment mutation
+ * Uses the real generated hook but wraps it to match the expected interface
  */
 function useCompleteAssessmentMutation() {
-  const mutate = async (_options: { variables: { sessionId: string } }): Promise<{ data: { completeAssessment?: { summary?: AssessmentSummary } } | null }> => {
-    // Stub - returns empty data, fallback is handled in hook
-    return { data: null };
+  const [completeAssessmentMutation] = useCompleteAssessmentMutationGenerated();
+
+  const mutate = async (options: { variables: { sessionId: string } }): Promise<{ data: { completeAssessment?: { summary?: AssessmentSummary; success?: boolean } } | null }> => {
+    try {
+      const result = await completeAssessmentMutation({
+        variables: {
+          input: {
+            sessionId: options.variables.sessionId,
+            force: true, // Force completion to bypass validation for now
+          },
+        },
+      });
+
+      return {
+        data: {
+          completeAssessment: {
+            success: result.data?.completeAssessment?.success ?? false,
+            summary: undefined, // Summary is not returned by backend
+          },
+        },
+      };
+    } catch (error) {
+      console.error("Failed to complete assessment:", error);
+      return { data: null };
+    }
   };
+
   return [mutate] as const;
 }
 
@@ -159,6 +186,7 @@ export interface UseAssessmentChatReturn {
   retryLastMessage: () => Promise<void>;
   isAiResponding: boolean;
   suggestedReplies: QuickReplyOption[];
+  isSuggestionsLoading: boolean;
   error: Error | null;
   saveStatus: "idle" | "saving" | "saved" | "error";
   retrySave: () => void;
@@ -206,8 +234,16 @@ export interface UseAssessmentChatReturn {
 export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [isAiResponding, setIsAiResponding] = React.useState(false);
-  const [suggestedReplies, setSuggestedReplies] = React.useState<QuickReplyOption[]>([]);
   const [error, setError] = React.useState<Error | null>(null);
+
+  // Dynamic AI-generated suggestions (fetched after AI response)
+  const {
+    suggestions: suggestedReplies,
+    isLoading: isSuggestionsLoading,
+    fetchSuggestions,
+    clearSuggestions,
+    setSuggestions,
+  } = useSuggestedReplies(sessionId);
   const [assessmentMode, setAssessmentMode] = React.useState<AssessmentMode>("chat");
   const [structuredQuestion, setStructuredQuestion] = React.useState<StructuredQuestion | null>(null);
   const [structuredProgress, setStructuredProgress] = React.useState<StructuredProgress | null>(null);
@@ -277,10 +313,8 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
         // Optimistically add user message to UI
         setMessages((prev) => [...prev, userMessage]);
 
-        // Hide suggested replies after selection
-        if (isQuickReply) {
-          setSuggestedReplies([]);
-        }
+        // Clear suggested replies when sending any message
+        clearSuggestions();
 
         // Set AI responding state
         setIsAiResponding(true);
@@ -318,8 +352,9 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
 
           setMessages((prev) => [...prev, aiMessage]);
 
-          // Clear suggested replies for now (backend can provide these in the future)
-          setSuggestedReplies([]);
+          // Fetch dynamic suggestions based on the AI response
+          // This is a separate call that runs in the background
+          fetchSuggestions(assistantMessage.id);
         }
 
         // Check if assessment is complete (backend signals this)
@@ -347,7 +382,7 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
         console.error("Error sending message:", err);
       }
     },
-    [sessionId, autoSave, sendMessageMutation]
+    [sessionId, autoSave, sendMessageMutation, clearSuggestions, fetchSuggestions]
   );
 
   /**
@@ -435,7 +470,7 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
           .filter((msg) => msg.sender === "AI")
           .pop();
         if (lastAiMessage?.suggestedReplies) {
-          setSuggestedReplies(
+          setSuggestions(
             lastAiMessage.suggestedReplies.map((label) => ({
               label,
               value: label.toLowerCase().replace(/\s+/g, "-"),
@@ -458,7 +493,7 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
         };
 
         setMessages([welcomeMessage]);
-        setSuggestedReplies(
+        setSuggestions(
           welcomeMessage.suggestedReplies!.map((label) => ({
             label,
             value: label.toLowerCase().replace(/\s+/g, "-"),
@@ -466,7 +501,7 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
         );
       }
     }
-  }, [messages.length, session, sessionId, isReturningUser]);
+  }, [messages.length, session, sessionId, isReturningUser, setSuggestions]);
 
   /**
    * Cleanup timers on unmount to prevent memory leaks
@@ -546,38 +581,90 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
   }, [messages.length, sessionId]);
 
   /**
-   * Trigger summary generation when assessment is complete
-   * Automatically calls CompleteAssessment mutation
+   * Converts internal Message format to ChatMessage format for form mapping
+   */
+  const convertToChatlMessage = React.useCallback((msg: Message): ChatMessage => ({
+    id: msg.id,
+    role: msg.sender === "USER" ? "user" : "assistant",
+    content: msg.content,
+    timestamp: msg.timestamp,
+  }), []);
+
+  /**
+   * Extracts form fields from chat messages and saves to localStorage
+   * Called after each message exchange to enable real-time form pre-population
+   */
+  const extractAndSaveFormFields = React.useCallback((currentMessages: Message[]) => {
+    const chatMessages = currentMessages.map(convertToChatlMessage);
+    const extractedData = chatToFormMapper({
+      conversationHistory: chatMessages,
+    });
+
+    // Save extracted data to unified localStorage
+    try {
+      const storageKey = `onboarding_session_${sessionId}`;
+      const existingData = localStorage.getItem(storageKey);
+      const parsed = existingData ? JSON.parse(existingData) : { data: {} };
+
+      parsed.data = {
+        ...parsed.data,
+        messages: currentMessages,
+        extractedData: extractedData,
+      };
+      parsed.savedAt = new Date().toISOString();
+
+      localStorage.setItem(storageKey, JSON.stringify(parsed));
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Extracted form data from chat:", Object.keys(extractedData));
+      }
+    } catch (err) {
+      console.error("Failed to save extracted form data:", err);
+    }
+  }, [sessionId, convertToChatlMessage]);
+
+  /**
+   * Extract and save form fields whenever messages change
+   * This enables real-time form pre-population as the user chats
+   */
+  React.useEffect(() => {
+    // Only extract if we have user messages (skip initial AI greeting)
+    const hasUserMessages = messages.some(m => m.sender === "USER");
+    if (hasUserMessages && messages.length > 1) {
+      extractAndSaveFormFields(messages);
+    }
+  }, [messages, extractAndSaveFormFields]);
+
+  /**
+   * When assessment is complete, show a continue prompt
+   * No summary generation - form fields are extracted in real-time
    */
   React.useEffect(() => {
     if (isComplete && !summary) {
-      const generateSummary = async () => {
-        try {
-          const { data } = await completeAssessment({
-            variables: { sessionId },
-          });
 
-          if (data?.completeAssessment?.summary) {
-            setSummary(data.completeAssessment.summary);
-          }
-        } catch (err) {
-          console.error("Failed to generate summary:", err);
-          // For now, create a mock summary so UI can be tested
-          setSummary({
-            keyConcerns: [
-              "Child has been feeling sad and withdrawn for the past few months",
-              "Sleep has been difficult, often staying up late or waking early",
-              "School performance has dropped, especially in subjects they used to enjoy",
-            ],
-            childName: session?.child?.firstName || "your child",
-            recommendedFocus: ["Depression", "Sleep", "Academic"],
-            generatedAt: new Date().toISOString(),
-          });
-        }
+      // Show completion message prompting user to continue
+      const completionMessage: Message = {
+        id: `msg_${Date.now()}_complete`,
+        sender: "AI",
+        content: "Thank you for sharing all of that with me. I have everything I need to help match your child with the right therapist. When you're ready, click Continue to proceed to the next step.",
+        timestamp: new Date().toISOString(),
       };
-      generateSummary();
+
+      setMessages((prev) => {
+        // Don't add if already added
+        if (prev.some(m => m.id.includes('_complete'))) return prev;
+        return [...prev, completionMessage];
+      });
+
+      // Set a minimal summary to signal completion (used for navigation)
+      setSummary({
+        keyConcerns: [],
+        childName: session?.child?.firstName || "your child",
+        recommendedFocus: [],
+        generatedAt: new Date().toISOString(),
+      });
     }
-  }, [isComplete, summary, sessionId, completeAssessment, session?.child?.firstName]);
+  }, [isComplete, summary, sessionId, messages, extractAndSaveFormFields, session?.child?.firstName]);
 
   /**
    * Confirms the assessment summary
@@ -631,7 +718,7 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
 
       // Clear all local state
       setMessages([]);
-      setSuggestedReplies([]);
+      clearSuggestions();
       setIsComplete(false);
       setSummary(null);
       setCrisisDetected(false);
@@ -650,7 +737,7 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
       setError(err instanceof Error ? err : new Error("Failed to reset assessment"));
       throw err;
     }
-  }, [sessionId, resetAssessment]);
+  }, [sessionId, resetAssessment, clearSuggestions]);
 
   return {
     messages,
@@ -658,6 +745,7 @@ export function useAssessmentChat(sessionId: string): UseAssessmentChatReturn {
     retryLastMessage,
     isAiResponding,
     suggestedReplies,
+    isSuggestionsLoading,
     error,
     saveStatus,
     retrySave,

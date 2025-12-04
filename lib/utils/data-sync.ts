@@ -212,6 +212,22 @@ const SUBMIT_ASSESSMENT_RESPONSE = gql`
   }
 `;
 
+const COMPLETE_ASSESSMENT = gql`
+  mutation SyncCompleteAssessment($input: CompleteAssessmentInput!) {
+    completeAssessment(input: $input) {
+      success
+      session {
+        id
+        assessment {
+          id
+          status
+        }
+      }
+      errors
+    }
+  }
+`;
+
 /**
  * Response types for mutations
  */
@@ -238,6 +254,14 @@ interface SelfPayMutationResult {
 interface AssessmentMutationResult {
   submitAssessmentResponse?: {
     assessment?: { id: string; status: string };
+    errors?: string[];
+  };
+}
+
+interface CompleteAssessmentResult {
+  completeAssessment?: {
+    success: boolean;
+    session?: { id: string; assessment?: { id: string; status: string } };
     errors?: string[];
   };
 }
@@ -610,8 +634,28 @@ export async function syncLocalStorageToBackend(
         await sleep(delayMs / 2);
       }
 
+      // Step 4: Mark assessment as complete after submitting responses
       if (!assessmentFailed) {
-        syncedItems.push("Assessment");
+        const completeResult = await client.mutate<CompleteAssessmentResult>({
+          mutation: COMPLETE_ASSESSMENT,
+          variables: {
+            input: {
+              sessionId,
+              force: true, // Force to skip prerequisite checks during sync
+            },
+          },
+        });
+
+        if (completeResult.errors?.length) {
+          errors.push(`Complete assessment: ${completeResult.errors.map((e) => e.message).join(", ")}`);
+          reportProgress("Complete Assessment", false);
+        } else if (completeResult.data?.completeAssessment?.errors?.length) {
+          errors.push(...completeResult.data.completeAssessment.errors);
+          reportProgress("Complete Assessment", false);
+        } else {
+          reportProgress("Complete Assessment", true);
+          syncedItems.push("Assessment");
+        }
       }
     }
 

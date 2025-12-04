@@ -12,9 +12,9 @@
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, Shield } from "lucide-react";
+import { ChevronLeft, Loader2, Shield } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn, scrollToFirstError } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,7 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useAutoSave } from "@/hooks/useAutoSave";
+import { ResourceAccordion } from "@/features/support";
+import {
+  getContextualTips,
+  getResourcesByTopic,
+} from "@/lib/data/support-resources";
 import {
   clinicalIntakeSchema,
   clinicalIntakeDefaults,
@@ -118,11 +124,17 @@ export function ClinicalIntakeForm({
   } = useForm<ClinicalIntakeInput>({
     resolver: zodResolver(clinicalIntakeSchema),
     defaultValues,
-    mode: "onBlur",
+    mode: "onChange", // Validate in real-time as user types
   });
 
   // Watch form values for character counter and auto-save
   const formValues = watch();
+
+  // Form ref for scrolling to errors (for consistency with other forms)
+  const formRef = React.useRef<HTMLFormElement>(null);
+
+  // Track saving state for button UI
+  const [isSaving, setIsSaving] = React.useState(false);
 
   // Auto-save integration (AC-3.3.10)
   const { save, saveStatus } = useAutoSave({
@@ -146,13 +158,36 @@ export function ClinicalIntakeForm({
   );
 
   /**
-   * Handles form submission
-   * Since all fields are optional, form is always valid
+   * Handles Continue button click
+   * Since all fields are optional, validation always passes.
+   * No backend sync - data only saved to localStorage.
    */
-  const onSubmit = (data: ClinicalIntakeInput) => {
-    // Final save before navigation
-    save({ clinical: data });
-    onContinue?.(data);
+  const handleContinueClick = React.useCallback(async () => {
+    setIsSaving(true);
+
+    // Trigger validation (will always pass since all fields optional)
+    const isFormValid = await trigger();
+
+    if (!isFormValid) {
+      scrollToFirstError(formRef.current);
+      setIsSaving(false);
+      return;
+    }
+
+    // Final save to localStorage before navigation
+    // Note: Clinical data has no backend mutation, saved to localStorage only
+    save({ clinical: formValues });
+
+    setIsSaving(false);
+    onContinue?.(formValues);
+  }, [trigger, formValues, save, onContinue]);
+
+  /**
+   * Handles form submission (prevents default, calls handleContinueClick)
+   */
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleContinueClick();
   };
 
   /**
@@ -185,7 +220,8 @@ export function ClinicalIntakeForm({
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      ref={formRef}
+      onSubmit={onSubmit}
       className="w-full max-w-[640px] mx-auto space-y-6"
       noValidate
     >
@@ -212,6 +248,10 @@ export function ClinicalIntakeForm({
         <Label htmlFor="currentMedications" className="flex items-center gap-1">
           Current Medications{" "}
           <span className="text-muted-foreground text-sm">(Optional)</span>
+          <InfoTooltip
+            tips={getContextualTips("clinical.medications")?.tips || []}
+            title={getContextualTips("clinical.medications")?.title}
+          />
         </Label>
         <Textarea
           id="currentMedications"
@@ -259,6 +299,10 @@ export function ClinicalIntakeForm({
         <Label htmlFor="previousTherapy" className="flex items-center gap-1">
           Previous Therapy Experience{" "}
           <span className="text-muted-foreground text-sm">(Optional)</span>
+          <InfoTooltip
+            tips={getContextualTips("clinical.previousTherapy")?.tips || []}
+            title={getContextualTips("clinical.previousTherapy")?.title}
+          />
         </Label>
         <Controller
           name="previousTherapy"
@@ -311,6 +355,10 @@ export function ClinicalIntakeForm({
         <Label className="flex items-center gap-1">
           Mental Health Diagnoses{" "}
           <span className="text-muted-foreground text-sm">(Optional)</span>
+          <InfoTooltip
+            tips={getContextualTips("clinical.diagnoses")?.tips || []}
+            title={getContextualTips("clinical.diagnoses")?.title}
+          />
         </Label>
         <p className="text-sm text-muted-foreground">
           Select any that apply to your child
@@ -461,6 +509,13 @@ export function ClinicalIntakeForm({
         </div>
       </div>
 
+      {/* Helpful Resources Section */}
+      <ResourceAccordion
+        title="Helpful Resources"
+        resources={getResourcesByTopic("getting-started")}
+        maxVisible={3}
+      />
+
       {/* Action buttons (AC-3.3.11) */}
       <div className="pt-4">
         <div className="flex flex-col-reverse sm:flex-row gap-3">
@@ -475,15 +530,23 @@ export function ClinicalIntakeForm({
             Back
           </Button>
 
-          {/* Continue button - always enabled since all fields optional (AC-3.3.7) */}
+          {/* Continue button - validates and saves on click */}
           <Button
             type="submit"
+            disabled={isSaving}
             className={cn(
               "w-full sm:flex-1",
               "bg-daybreak-teal hover:bg-daybreak-teal/90 text-white"
             )}
           >
-            Continue
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Continue"
+            )}
           </Button>
         </div>
         {/* Save status indicator - positioned below buttons */}

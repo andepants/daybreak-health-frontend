@@ -8,6 +8,7 @@
 "use client";
 
 import * as React from "react";
+import { parentInfoDefaults } from "@/lib/validations/demographics";
 
 /**
  * Save status states
@@ -94,10 +95,29 @@ export function useAutoSave({
           const existing = existingRaw ? JSON.parse(existingRaw) : {};
           const existingData = existing.data || {};
 
+          // Prepare data with defaults applied
+          let dataToMerge = data && typeof data === "object" ? { ...data } as Record<string, unknown> : {};
+
+          // Apply parent defaults when parent data is being saved
+          // This ensures relationshipToChild defaults to "parent" when not explicitly set
+          if (dataToMerge.parent && typeof dataToMerge.parent === "object") {
+            const parentData = dataToMerge.parent as Record<string, unknown>;
+            // Only apply default if relationshipToChild is not set
+            if (!parentData.relationshipToChild) {
+              dataToMerge = {
+                ...dataToMerge,
+                parent: {
+                  ...parentData,
+                  relationshipToChild: parentInfoDefaults.relationshipToChild,
+                },
+              };
+            }
+          }
+
           // Deep merge new data into existing data
           const mergedData = {
             ...existingData,
-            ...(data && typeof data === "object" ? data : {}),
+            ...dataToMerge,
           };
 
           localStorage.setItem(

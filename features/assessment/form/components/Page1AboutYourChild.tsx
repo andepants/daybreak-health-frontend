@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import {
   type Page1Input,
   CONCERN_DURATION_OPTIONS,
@@ -28,6 +29,7 @@ import {
   SEVERITY_OPTIONS,
   SEVERITY_LABELS,
 } from "@/lib/validations/assessment";
+import { getContextualTips } from "@/lib/data/support-resources";
 import { FieldStatusIndicator } from "./FieldStatusIndicator";
 
 /**
@@ -153,6 +155,10 @@ export function Page1AboutYourChild({
             isTouched={!!touchedFields.primaryConcerns}
             hasError={!!errors.primaryConcerns}
           />
+          <InfoTooltip
+            tips={getContextualTips("assessment.primaryConcerns")?.tips || []}
+            title={getContextualTips("assessment.primaryConcerns")?.title}
+          />
         </Label>
         <p className="text-xs text-muted-foreground">
           Please describe what you&apos;ve been noticing about your child&apos;s behavior, mood, or wellbeing.
@@ -276,6 +282,10 @@ export function Page1AboutYourChild({
             isRequired={true}
             isTouched={!!touchedFields.concernSeverity}
             hasError={!!errors.concernSeverity}
+          />
+          <InfoTooltip
+            tips={getContextualTips("assessment.severity")?.tips || []}
+            title={getContextualTips("assessment.severity")?.title}
           />
         </Label>
         <p className="text-xs text-muted-foreground">

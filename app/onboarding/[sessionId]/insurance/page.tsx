@@ -7,7 +7,7 @@
  *
  * Flow:
  * - Previous: /onboarding/[sessionId]/demographics?section=clinical
- * - Next: /onboarding/[sessionId]/matching (after submission)
+ * - Next: /onboarding/[sessionId]/availability (after submission)
  */
 "use client";
 
@@ -103,15 +103,15 @@ export default function InsurancePage({ params }: InsurancePageProps) {
 
   /**
    * Handles insurance form submission
-   * Navigates to matching/therapist selection
+   * Navigates to availability selection
    * @param data - Validated insurance form data
    */
   function handleContinue(data: InsuranceFormData): void {
     console.info("Insurance submitted:", { sessionId });
     // PHI Protection: Do not log member ID
 
-    // Navigate to therapist matching
-    router.push(`/onboarding/${sessionId}/matching`);
+    // Navigate to availability selection
+    router.push(`/onboarding/${sessionId}/availability`);
   }
 
   /**
@@ -123,13 +123,13 @@ export default function InsurancePage({ params }: InsurancePageProps) {
 
   /**
    * Handles self-pay selection
-   * Navigates to matching without insurance verification
+   * Navigates to availability selection without insurance verification
    */
   function handleSelfPay(): void {
     console.info("Self-pay selected:", { sessionId });
 
-    // Navigate to therapist matching (skip insurance verification)
-    router.push(`/onboarding/${sessionId}/matching`);
+    // Navigate to availability selection (skip insurance verification)
+    router.push(`/onboarding/${sessionId}/availability`);
   }
 
   return (

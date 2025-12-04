@@ -13,11 +13,18 @@
  */
 import { HttpLink, ApolloLink, split } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
-import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
-import { createClient, type Client } from "graphql-ws";
 // apollo-upload-client v19 exports default
 import UploadHttpLink from "apollo-upload-client/UploadHttpLink.mjs";
+
+import {
+  createActionCableLink,
+  onActionCableStateChange,
+  getActionCableState,
+  disconnectActionCable,
+  reconnectActionCable,
+  type ActionCableConnectionState,
+} from "./action-cable-link";
 
 /**
  * Determines the GraphQL HTTP endpoint based on environment configuration.
@@ -176,42 +183,15 @@ export function createAuthLink(): ApolloLink {
 }
 
 /**
- * WebSocket client instance for subscription management.
- * Stored at module level for connection state tracking.
- */
-let wsClient: Client | null = null;
-
-/**
  * Connection state for WebSocket monitoring
+ * Re-exported from ActionCable link for backwards compatibility
  */
-export type ConnectionState =
-  | "connecting"
-  | "connected"
-  | "disconnected"
-  | "error";
+export type ConnectionState = ActionCableConnectionState;
 
 /**
  * Connection state change callback type
  */
 export type ConnectionStateCallback = (state: ConnectionState) => void;
-
-/**
- * Registered connection state listeners
- */
-const connectionListeners: Set<ConnectionStateCallback> = new Set();
-
-/**
- * Current connection state
- */
-let currentConnectionState: ConnectionState = "disconnected";
-
-/**
- * Notifies all registered listeners of connection state changes
- */
-function notifyConnectionChange(state: ConnectionState): void {
-  currentConnectionState = state;
-  connectionListeners.forEach((listener) => listener(state));
-}
 
 /**
  * Registers a callback for connection state changes
@@ -221,13 +201,7 @@ function notifyConnectionChange(state: ConnectionState): void {
 export function onConnectionStateChange(
   callback: ConnectionStateCallback
 ): () => void {
-  connectionListeners.add(callback);
-  // Immediately notify of current state
-  callback(currentConnectionState);
-
-  return () => {
-    connectionListeners.delete(callback);
-  };
+  return onActionCableStateChange(callback);
 }
 
 /**
@@ -235,50 +209,26 @@ export function onConnectionStateChange(
  * @returns Current connection state
  */
 export function getConnectionState(): ConnectionState {
-  return currentConnectionState;
+  return getActionCableState();
 }
 
 /**
- * Creates a WebSocket link for GraphQL subscriptions using graphql-ws.
+ * Creates a WebSocket link for GraphQL subscriptions using ActionCable.
  * Uses getWebSocketEndpoint() to determine the correct endpoint based on environment.
- * Configured with exponential backoff reconnection (1s, 2s, 4s, max 30s).
  *
- * @returns Configured GraphQLWsLink instance
+ * NOTE: This now uses ActionCable instead of graphql-ws because the Rails backend
+ * uses GraphQL::Subscriptions::ActionCableSubscriptions which requires ActionCable's
+ * proprietary protocol, not the graphql-transport-ws protocol.
+ *
+ * @returns Configured ActionCable Apollo Link instance
  */
-export function createWsLink(): GraphQLWsLink {
+export function createWsLink(): ApolloLink {
   const wsEndpoint = getWebSocketEndpoint();
 
-  wsClient = createClient({
+  return createActionCableLink({
     url: wsEndpoint,
-    connectionParams: () => {
-      const token = getAuthToken();
-      return token ? { token } : {};
-    },
-    retryAttempts: Infinity,
-    shouldRetry: () => true,
-    retryWait: async (retries) => {
-      // Exponential backoff: 1s, 2s, 4s, 8s, 16s, max 30s
-      const delay = Math.min(1000 * Math.pow(2, retries), 30000);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    },
-    on: {
-      connecting: () => {
-        notifyConnectionChange("connecting");
-      },
-      connected: () => {
-        notifyConnectionChange("connected");
-      },
-      closed: () => {
-        notifyConnectionChange("disconnected");
-      },
-      error: () => {
-        notifyConnectionChange("error");
-      },
-    },
-    lazy: true,
+    channelName: "GraphqlChannel",
   });
-
-  return new GraphQLWsLink(wsClient);
 }
 
 /**
@@ -286,25 +236,21 @@ export function createWsLink(): GraphQLWsLink {
  * Useful for user-initiated reconnection after errors
  */
 export function reconnectWebSocket(): void {
-  if (wsClient) {
-    // Dispose and let the lazy connection re-establish
-    wsClient.dispose();
-    // Reset state - next subscription will trigger reconnect
-    notifyConnectionChange("connecting");
-  }
+  const wsEndpoint = getWebSocketEndpoint();
+  reconnectActionCable(wsEndpoint);
 }
 
 /**
  * Creates a split link that routes operations based on type.
- * Subscriptions go to WebSocket, queries/mutations go to HTTP.
+ * Subscriptions go to WebSocket (ActionCable), queries/mutations go to HTTP.
  *
  * @param httpLink - HTTP link for queries/mutations
- * @param wsLink - WebSocket link for subscriptions
+ * @param wsLink - ActionCable link for subscriptions
  * @returns Configured split ApolloLink
  */
 export function createSplitLink(
   httpLink: ApolloLink,
-  wsLink: GraphQLWsLink
+  wsLink: ApolloLink
 ): ApolloLink {
   return split(
     ({ query }) => {

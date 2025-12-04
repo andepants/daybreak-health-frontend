@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import {
   type Page2Input,
   SLEEP_PATTERN_OPTIONS,
@@ -30,6 +31,7 @@ import {
   SOCIAL_RELATIONSHIP_OPTIONS,
   SOCIAL_RELATIONSHIP_LABELS,
 } from "@/lib/validations/assessment";
+import { getContextualTips } from "@/lib/data/support-resources";
 
 /**
  * Props for Page2DailyLifeImpact component
@@ -193,8 +195,12 @@ export function Page2DailyLifeImpact({
 
       {/* School Performance Select */}
       <div className="space-y-2">
-        <Label htmlFor="schoolPerformance">
+        <Label htmlFor="schoolPerformance" className="flex items-center gap-1">
           School performance
+          <InfoTooltip
+            tips={getContextualTips("assessment.schoolImpact")?.tips || []}
+            title={getContextualTips("assessment.schoolImpact")?.title}
+          />
         </Label>
         <p className="text-xs text-muted-foreground">
           How is your child doing academically?

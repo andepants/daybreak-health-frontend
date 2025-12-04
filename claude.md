@@ -20,3 +20,4 @@ Code Style and Structure:
 - Avoid enums; use maps instead.
 - Use the "function" keyword for pure functions.
 - Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+- Never commit secrets

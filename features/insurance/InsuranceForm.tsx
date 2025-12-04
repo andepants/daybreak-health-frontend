@@ -156,7 +156,7 @@ export function InsuranceForm({
   } = useForm<InsuranceFormData>({
     resolver: zodResolver(insuranceSchema),
     defaultValues: { ...insuranceDefaults, ...initialData },
-    mode: "onBlur", // AC-4.1.5: Validate on blur, not keystroke
+    mode: "onChange", // Validate in real-time as user types
   });
 
   // Track if we've applied initial data to avoid re-applying on every render

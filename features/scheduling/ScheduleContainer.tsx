@@ -1,20 +1,20 @@
 /**
  * ScheduleContainer component - orchestrates the appointment scheduling flow
  *
- * Main container component that brings together the calendar, time slot picker,
- * and session details to create a complete scheduling experience. Manages
- * state for date/time selection and coordinates data fetching.
+ * Main container component that displays recommended time slots based on
+ * user preferences and therapist availability. Shows a curated list of
+ * best-matching times with the option to expand and see all.
  *
  * Features:
- * - Two-step selection: date then time
+ * - Recommended time slots ranked by user preference match
+ * - Expandable list to see all available times
  * - Session details sidebar (desktop) or header (mobile)
  * - "Confirm Booking" button (enabled when time selected)
  * - "Back to Matching" navigation
- * - Real-time availability updates
  * - Loading and error states
  *
  * Layout:
- * - Desktop: Calendar + Time slots (left) | Session details (right sidebar)
+ * - Desktop: Recommended slots (left) | Session details (right sidebar)
  * - Mobile: Stacked layout with session details at top
  *
  * Visual Design:
@@ -30,86 +30,15 @@
 "use client";
 
 import * as React from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { AppointmentCalendar } from "./AppointmentCalendar";
-import { TimeSlotPicker, type TimeSlot } from "./TimeSlotPicker";
+import { RecommendedTimeSlots } from "./RecommendedTimeSlots";
+import { type TimeSlot } from "./TimeSlotPicker";
 import { SessionDetails } from "./SessionDetails";
 import { useDetectedTimezone } from "./TimezoneSelector";
 import { useGetTherapistAvailabilityQuery } from "@/types/graphql";
-
-/**
- * Check if a therapist is a fallback/mock therapist
- * Fallback therapists have IDs prefixed with "fallback_"
- */
-function isFallbackTherapist(therapistId: string): boolean {
-  return therapistId.startsWith("fallback_");
-}
-
-/**
- * Generate mock availability data for fallback therapists
- * Creates availability for the next 14 days with realistic time slots
- */
-function generateMockAvailability(therapistId: string, therapistName: string, timezone: string) {
-  const availableDates = [];
-  const today = new Date();
-
-  // Generate availability for next 14 days
-  for (let i = 1; i <= 14; i++) {
-    const date = new Date(today);
-    date.setDate(date.getDate() + i);
-
-    // Skip weekends for more realistic availability
-    const dayOfWeek = date.getDay();
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      continue;
-    }
-
-    const dateStr = date.toISOString().split("T")[0];
-
-    // Generate 3-5 time slots per day
-    const slots = [];
-    const slotTimes = [9, 10, 11, 14, 15, 16]; // 9am, 10am, 11am, 2pm, 3pm, 4pm
-
-    // Randomly select 3-5 slots
-    const numSlots = 3 + Math.floor(Math.random() * 3);
-    const selectedTimes = slotTimes.slice(0, numSlots);
-
-    for (const hour of selectedTimes) {
-      const startTime = new Date(date);
-      startTime.setHours(hour, 0, 0, 0);
-
-      const endTime = new Date(startTime);
-      endTime.setMinutes(50); // 50-minute sessions
-
-      slots.push({
-        __typename: "AvailableSlot" as const,
-        id: `mock_slot_${dateStr}_${hour}`,
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        isAvailable: true,
-        timezone,
-      });
-    }
-
-    availableDates.push({
-      __typename: "AvailableDate" as const,
-      date: dateStr,
-      hasAvailability: slots.length > 0,
-      slots,
-    });
-  }
-
-  return {
-    __typename: "TherapistAvailabilityResult" as const,
-    therapistId,
-    therapistName,
-    therapistPhotoUrl: null,
-    timezone,
-    availableDates,
-  };
-}
+import { usePatientAvailability } from "../availability/usePatientAvailability";
 
 /**
  * Props for ScheduleContainer component
@@ -132,15 +61,15 @@ export interface ScheduleContainerProps {
 }
 
 /**
- * Orchestrates the appointment scheduling flow with calendar and time selection
+ * Orchestrates the appointment scheduling flow with recommended time slots
  *
  * State Management:
- * - Selected date (calendar)
  * - Selected time slot
  * - User timezone (with auto-detection)
  *
  * Data Fetching:
  * - GraphQL query for therapist availability
+ * - GraphQL query for user availability preferences
  * - Refetch on timezone change
  * - Loading and error states
  *
@@ -162,7 +91,6 @@ export function ScheduleContainer({
   className,
 }: ScheduleContainerProps) {
   // State
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>();
   const [selectedSlot, setSelectedSlot] = React.useState<TimeSlot | undefined>();
   const detectedTimezone = useDetectedTimezone();
   const [timezone, setTimezone] = React.useState<string>(detectedTimezone);
@@ -175,9 +103,12 @@ export function ScheduleContainer({
   }, [detectedTimezone]);
 
   /**
-   * Check if this is a fallback therapist (for mock data)
+   * Fetch user's availability preferences for scoring
    */
-  const isFallback = isFallbackTherapist(therapistId);
+  const { existingAvailability: userAvailability, isLoading: isLoadingUserAvailability } =
+    usePatientAvailability({
+      sessionId: sessionId || "",
+    });
 
   /**
    * Calculate date range for availability query
@@ -196,70 +127,33 @@ export function ScheduleContainer({
 
   /**
    * Fetch therapist availability from GraphQL API
-   * Skip query for fallback therapists - use mock data instead
+   * Queries real availability data from the database for all therapists
+   * When sessionId is provided, filters slots to only show those that
+   * overlap with the patient's submitted availability preferences
    */
-  const { data: queryData, loading, error } = useGetTherapistAvailabilityQuery({
+  const { data, loading, error } = useGetTherapistAvailabilityQuery({
     variables: {
       therapistId,
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
       timezone,
+      sessionId: sessionId || undefined,
     },
-    skip: !therapistId || isFallback,
+    skip: !therapistId,
     fetchPolicy: "cache-and-network",
   });
 
   /**
-   * Generate mock availability for fallback therapists
-   * Memoized to prevent regeneration on every render
+   * Flatten all available time slots into a single array
+   * Used by RecommendedTimeSlots for scoring and display
    */
-  const mockData = React.useMemo(() => {
-    if (!isFallback) return null;
-    return {
-      therapistAvailability: generateMockAvailability(therapistId, therapistName, timezone),
-    };
-  }, [isFallback, therapistId, therapistName, timezone]);
-
-  /**
-   * Combined data source - use mock data for fallback therapists, query data otherwise
-   */
-  const data = isFallback ? mockData : queryData;
-
-  /**
-   * Extract available dates from query response
-   */
-  const availableDates = React.useMemo(() => {
+  const allSlots = React.useMemo(() => {
     if (!data?.therapistAvailability?.availableDates) return [];
 
     return data.therapistAvailability.availableDates
-      .filter((d) => d.hasAvailability)
-      .map((d) => new Date(d.date));
+      .flatMap((dateData) => dateData.slots || [])
+      .filter((slot) => slot.isAvailable);
   }, [data]);
-
-  /**
-   * Get time slots for selected date
-   */
-  const timeSlotsForSelectedDate = React.useMemo(() => {
-    if (!selectedDate || !data?.therapistAvailability?.availableDates) {
-      return [];
-    }
-
-    const dateStr = selectedDate.toISOString().split("T")[0];
-    const dateData = data.therapistAvailability.availableDates.find(
-      (d) => d.date.startsWith(dateStr)
-    );
-
-    return dateData?.slots || [];
-  }, [selectedDate, data]);
-
-  /**
-   * Handle date selection from calendar
-   * Reset selected slot when date changes
-   */
-  const handleDateSelect = React.useCallback((date: Date | undefined) => {
-    setSelectedDate(date);
-    setSelectedSlot(undefined); // Reset time slot when date changes
-  }, []);
 
   /**
    * Handle time slot selection
@@ -270,11 +164,10 @@ export function ScheduleContainer({
 
   /**
    * Handle timezone change
-   * Reset selections as times will change
+   * Reset selection as times will change
    */
   const handleTimezoneChange = React.useCallback((newTimezone: string) => {
     setTimezone(newTimezone);
-    setSelectedDate(undefined);
     setSelectedSlot(undefined);
   }, []);
 
@@ -290,7 +183,12 @@ export function ScheduleContainer({
   /**
    * Check if booking can be confirmed
    */
-  const canConfirmBooking = Boolean(selectedDate && selectedSlot);
+  const canConfirmBooking = Boolean(selectedSlot);
+
+  /**
+   * Combined loading state
+   */
+  const isLoading = loading || isLoadingUserAvailability;
 
   return (
     <div className={cn("min-h-screen bg-cream/50", className)}>
@@ -316,41 +214,25 @@ export function ScheduleContainer({
             Schedule Your First Session
           </h1>
           <p className="text-muted-foreground">
-            Select a convenient date and time for your appointment
+            Choose a time that works best for you
           </p>
         </div>
 
         {/* Layout: Sidebar (Desktop) / Stacked (Mobile) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Calendar + Time Slots */}
+          {/* Left Column: Recommended Time Slots */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Calendar */}
-            <AppointmentCalendar
-              availableDates={availableDates}
-              selectedDate={selectedDate}
-              onDateSelect={handleDateSelect}
-            />
-
-            {/* Time Slots (only show when date selected) */}
-            {selectedDate && (
-              <div role="region" aria-live="polite" aria-atomic="true">
-                {loading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-daybreak-teal" />
-                    <span className="ml-3 text-muted-foreground">
-                      Loading available times...
-                    </span>
-                  </div>
-                ) : (
-                  <TimeSlotPicker
-                    slots={timeSlotsForSelectedDate}
-                    selectedSlot={selectedSlot}
-                    onSlotSelect={handleSlotSelect}
-                    timezone={timezone}
-                  />
-                )}
-              </div>
-            )}
+            {/* Recommended Time Slots */}
+            <div role="region" aria-live="polite" aria-atomic="true">
+              <RecommendedTimeSlots
+                allSlots={allSlots}
+                userAvailability={userAvailability || undefined}
+                selectedSlot={selectedSlot}
+                onSlotSelect={handleSlotSelect}
+                timezone={timezone}
+                isLoading={isLoading}
+              />
+            </div>
 
             {/* Error State */}
             {error && (
@@ -381,15 +263,15 @@ export function ScheduleContainer({
               {/* Confirm Booking Button */}
               <Button
                 onClick={handleConfirmBooking}
-                disabled={!canConfirmBooking || loading}
+                disabled={!canConfirmBooking || isLoading}
                 className="w-full mt-6 bg-daybreak-teal hover:bg-daybreak-teal/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 size="lg"
               >
-                {canConfirmBooking ? "Confirm Booking" : "Select Date & Time"}
+                {canConfirmBooking ? "Confirm Booking" : "Select a Time"}
               </Button>
 
               {/* Selection Summary */}
-              {selectedDate && selectedSlot && (
+              {selectedSlot && (
                 <div
                   className="mt-4 p-4 rounded-lg bg-green-50 border border-green-200"
                   role="status"
@@ -399,11 +281,12 @@ export function ScheduleContainer({
                     Ready to book!
                   </p>
                   <p className="text-xs text-green-700 mt-1">
-                    {selectedDate.toLocaleDateString("en-US", {
+                    {new Date(selectedSlot.startTime).toLocaleDateString("en-US", {
                       weekday: "long",
                       month: "long",
                       day: "numeric",
                       year: "numeric",
+                      timeZone: timezone,
                     })}{" "}
                     at{" "}
                     {new Date(selectedSlot.startTime).toLocaleTimeString(

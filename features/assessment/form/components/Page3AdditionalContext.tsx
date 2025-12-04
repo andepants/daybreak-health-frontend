@@ -13,7 +13,13 @@ import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { type Page3Input } from "@/lib/validations/assessment";
+import {
+  getContextualTips,
+  getResourcesByTopic,
+} from "@/lib/data/support-resources";
+import { ResourceAccordion } from "@/features/support";
 import { FieldStatusIndicator } from "./FieldStatusIndicator";
 
 /**
@@ -174,6 +180,10 @@ export function Page3AdditionalContext({
             isTouched={!!touchedFields.therapyGoals}
             hasError={!!errors.therapyGoals}
           />
+          <InfoTooltip
+            tips={getContextualTips("assessment.goals")?.tips || []}
+            title={getContextualTips("assessment.goals")?.title}
+          />
         </Label>
         <p className="text-xs text-muted-foreground">
           Help us understand your goals and expectations for your child&apos;s therapy journey.
@@ -219,6 +229,13 @@ export function Page3AdditionalContext({
           </span>
         </div>
       </div>
+
+      {/* Helpful Resources Section */}
+      <ResourceAccordion
+        title="Helpful Resources for Your Journey"
+        resources={getResourcesByTopic("getting-started")}
+        maxVisible={3}
+      />
     </div>
   );
 }

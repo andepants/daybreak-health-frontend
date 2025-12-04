@@ -22,6 +22,7 @@ import type {
   FieldCompletionStatus,
 } from "./types";
 import { FIELD_CONFIG } from "./field-config";
+import { parentInfoDefaults } from "@/lib/validations/demographics";
 
 /**
  * Custom event name for same-tab data updates
@@ -125,6 +126,7 @@ function createEmptyState(sessionId: string): OnboardingCompletionState {
       assessment: emptySectionStatus("assessment"),
       info: emptySectionStatus("info"),
       insurance: emptySectionStatus("insurance"),
+      availability: emptySectionStatus("availability"),
       match: emptySectionStatus("match"),
       book: emptySectionStatus("book"),
     },
@@ -166,7 +168,7 @@ export function useCompletionStatus({
   const [localData, setLocalData] = useState<Record<string, unknown>>({});
 
   /**
-   * Load data from localStorage
+   * Load data from localStorage and apply defaults for required fields
    */
   const loadData = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -175,7 +177,21 @@ export function useCompletionStatus({
       const stored = localStorage.getItem(`onboarding_session_${sessionId}`);
       if (stored) {
         const parsed = JSON.parse(stored);
-        setLocalData(parsed.data || parsed || {});
+        let data = parsed.data || parsed || {};
+
+        // Apply parent defaults if parent data exists but relationshipToChild is missing
+        // This ensures the default "parent" relationship is used when not explicitly set
+        if (data.parent && typeof data.parent === "object" && !data.parent.relationshipToChild) {
+          data = {
+            ...data,
+            parent: {
+              ...data.parent,
+              relationshipToChild: parentInfoDefaults.relationshipToChild,
+            },
+          };
+        }
+
+        setLocalData(data);
       } else {
         setLocalData({});
       }
@@ -230,10 +246,40 @@ export function useCompletionStatus({
       getNestedValue(localData, "insurance.isSelfPay") === true;
 
     // Compute status for each section
+    // Check if availability has been submitted (array with at least one slot)
+    // Data is stored at availability.availabilities by usePatientAvailability hook
+    const availabilityData = getNestedValue(localData, "availability") as { availabilities?: unknown[] } | undefined;
+    const availabilitySlots = availabilityData?.availabilities;
+    const hasAvailability = Array.isArray(availabilitySlots) && availabilitySlots.length > 0;
+
     const sections: Record<StepId, SectionCompletionStatus> = {
       assessment: computeSectionStatus("assessment", localData, isSelfPay),
       info: computeSectionStatus("info", localData, isSelfPay),
       insurance: computeSectionStatus("insurance", localData, isSelfPay),
+      // Availability is required - check if at least one time slot was selected
+      availability: {
+        sectionId: "availability",
+        isComplete: hasAvailability,
+        percentComplete: hasAvailability ? 100 : 0,
+        requiredFieldsComplete: hasAvailability ? 1 : 0,
+        requiredFieldsTotal: 1,
+        optionalFieldsComplete: 0,
+        optionalFieldsTotal: 0,
+        missingRequiredFields: hasAvailability ? [] : [{
+          fieldName: "availability",
+          displayLabel: "Availability Selection",
+          isComplete: false,
+          isRequired: true,
+          section: "availability",
+        }],
+        completedRequiredFields: hasAvailability ? [{
+          fieldName: "availability",
+          displayLabel: "Availability Selection",
+          isComplete: true,
+          isRequired: true,
+          section: "availability",
+        }] : [],
+      },
       // Match and Book don't have form fields - they're complete based on actions
       match: {
         sectionId: "match",
@@ -261,8 +307,8 @@ export function useCompletionStatus({
       },
     };
 
-    // Calculate overall percentage (assessment, info, insurance sections)
-    const trackableSections = [sections.assessment, sections.info, sections.insurance];
+    // Calculate overall percentage (assessment, info, insurance, availability sections)
+    const trackableSections = [sections.assessment, sections.info, sections.insurance, sections.availability];
     const totalRequired = trackableSections.reduce(
       (sum, s) => sum + s.requiredFieldsTotal,
       0
@@ -298,10 +344,18 @@ export function useCompletionStatus({
       });
     }
 
+    // Check availability (required for matching)
+    if (!sections.availability.isComplete) {
+      sections.availability.missingRequiredFields.forEach((f) => {
+        matchingBlockers.push(f.displayLabel);
+      });
+    }
+
     const canProceedToMatching =
       sections.assessment.isComplete &&
       sections.info.isComplete &&
-      (isSelfPay || sections.insurance.isComplete);
+      (isSelfPay || sections.insurance.isComplete) &&
+      sections.availability.isComplete;
 
     return {
       sessionId,

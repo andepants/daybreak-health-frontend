@@ -32,7 +32,7 @@ import { Loader2 } from "lucide-react";
 export function BookingProcessingState() {
   return (
     <div
-      className="flex min-h-screen items-center justify-center bg-cream p-6"
+      className="flex flex-col items-center justify-center py-12"
       role="status"
       aria-live="polite"
       aria-label="Booking appointment"
@@ -50,7 +50,7 @@ export function BookingProcessingState() {
             Booking your appointment...
           </h2>
           <p className="text-muted-foreground">
-            This will only take a moment
+            You&apos;ll be redirected shortly
           </p>
         </div>
       </div>

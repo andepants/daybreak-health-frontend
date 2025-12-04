@@ -52,20 +52,30 @@ export interface FallbackResults {
 }
 
 /**
+ * Real therapist IDs used for fallback display
+ * These are actual clinicians imported from CSV data
+ */
+const FALLBACK_THERAPIST_IDS = [
+  "9e0e8f0c-cfe7-43a5-90d2-f86e933d88ba", // Valeriya Bauer
+  "e5ab0424-bc98-41f1-a12e-539a5dbcb00c", // JaNece Dickerson
+];
+
+/**
  * Fallback therapists shown when backend returns empty results
  * Using real therapist IDs from the database so bookings work end-to-end
+ * Data sourced from clinicians_anonymized.csv
  */
 export const FALLBACK_THERAPISTS: FallbackTherapist[] = [
   {
-    id: "5271678c-ad6e-4595-bc2c-7f2d40957c13",
-    name: "Dr. Sarah Chen",
-    credentials: "PhD, LMFT",
+    id: "9e0e8f0c-cfe7-43a5-90d2-f86e933d88ba",
+    name: "Valeriya Bauer",
+    credentials: "LCSW",
     photoUrl: null,
-    specialties: ["Anxiety", "Teen Issues", "Family Therapy"],
+    specialties: ["Anxiety", "Depression", "Teen Issues"],
     availabilityStatus: "available",
-    availabilityText: "Contact us for availability",
-    yearsOfExperience: 12,
-    bio: "Specializing in adolescent mental health with a warm, evidence-based approach. Experienced in helping teens navigate anxiety, depression, and family challenges.",
+    availabilityText: "Available this week",
+    yearsOfExperience: null,
+    bio: "I have been passionate about mental health from a very young age. As a teen, I struggled to find and make meaningful connections and make sense of the world. I turned my personal quest for knowledge and healing into a career to help others do the same.",
     matchScore: 85,
     isBestMatch: true,
     matchReasons: [
@@ -83,15 +93,15 @@ export const FALLBACK_THERAPISTS: FallbackTherapist[] = [
     isFallback: true,
   },
   {
-    id: "d88882ce-f51a-407c-a71e-c16797466bb7",
-    name: "Michael Torres",
+    id: "e5ab0424-bc98-41f1-a12e-539a5dbcb00c",
+    name: "JaNece Dickerson",
     credentials: "LCSW",
     photoUrl: null,
-    specialties: ["Depression", "ADHD", "School Issues"],
+    specialties: ["Depression", "Youth Therapy", "Social Work"],
     availabilityStatus: "available",
-    availabilityText: "Contact us for availability",
-    yearsOfExperience: 8,
-    bio: "Focused on helping children and adolescents build resilience and develop coping strategies. Collaborative approach working closely with families and schools.",
+    availabilityText: "Available this week",
+    yearsOfExperience: null,
+    bio: "I am originally from California, but moved to Huntsville, Alabama to complete all of my schooling. I'm a firm believer in building the next generation and that begins with our mental health.",
     matchScore: 82,
     isBestMatch: false,
     matchReasons: [
@@ -102,7 +112,7 @@ export const FALLBACK_THERAPISTS: FallbackTherapist[] = [
       },
       {
         id: "fallback_reason_4",
-        text: "Specializes in ADHD and academic challenges",
+        text: "Focused on youth mental health",
         icon: "experience",
       },
     ],
@@ -127,10 +137,11 @@ export function createFallbackResults(): FallbackResults {
 
 /**
  * Checks if a therapist ID is a fallback therapist
+ * Now uses real therapist IDs from the database
  *
  * @param therapistId - The therapist ID to check
  * @returns true if the ID belongs to a fallback therapist
  */
 export function isFallbackTherapist(therapistId: string): boolean {
-  return therapistId.startsWith("fallback_");
+  return FALLBACK_THERAPIST_IDS.includes(therapistId);
 }

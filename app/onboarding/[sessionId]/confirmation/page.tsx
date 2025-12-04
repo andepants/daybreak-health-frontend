@@ -70,7 +70,7 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
       }
 
       const sessionData = JSON.parse(stored);
-      const { selectedSlot, selectedTimezone, therapistId } = sessionData.data || {};
+      const { selectedSlot, selectedTimezone, therapistId, selectedTherapist } = sessionData.data || {};
 
       if (!selectedSlot || !therapistId) {
         setError("Incomplete booking data. Please select a therapist and time slot.");
@@ -86,6 +86,8 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
         endTime: selectedSlot.endTime,
         duration: 50, // Default 50-minute session
         timezone: selectedTimezone || selectedSlot.timezone,
+        therapistName: selectedTherapist?.name,
+        therapistPhotoUrl: selectedTherapist?.photoUrl,
       };
 
       setBookingRequest(request);
@@ -105,10 +107,10 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
   }
 
   /**
-   * Handle completion - redirect to Daybreak Health main site
+   * Handle completion - stay on success screen
    */
   function handleComplete() {
-    window.location.href = "https://www.daybreakhealth.com/";
+    // Stay on success screen - no redirect
   }
 
   // Loading state while reading localStorage
@@ -157,7 +159,6 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
     <Confirmation
       bookingRequest={bookingRequest}
       onComplete={handleComplete}
-      returnUrl="https://www.daybreakhealth.com/"
     />
   );
 }

@@ -26,6 +26,7 @@ export const INSURANCE_CARRIERS: InsuranceCarrier[] = [
   { id: "anthem", name: "Anthem Blue Cross", idFormat: "3 letters + 9 digits" },
   { id: "bcbs", name: "Blue Cross Blue Shield", idFormat: "3 letters + 9-12 digits" },
   { id: "carefirst", name: "CareFirst", idFormat: "9-12 alphanumeric" },
+  { id: "cencal", name: "CenCal Health", idFormat: "9-12 alphanumeric" },
   { id: "centene", name: "Centene", idFormat: "10-12 alphanumeric" },
   { id: "cigna", name: "Cigna", idFormat: "U followed by 8 digits" },
   { id: "coventry", name: "Coventry Health Care", idFormat: "9-12 alphanumeric" },
@@ -120,6 +121,8 @@ export function findCarrierByName(name: string): InsuranceCarrier | undefined {
     "aetna": "aetna",
     "humana": "humana",
     "molina": "molina",
+    "cencal": "cencal",
+    "cencal health": "cencal",
   };
 
   for (const [pattern, carrierId] of Object.entries(ocrMappings)) {

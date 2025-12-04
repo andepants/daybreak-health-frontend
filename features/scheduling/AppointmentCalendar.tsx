@@ -171,10 +171,17 @@ export function AppointmentCalendar({
         disabled={disabledMatcher}
         modifiers={modifiers}
         modifiersClassNames={modifiersClassNames}
+        showDropdowns={true}
         className="mx-auto"
         classNames={{
           month_caption: "flex justify-center pt-1 relative items-center mb-4",
-          caption_label: "text-base font-semibold font-serif text-deep-text",
+          dropdowns: "flex gap-2 items-center justify-center",
+          dropdown: cn(
+            "appearance-none bg-white border border-gray-200 rounded-md",
+            "px-3 py-1.5 text-sm font-medium text-deep-text font-serif",
+            "hover:border-daybreak-teal/50 focus:outline-none focus:ring-2 focus:ring-daybreak-teal/30",
+            "cursor-pointer transition-colors duration-150"
+          ),
           nav: "space-x-1 flex items-center",
           button_previous: cn(
             "absolute left-1 h-8 w-8 bg-white hover:bg-gray-50 border border-gray-200 rounded-md transition-colors"

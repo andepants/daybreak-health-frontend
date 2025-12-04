@@ -8,7 +8,7 @@
 /**
  * Step identifiers matching OnboardingProgress component
  */
-export type StepId = "assessment" | "info" | "insurance" | "match" | "book";
+export type StepId = "assessment" | "info" | "insurance" | "availability" | "match" | "book";
 
 /**
  * Completion status for a single form field

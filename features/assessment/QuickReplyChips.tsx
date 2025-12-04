@@ -111,7 +111,7 @@ export const QuickReplyChips = React.memo(function QuickReplyChips({
       aria-label="Quick reply options. Use Tab to navigate between options."
     >
       <div className="flex flex-wrap gap-2 px-4 justify-center">
-        {options.map((option) => {
+        {options.map((option, index) => {
           const isSelected = selectedChip === option.value;
 
           return (
@@ -125,9 +125,15 @@ export const QuickReplyChips = React.memo(function QuickReplyChips({
                 "hover:bg-daybreak-teal/10",
                 "transition-all duration-200",
                 "text-sm font-medium",
+                // Staggered fade-in animation for each chip
+                "animate-fade-in-up",
                 // Selected state - filled with teal
                 isSelected && "bg-daybreak-teal text-white hover:bg-daybreak-teal"
               )}
+              style={{
+                animationDelay: `${index * 75}ms`,
+                animationFillMode: "backwards",
+              }}
               aria-label={`Quick reply: ${option.label}`}
             >
               {option.icon && (

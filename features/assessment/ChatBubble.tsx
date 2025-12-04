@@ -4,10 +4,12 @@
  * Renders individual chat messages with appropriate styling based on sender type.
  * Supports AI, user, and system message variants with distinct visual treatments.
  * Includes avatar, message content, and relative timestamp display.
+ * AI messages render markdown for proper bullet point and formatting support.
  */
 "use client";
 
 import * as React from "react";
+import ReactMarkdown from "react-markdown";
 import { Mountain } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -107,9 +109,35 @@ export const ChatBubble = React.memo(function ChatBubble({
             isSystem && "bg-muted/50 text-muted-foreground text-center"
           )}
         >
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">
-            {message.content}
-          </p>
+          {isAI ? (
+            <div className="text-sm leading-relaxed">
+              <ReactMarkdown
+                components={{
+                  p: ({ children }) => (
+                    <p className="mb-2 last:mb-0">{children}</p>
+                  ),
+                  ul: ({ children }) => (
+                    <ul className="list-disc pl-4 mb-2 last:mb-0">{children}</ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className="list-decimal pl-4 mb-2 last:mb-0">{children}</ol>
+                  ),
+                  li: ({ children }) => (
+                    <li className="mb-1 last:mb-0">{children}</li>
+                  ),
+                  strong: ({ children }) => (
+                    <strong className="font-semibold">{children}</strong>
+                  ),
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            </div>
+          ) : (
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">
+              {message.content}
+            </p>
+          )}
         </div>
 
         {/* Timestamp */}
