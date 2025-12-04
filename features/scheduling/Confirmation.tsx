@@ -57,6 +57,8 @@ export interface BookingRequest {
 export interface ConfirmationProps {
   /** Booking details to submit */
   bookingRequest: BookingRequest;
+  /** Callback when booking is complete and user dismisses success screen */
+  onComplete?: () => void;
 }
 
 /**
@@ -117,6 +119,7 @@ function generateMockAppointment(request: BookingRequest): AppointmentData {
 
 export function Confirmation({
   bookingRequest,
+  onComplete,
 }: ConfirmationProps) {
   const router = useRouter();
   const { bookAppointment, loading, error, appointment, emailConfirmation } = useBooking();
