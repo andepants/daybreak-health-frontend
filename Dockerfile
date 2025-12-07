@@ -17,8 +17,17 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build Next.js
-RUN npm run build
+# Copy .aptible.env if it exists (written by Aptible before build)
+# These NEXT_PUBLIC_* vars need to be available at build time
+COPY .aptible.env* ./
+
+# Source .aptible.env if it exists, then build Next.js
+# This makes NEXT_PUBLIC_* variables available during the build
+RUN if [ -f .aptible.env ]; then \
+      echo "Loading .aptible.env for build..."; \
+      export $(grep -v '^#' .aptible.env | xargs); \
+    fi && \
+    npm run build
 
 # Production image
 FROM base AS runner
